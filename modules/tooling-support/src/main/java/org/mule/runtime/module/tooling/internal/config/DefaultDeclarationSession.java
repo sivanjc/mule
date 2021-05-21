@@ -6,28 +6,40 @@
  */
 package org.mule.runtime.module.tooling.internal.config;
 
+import static com.google.common.base.Throwables.getCausalChain;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+import static org.mule.runtime.api.connection.ConnectionValidationResult.failure;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+import static org.mule.runtime.api.value.ValueResult.resultFrom;
+import static org.mule.sdk.api.values.ValueResolvingException.CONNECTION_FAILURE;
 
+import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.metadata.MetadataKeysContainer;
 import org.mule.runtime.api.metadata.descriptor.ComponentMetadataTypesDescriptor;
+import org.mule.runtime.api.metadata.resolving.FailureCode;
+import org.mule.runtime.api.metadata.resolving.MetadataFailure;
 import org.mule.runtime.api.metadata.resolving.MetadataResult;
+import org.mule.runtime.api.sampledata.SampleDataFailure;
 import org.mule.runtime.api.sampledata.SampleDataResult;
 import org.mule.runtime.api.util.LazyValue;
+import org.mule.runtime.api.value.ResolvingFailure;
 import org.mule.runtime.api.value.ValueResult;
 import org.mule.runtime.app.declaration.api.ComponentElementDeclaration;
 import org.mule.runtime.app.declaration.api.ParameterizedElementDeclaration;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.deployment.model.api.DeploymentException;
+import org.mule.runtime.deployment.model.api.DeploymentStartException;
 import org.mule.runtime.deployment.model.api.application.Application;
 import org.mule.runtime.module.tooling.api.artifact.DeclarationSession;
 import org.mule.runtime.module.tooling.internal.AbstractArtifactAgnosticService;
 import org.mule.runtime.module.tooling.internal.ApplicationSupplier;
+import org.mule.sdk.api.data.sample.SampleDataException;
 
 import java.util.function.Function;
 
@@ -46,8 +58,6 @@ public class DefaultDeclarationSession extends AbstractArtifactAgnosticService i
         return createInternalService(getStartedApplication());
       } catch (ApplicationStartingException e) {
         Exception causeException = e.getCauseException();
-        LOGGER.error("There was an error while starting temporary application for declaration session: {}",
-                     getRootCauseMessage(causeException));
         propagateIfPossible(causeException, MuleRuntimeException.class);
         throw new MuleRuntimeException(causeException);
       }
@@ -104,6 +114,17 @@ public class DefaultDeclarationSession extends AbstractArtifactAgnosticService i
   public ConnectionValidationResult testConnection(String configName) {
     try {
       return withInternalDeclarationSession("testConnection()", session -> session.testConnection(configName));
+    } catch (DeploymentStartException e) {
+      String message = format("Couldn't start configuration(s) while performing test connection on config: '%s'", configName);
+      LOGGER.error(message, e);
+      return getCausalChain(e).stream()
+          .filter(exception -> exception.getClass().equals(ConnectionException.class)
+              && ((ConnectionException) exception).getErrorType().isPresent())
+          .map(exception -> failure(exception.getMessage(),
+                                    ((ConnectionException) exception).getErrorType().get(),
+                                    (Exception) exception))
+          .findFirst()
+          .orElse(failure(message, e));
     } catch (Throwable t) {
       LOGGER.error(format("Error while performing test connection on config: '%s'", configName), t);
       throw t;
@@ -114,6 +135,16 @@ public class DefaultDeclarationSession extends AbstractArtifactAgnosticService i
   public ValueResult getValues(ParameterizedElementDeclaration component, String providerName) {
     try {
       return withInternalDeclarationSession("getValues()", session -> session.getValues(component, providerName));
+    } catch (DeploymentStartException e) {
+      String message =
+          format("Couldn't start configuration(s) while resolving values on component: '%s:%s' for providerName: '%s'",
+                 component.getDeclaringExtension(),
+                 component.getName(), providerName);
+      LOGGER.error(message, e);
+      return resultFrom(ResolvingFailure.Builder.newFailure(e)
+          .withMessage(message)
+          .withReason(getRootCauseMessage(e))
+          .build());
     } catch (Throwable t) {
       LOGGER.error(format("Error while resolving values on component: '%s:%s' for providerName: '%s'",
                           component.getDeclaringExtension(),
@@ -127,6 +158,14 @@ public class DefaultDeclarationSession extends AbstractArtifactAgnosticService i
   public MetadataResult<MetadataKeysContainer> getMetadataKeys(ComponentElementDeclaration component) {
     try {
       return withInternalDeclarationSession("getMetadataKeys()", session -> session.getMetadataKeys(component));
+    } catch (DeploymentStartException e) {
+      String message = format("Couldn't start configuration(s) while resolving metadata keys on component: '%s:%s'",
+                              component.getDeclaringExtension(),
+                              component.getName());
+      LOGGER.error(message, e);
+      return MetadataResult.failure(MetadataFailure.Builder.newFailure(e)
+          .withMessage(message)
+          .withReason(getRootCauseMessage(e)).onKeys());
     } catch (Throwable t) {
       LOGGER.error(format("Error while resolving metadata keys on component: '%s:%s'", component.getDeclaringExtension(),
                           component.getName()),
@@ -139,6 +178,15 @@ public class DefaultDeclarationSession extends AbstractArtifactAgnosticService i
   public MetadataResult<ComponentMetadataTypesDescriptor> resolveComponentMetadata(ComponentElementDeclaration component) {
     try {
       return withInternalDeclarationSession("resolveComponentMetadata()", session -> session.resolveComponentMetadata(component));
+    } catch (DeploymentStartException e) {
+      String message = format("Couldn't start configuration(s) while resolving metadata on component: '%s:%s'",
+                              component.getDeclaringExtension(),
+                              component.getName());
+      LOGGER.error(message, e);
+      return MetadataResult.failure(MetadataFailure.Builder
+          .newFailure(e)
+          .withMessage(message)
+          .withReason(getRootCauseMessage(e)).onComponent());
     } catch (Throwable t) {
       LOGGER.error(format("Error while resolving metadata on component: '%s:%s'", component.getDeclaringExtension(),
                           component.getName()),
@@ -151,6 +199,15 @@ public class DefaultDeclarationSession extends AbstractArtifactAgnosticService i
   public SampleDataResult getSampleData(ComponentElementDeclaration component) {
     try {
       return withInternalDeclarationSession("getSampleData()", session -> session.getSampleData(component));
+    } catch (DeploymentStartException e) {
+      String message = format("Couldn't start configuration(s) while retrieving sample data on component: '%s:%s'",
+                              component.getDeclaringExtension(),
+                              component.getName());
+      LOGGER.error(message, e);
+      return SampleDataResult.resultFrom(SampleDataFailure.Builder.newFailure(e)
+          .withMessage(message)
+          .withReason(getRootCauseMessage(e))
+          .build());
     } catch (Throwable t) {
       LOGGER.error(format("Error while retrieving sample data on component: '%s:%s'", component.getDeclaringExtension(),
                           component.getName()),

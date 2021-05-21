@@ -16,8 +16,8 @@ import static org.mule.runtime.core.api.util.FileUtils.deleteTree;
 
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.config.api.LazyComponentInitializer;
-import org.mule.runtime.core.api.config.ConfigurationException;
 import org.mule.runtime.deployment.model.api.DeploymentInitException;
+import org.mule.runtime.deployment.model.api.DeploymentStartException;
 import org.mule.runtime.deployment.model.api.application.Application;
 import org.mule.runtime.module.repository.api.BundleNotFoundException;
 
@@ -77,12 +77,7 @@ public abstract class AbstractArtifactAgnosticService {
             application.getRegistry().lookupByType(LazyComponentInitializer.class)
                 .ifPresent(lazyInit -> lazyInit.initializeComponents(comp -> true));
           } catch (Exception e) {
-            if (e.getCause() instanceof ConfigurationException) {
-              // Keep thrown exception consistent with the previous implementation.
-              throw new DeploymentInitException(createStaticMessage(e.getCause().getMessage()), e.getCause());
-            } else {
-              throw e;
-            }
+            throw new DeploymentInitException(createStaticMessage(e.getCause().getMessage()), e.getCause());
           }
         } else {
           application.init();
@@ -96,7 +91,11 @@ public abstract class AbstractArtifactAgnosticService {
       } catch (Exception e) {
         // Clean everything if there is an error
         dispose();
-        throw new ApplicationStartingException(e);
+        if (e.getCause() instanceof DeploymentStartException) {
+          throw new ApplicationStartingException((Exception) e.getCause());
+        } else {
+          throw new ApplicationStartingException(e);
+        }
       }
     }
     return application;
