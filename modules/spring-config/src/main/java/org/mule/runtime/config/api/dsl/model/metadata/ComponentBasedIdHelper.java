@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.config.api.dsl.model.metadata;
 
+import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparing;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -14,16 +15,21 @@ import static org.mule.runtime.core.api.util.StringUtils.isEmpty;
 import static org.mule.runtime.internal.dsl.DslConstants.CONFIG_ATTRIBUTE_NAME;
 
 import org.mule.metadata.api.model.ArrayType;
+import org.mule.metadata.api.visitor.MetadataTypeVisitor;
+import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.meta.NamedObject;
 import org.mule.runtime.api.meta.Typed;
 import org.mule.runtime.ast.api.ComponentAst;
 import org.mule.runtime.ast.api.ComponentParameterAst;
 import org.mule.runtime.core.internal.util.cache.CacheIdBuilderAdapter;
+import org.mule.runtime.extension.api.dsl.syntax.DslElementSyntax;
 import org.mule.runtime.extension.api.util.ExtensionMetadataTypeUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -112,7 +118,10 @@ public class ComponentBasedIdHelper {
           .orElse(containerComponent.getIdentifier().getNamespace() + ":" + parameterAst.getModel().getName());
       this.idBuilderSupplier = cacheKeyBuilderSupplier;
       this.idBuilder = idBuilderSupplier.get().withSourceElementName(name).withHashValue(Objects.hashCode(name));
-      parameterAst.getValue().reduce(v -> hashForLeft(parameterAst.getRawValue()), this::hashForRight);
+      parameterAst.getValue().reduce(v -> hashForLeft(parameterAst.getRawValue()),
+                                     v -> {
+                                       return hashForRight(parameterAst, v);
+                                     });
     }
 
     private ParameterVisitorFunctions(ComponentAst component,
@@ -130,11 +139,10 @@ public class ComponentBasedIdHelper {
       return null;
     }
 
-    private Void hashForRight(Object o) {
+    private Void hashForRight(ComponentParameterAst parameterAst, Object o) {
       if (o instanceof Collection) {
-        final Collection<ComponentAst> collection = (Collection<ComponentAst>) o;
-        this.idBuilder.containing(collection.stream()
-            .map(e -> computeIdFor(e, idBuilderSupplier))
+        this.idBuilder.containing((List<K>) ((Collection) o).stream()
+            .map(e -> extracted(parameterAst, e))
             .collect(toList()));
       } else if (o instanceof ComponentAst) {
         final ComponentAst c = (ComponentAst) o;
@@ -151,6 +159,38 @@ public class ComponentBasedIdHelper {
       }
       return null;
     }
+
+    private K extracted(ComponentParameterAst parameterAst, Object e) {
+      if (e instanceof ComponentAst) {
+        return computeIdFor((ComponentAst) e, idBuilderSupplier);
+      } else {
+        AtomicReference<K> result = new AtomicReference<>();
+        parameterAst.getModel().getType().accept(new MetadataTypeVisitor() {
+
+          @Override
+          public void visitArrayType(ArrayType arrayType) {
+            Optional<DslElementSyntax> itemsDsl =
+                parameterAst.getGenerationInformation().getSyntax().flatMap(dsl -> dsl.getGeneric(arrayType.getType()));
+
+            final ComponentIdentifier listItemIdentifier = ComponentIdentifier.builder()
+                .namespaceUri(itemsDsl.get().getNamespace())
+                .namespace(itemsDsl.get().getPrefix())
+                .name(itemsDsl.get().getElementName()).build();
+
+            result.set(idBuilderSupplier.get()
+                .withSourceElementName(listItemIdentifier.toString())
+                .withHashValue(Objects.hashCode(listItemIdentifier.toString()))
+                .containing(singletonList(idBuilderSupplier.get()
+                    .withSourceElementName(itemsDsl.get().getPrefix() + ":value")
+                    .withHashValue(Objects.hashCode(itemsDsl.get().getPrefix() + ":value"))
+                    .withHashValue(Objects.hashCode(e.toString()))
+                    .build()))
+                .build());
+          }
+        });
+        return result.get();
+      }
+    }
   }
 
   @Deprecated
@@ -160,7 +200,7 @@ public class ComponentBasedIdHelper {
       return Objects.hashCode(new DeprecatedParameterVisitorFunctions(parameter).hashBuilder.toString());
     }
 
-    private StringBuilder hashBuilder = new StringBuilder();
+    private final StringBuilder hashBuilder = new StringBuilder();
     private final Function<String, Void> leftFunction = this::hashForLeft;
     private final Function<Object, Void> rightFunction = this::hashForRight;
 

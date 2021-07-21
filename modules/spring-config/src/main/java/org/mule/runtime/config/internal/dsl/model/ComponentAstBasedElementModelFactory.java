@@ -27,6 +27,7 @@ import org.mule.metadata.api.ClassTypeLoader;
 import org.mule.metadata.api.model.ArrayType;
 import org.mule.metadata.api.model.MetadataType;
 import org.mule.metadata.api.model.ObjectType;
+import org.mule.metadata.api.model.UnionType;
 import org.mule.metadata.api.visitor.MetadataTypeVisitor;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.meta.model.connection.ConnectionProviderModel;
@@ -313,8 +314,8 @@ class ComponentAstBasedElementModelFactory {
           g.getParameterModels().forEach(p -> {
             addElementParameter(configuration, parameters, elementDsl, builder, p,
                                 paramModel -> configuration.getParameter(paramModel.getName()));
-          });
-        });
+          });//
+        });//
   }
 
   private void populateConnectionProviderElements(DslElementModel.Builder builder, ComponentAst configuration) {
@@ -468,20 +469,62 @@ class ComponentAstBasedElementModelFactory {
           @Override
           public void visitArrayType(ArrayType arrayType) {
             MetadataType itemType = arrayType.getType();
-            paramSyntax.getGeneric(itemType)
-                .ifPresent(itemdsl -> ((Collection<ComponentAst>) paramValue)
-                    .stream()
-                    .filter(c -> c.getModel(MetadataTypeAdapter.class).map(mtma -> mtma.isWrapperFor(itemType))
-                        .orElse(false))
-                    .forEach(c -> {
-                      final Builder<Object> arrayModelBuilder = DslElementModel.builder()
-                          .withModel(itemType)
-                          .withDsl(c.getGenerationInformation().getSyntax().get())
-                          .withConfig(c);
-                      enrichElementModel(c.getModel(ParameterizedModel.class).get(), itemdsl, c,
-                                         arrayModelBuilder);
-                      paramElementBuilder.containing(arrayModelBuilder.build());
-                    }));
+
+
+
+            itemType.accept(new MetadataTypeVisitor() {
+
+              @Override
+              protected void defaultVisit(MetadataType metadataType) {
+                paramSyntax.getGeneric(itemType)
+                    .ifPresent(itemdsl -> ((Collection<String>) paramValue)
+                        .stream()
+                        // .filter(c -> c.getModel(MetadataTypeAdapter.class)
+                        // .map(mtma -> mtma.isWrapperFor(itemType))
+                        // .orElse(false))
+                        .forEach(c -> {
+                          final Builder<Object> arrayItemModelBuilder = DslElementModel.builder()
+                              .withModel(itemType)
+                              .withDsl(itemdsl)
+                              .withValue(c);
+                          paramElementBuilder.containing(arrayItemModelBuilder.build());
+                        }));
+              }
+
+              @Override
+              public void visitArrayType(ArrayType arrayType) {
+                visitComplex();
+              }
+
+              @Override
+              public void visitObject(ObjectType objectType) {
+                visitComplex();
+              }
+
+              @Override
+              public void visitUnion(UnionType unionType) {
+                visitComplex();
+              }
+
+              private void visitComplex() {
+                paramSyntax.getGeneric(itemType)
+                    .ifPresent(itemdsl -> ((Collection<ComponentAst>) paramValue)
+                        .stream()
+                        .filter(c -> c.getModel(MetadataTypeAdapter.class)
+                            .map(mtma -> mtma.isWrapperFor(itemType))
+                            .orElse(false))
+                        .forEach(c -> {
+                          final Builder<Object> arrayItemModelBuilder = DslElementModel.builder()
+                              .withModel(itemType)
+                              .withDsl(itemdsl)
+                              .withConfig(c);
+                          enrichElementModel(c.getModel(ParameterizedModel.class).get(), itemdsl, c,
+                                             arrayItemModelBuilder);
+                          paramElementBuilder.containing(arrayItemModelBuilder.build());
+                        }));
+              }
+
+            });
           }
 
           @Override

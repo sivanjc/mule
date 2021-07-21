@@ -12,7 +12,6 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.mule.runtime.api.util.Preconditions.checkState;
-import static org.mule.runtime.ast.api.ComponentAst.BODY_RAW_PARAM_NAME;
 import static org.mule.runtime.extension.api.util.ExtensionMetadataTypeUtils.isMap;
 import static org.mule.runtime.extension.api.util.ExtensionModelUtils.isContent;
 import static org.mule.runtime.extension.api.util.ExtensionModelUtils.isText;
@@ -261,10 +260,10 @@ public class DslElementModel<T> {
           });
 
       element.directChildrenStream()
-          .forEach(i -> {
-            builder.withNestedComponent(from(i));
-          });
-      element.getMetadata().getParserAttributes().forEach(builder::withProperty);
+          .map(this::from)
+          .forEach(builder::withNestedComponent);
+      element.getMetadata().getParserAttributes()
+          .forEach(builder::withProperty);
       builder.withComponentLocation(element.getLocation());
       builder.withProperty(COMPONENT_AST_KEY, element);
 
@@ -405,11 +404,25 @@ public class DslElementModel<T> {
                       InternalComponentConfiguration.builder()
                           .withIdentifier(listWrapperIdentifier);
 
-                  Collection<ComponentAst> arrayValues =
-                      (Collection<ComponentAst>) param.getValue().getRight();
+                  Collection arrayValues =
+                      (Collection) param.getValue().getRight();
                   if (arrayValues != null) {
-                    for (ComponentAst child : arrayValues) {
-                      listWrapperBuilder.withNestedComponent(from(child));
+                    for (Object child : arrayValues) {
+                      if (child instanceof ComponentAst) {
+                        listWrapperBuilder.withNestedComponent(from((ComponentAst) child));
+                      } else {
+                        DslElementSyntax listItemDsl = dslElementSyntax.getGenerics().get(arrayType.getType());
+                        final ComponentIdentifier listItemIdentifier = ComponentIdentifier.builder()
+                            .namespaceUri(listItemDsl.getNamespace())
+                            .namespace(listItemDsl.getPrefix())
+                            .name(listItemDsl.getElementName()).build();
+
+                        InternalComponentConfiguration.Builder simpleItemElementBuilder = InternalComponentConfiguration.builder()
+                            .withIdentifier(listItemIdentifier)
+                            .withParameter("value", child.toString());
+
+                        listWrapperBuilder.withNestedComponent(simpleItemElementBuilder.build());
+                      }
                     }
                   }
 

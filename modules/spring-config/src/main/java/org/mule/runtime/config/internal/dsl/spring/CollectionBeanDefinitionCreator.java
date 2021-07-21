@@ -8,6 +8,11 @@ package org.mule.runtime.config.internal.dsl.spring;
 
 import static java.util.stream.Collectors.toCollection;
 
+import org.mule.metadata.api.model.ArrayType;
+import org.mule.metadata.api.model.MetadataType;
+import org.mule.metadata.api.model.ObjectType;
+import org.mule.metadata.api.model.UnionType;
+import org.mule.metadata.api.visitor.MetadataTypeVisitor;
 import org.mule.runtime.ast.api.ComponentAst;
 import org.mule.runtime.config.internal.dsl.model.SpringComponentModel;
 
@@ -52,19 +57,61 @@ class CollectionBeanDefinitionCreator extends BeanDefinitionCreator<CreateParamB
                                CreateParamBeanDefinitionRequest request, Class<Object> type) {
     request.getSpringComponentModel().setType(type);
 
-    Collection<ComponentAst> items = (Collection<ComponentAst>) request.getParam().getValue().getRight();
 
-    items.forEach(request.getNestedComponentParamProcessor());
+    request.getParam().getModel().getType().accept(new MetadataTypeVisitor() {
 
-    ManagedList<Object> managedList = items.stream()
-        .map(springComponentModels::get)
-        .map(innerSpringComp -> innerSpringComp.getBeanDefinition() == null
-            ? innerSpringComp.getBeanReference()
-            : innerSpringComp.getBeanDefinition())
-        .collect(toCollection(ManagedList::new));
+      @Override
+      public void visitArrayType(ArrayType arrayType) {
 
-    request.getSpringComponentModel()
-        .setBeanDefinition(BeanDefinitionBuilder.genericBeanDefinition(type)
-            .addConstructorArgValue(managedList).getBeanDefinition());
+        arrayType.getType().accept(new MetadataTypeVisitor() {
+
+          @Override
+          protected void defaultVisit(MetadataType metadataType) {
+            Collection<String> items = (Collection<String>) request.getParam().getValue().getRight();
+
+            ManagedList<Object> managedList = items.stream()
+                .collect(toCollection(ManagedList::new));
+
+            request.getSpringComponentModel()
+                .setBeanDefinition(BeanDefinitionBuilder.genericBeanDefinition(type)
+                    .addConstructorArgValue(managedList).getBeanDefinition());
+          }
+
+          @Override
+          public void visitObject(ObjectType objectType) {
+            doVisitComplex();
+          }
+
+          @Override
+          public void visitArrayType(ArrayType arrayType) {
+            doVisitComplex();
+          }
+
+          @Override
+          public void visitUnion(UnionType unionType) {
+            doVisitComplex();
+          }
+
+          private void doVisitComplex() {
+            Collection<ComponentAst> items = (Collection<ComponentAst>) request.getParam().getValue().getRight();
+
+            items.forEach(request.getNestedComponentParamProcessor());
+
+            ManagedList<Object> managedList = items.stream()
+                .map(springComponentModels::get)
+                .map(innerSpringComp -> innerSpringComp.getBeanDefinition() == null
+                    ? innerSpringComp.getBeanReference()
+                    : innerSpringComp.getBeanDefinition())
+                .collect(toCollection(ManagedList::new));
+
+            request.getSpringComponentModel()
+                .setBeanDefinition(BeanDefinitionBuilder.genericBeanDefinition(type)
+                    .addConstructorArgValue(managedList).getBeanDefinition());
+          }
+        });
+
+      }
+
+    });
   }
 }
