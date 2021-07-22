@@ -6,7 +6,6 @@
  */
 package org.mule.runtime.config.api.dsl.model.metadata;
 
-import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparing;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -26,6 +25,7 @@ import org.mule.runtime.extension.api.dsl.syntax.DslElementSyntax;
 import org.mule.runtime.extension.api.util.ExtensionMetadataTypeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -177,15 +177,18 @@ public class ComponentBasedIdHelper {
                 .namespace(itemsDsl.get().getPrefix())
                 .name(itemsDsl.get().getElementName()).build();
 
-            result.set(idBuilderSupplier.get()
-                .withSourceElementName(listItemIdentifier.toString())
-                .withHashValue(Objects.hashCode(listItemIdentifier.toString()))
-                .containing(singletonList(idBuilderSupplier.get()
-                    .withSourceElementName(itemsDsl.get().getPrefix() + ":value")
-                    .withHashValue(Objects.hashCode(itemsDsl.get().getPrefix() + ":value"))
-                    .withHashValue(Objects.hashCode(e.toString()))
-                    .build()))
-                .build());
+            result.set(
+                       idBuilderSupplier.get()
+                           .withSourceElementName(listItemIdentifier.toString())
+                           .withHashValue(Objects.hashCode(listItemIdentifier.toString()))
+                           .containing(Collections.singletonList(
+                                                                 idBuilderSupplier.get()
+                                                                     .withSourceElementName(itemsDsl.get().getPrefix() + ":value")
+                                                                     .withHashValue(Objects
+                                                                         .hashCode(itemsDsl.get().getPrefix() + ":value"))
+                                                                     .withHashValue(Objects.hashCode(e.toString()))
+                                                                     .build()))
+                           .build());
           }
         });
         return result.get();

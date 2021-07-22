@@ -42,6 +42,7 @@ import org.mule.runtime.ast.api.builder.ComponentAstBuilder;
 import org.mule.runtime.config.api.dsl.model.DslElementModel;
 import org.mule.runtime.config.api.dsl.model.DslElementModel.Builder;
 import org.mule.runtime.config.api.dsl.model.DslElementModelFactory;
+import org.mule.runtime.dsl.internal.component.config.InternalComponentConfiguration;
 import org.mule.runtime.extension.api.declaration.type.ExtensionsTypeLoaderFactory;
 import org.mule.runtime.extension.api.dsl.syntax.DslElementSyntax;
 
@@ -483,10 +484,26 @@ class ComponentAstBasedElementModelFactory {
                         // .map(mtma -> mtma.isWrapperFor(itemType))
                         // .orElse(false))
                         .forEach(c -> {
+                          InternalComponentConfiguration.Builder builder = InternalComponentConfiguration.builder()
+                              .withIdentifier(getIdentifier(itemdsl).get())
+                              .withParameter("value", c);
+
+
                           final Builder<Object> arrayItemModelBuilder = DslElementModel.builder()
                               .withModel(itemType)
                               .withDsl(itemdsl)
-                              .withValue(c);
+                              .withConfig(builder.build());
+
+                          final Builder<Object> arrayItemValueModelBuilder = DslElementModel.builder()
+                              .withModel(itemType)
+                              .withDsl(itemdsl.getAttribute("value").get())
+                              .withValue(c)
+                          // .withConfig(builder.build())
+                          ;
+
+                          arrayItemModelBuilder.containing(arrayItemValueModelBuilder.build());
+
+
                           paramElementBuilder.containing(arrayItemModelBuilder.build());
                         }));
               }

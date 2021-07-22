@@ -98,13 +98,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 public abstract class AbstractMockedValueProviderExtensionTestCase extends AbstractMuleTestCase {
 
@@ -560,16 +561,17 @@ public abstract class AbstractMockedValueProviderExtensionTestCase extends Abstr
     return logId.toString();
   }
 
-  protected void checkIdsAreEqual(Optional<ValueProviderCacheId> id1, Optional<ValueProviderCacheId> id2) {
+  protected void checkIdsAreEqual(String comparation, Optional<ValueProviderCacheId> id1, Optional<ValueProviderCacheId> id2) {
     LOGGER.debug("ID1: " + id1.map(i -> collectLog(i, 0)).orElse("empty"));
     LOGGER.debug("ID2: " + id2.map(i -> collectLog(i, 0)).orElse("empty"));
-    assertThat(id1, equalTo(id2));
+    assertThat(comparation, id2, equalTo(id1));
   }
 
-  protected void checkIdsAreDifferent(Optional<ValueProviderCacheId> id1, Optional<ValueProviderCacheId> id2) {
+  protected void checkIdsAreDifferent(String comparation, Optional<ValueProviderCacheId> id1,
+                                      Optional<ValueProviderCacheId> id2) {
     LOGGER.debug("ID1: " + id1.map(i -> collectLog(i, 0)).orElse("empty"));
     LOGGER.debug("ID2: " + id2.map(i -> collectLog(i, 0)).orElse("empty"));
-    assertThat(id1, not(equalTo(id2)));
+    assertThat(comparation, id2, not(equalTo(id1)));
   }
 
   protected static class Locator implements ComponentLocator<ComponentAst> {

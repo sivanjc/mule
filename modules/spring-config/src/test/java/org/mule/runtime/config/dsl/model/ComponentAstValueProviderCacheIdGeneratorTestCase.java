@@ -98,7 +98,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     ArtifactDeclaration app = getBaseApp();
     Optional<ValueProviderCacheId> configId = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     assertThat(configId.isPresent(), is(true));
-    checkIdsAreEqual(configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
   }
 
 
@@ -109,7 +109,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> configId = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     assertThat(configId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, PARAMETER_REQUIRED_FOR_METADATA_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> configId = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     assertThat(configId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -127,7 +127,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> configId = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     assertThat(configId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, PARAMETER_IN_GROUP_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", configId, computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -135,7 +135,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     ArtifactDeclaration app = getBaseApp();
     Optional<ValueProviderCacheId> opId = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(opId.isPresent(), is(true));
-    checkIdsAreEqual(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -144,7 +144,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, OPERATION_LOCATION, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -153,7 +153,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, OPERATION_LOCATION, PARAMETER_IN_GROUP_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -163,7 +163,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, PARAMETER_REQUIRED_FOR_METADATA_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
     modifyParameter(app, MY_CONFIG, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -174,7 +174,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     modifyParameter(app, MY_CONNECTION, PARAMETER_REQUIRED_FOR_METADATA_NAME,
                     p -> p.setValue(ParameterSimpleValue.of("newValue")));
     modifyParameter(app, MY_CONNECTION, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
 
@@ -183,7 +183,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     ArtifactDeclaration app = getBaseApp();
     Optional<ValueProviderCacheId> sourceId = computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(sourceId.isPresent(), is(true));
-    checkIdsAreEqual(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -192,7 +192,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> sourceId = computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, SOURCE_LOCATION, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -201,7 +201,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> sourceId = computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, SOURCE_LOCATION, PARAMETER_IN_GROUP_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -211,7 +211,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, PARAMETER_REQUIRED_FOR_METADATA_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
     modifyParameter(app, MY_CONFIG, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -222,7 +222,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     modifyParameter(app, MY_CONNECTION, PARAMETER_REQUIRED_FOR_METADATA_NAME,
                     p -> p.setValue(ParameterSimpleValue.of("newValue")));
     modifyParameter(app, MY_CONNECTION, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -232,7 +232,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -242,7 +242,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, PARAMETER_REQUIRED_FOR_METADATA_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -252,7 +252,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, MY_CONNECTION, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -263,7 +263,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     assertThat(opId.isPresent(), is(true));
     modifyParameter(app, MY_CONNECTION, PARAMETER_REQUIRED_FOR_METADATA_NAME,
                     p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", opId, computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -273,7 +273,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> sourceId = computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -283,7 +283,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> sourceId = computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, MY_CONFIG, PARAMETER_REQUIRED_FOR_METADATA_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -293,7 +293,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> sourceId = computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME);
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, MY_CONNECTION, ACTING_PARAMETER_NAME, p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreEqual(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreEqual("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -304,7 +304,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     assertThat(sourceId.isPresent(), is(true));
     modifyParameter(app, MY_CONNECTION, PARAMETER_REQUIRED_FOR_METADATA_NAME,
                     p -> p.setValue(ParameterSimpleValue.of("newValue")));
-    checkIdsAreDifferent(sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
+    checkIdsAreDifferent("computeIdFor", sourceId, computeIdFor(app, SOURCE_LOCATION, PROVIDED_PARAMETER_NAME));
   }
 
   @Test
@@ -318,7 +318,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
                                        PARAMETER_IN_GROUP_DEFAULT_VALUE));
     Optional<ValueProviderCacheId> config1Id = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     Optional<ValueProviderCacheId> config2Id = computeIdFor(app, "newName", PROVIDED_PARAMETER_NAME);
-    checkIdsAreEqual(config1Id, config2Id);
+    checkIdsAreEqual("computeIdFor", config1Id, config2Id);
   }
 
   @Test
@@ -333,7 +333,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> config1Id = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     when(valueProviderModel.getProviderId()).thenReturn("newValueProviderId");
     Optional<ValueProviderCacheId> config2Id = computeIdFor(app, "newName", PROVIDED_PARAMETER_NAME);
-    checkIdsAreDifferent(config1Id, config2Id);
+    checkIdsAreDifferent("computeIdFor", config1Id, config2Id);
   }
 
   @Test
@@ -347,7 +347,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
                                             PARAMETER_IN_GROUP_DEFAULT_VALUE));
     Optional<ValueProviderCacheId> config1Id = computeIdFor(app, MY_CONFIG, PROVIDED_PARAMETER_NAME);
     Optional<ValueProviderCacheId> config2Id = computeIdFor(app, "newName", PROVIDED_PARAMETER_NAME);
-    checkIdsAreEqual(config1Id, config2Id);
+    checkIdsAreEqual("computeIdFor", config1Id, config2Id);
   }
 
   @Test
@@ -358,7 +358,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId1 = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     when(valueProviderModel.getProviderId()).thenReturn("newValueProviderId");
     Optional<ValueProviderCacheId> opId2 = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
-    checkIdsAreDifferent(opId1, opId2);
+    checkIdsAreDifferent("computeIdFor", opId1, opId2);
   }
 
   @Test
@@ -367,7 +367,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     Optional<ValueProviderCacheId> opId1 = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     when(valueProviderModel.getProviderId()).thenReturn("newValueProviderId");
     Optional<ValueProviderCacheId> opId2 = computeIdFor(app, OTHER_OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
-    checkIdsAreDifferent(opId1, opId2);
+    checkIdsAreDifferent("computeIdFor", opId1, opId2);
   }
 
   @Test
@@ -375,7 +375,7 @@ public class ComponentAstValueProviderCacheIdGeneratorTestCase extends AbstractM
     ArtifactDeclaration app = getBaseApp();
     Optional<ValueProviderCacheId> opId1 = computeIdFor(app, OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
     Optional<ValueProviderCacheId> opId2 = computeIdFor(app, OTHER_OPERATION_LOCATION, PROVIDED_PARAMETER_NAME);
-    checkIdsAreEqual(opId1, opId2);
+    checkIdsAreEqual("computeIdFor", opId1, opId2);
   }
 
   private static class Locator implements ComponentLocator<ComponentAst> {
