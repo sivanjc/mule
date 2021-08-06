@@ -173,4 +173,6 @@ public interface DeploymentService extends DeploymentListenerManager, DomainDepl
   void start();
 
   void stop();
+
+  public String getConnectionPoolsInfo(String applicationName);
 }

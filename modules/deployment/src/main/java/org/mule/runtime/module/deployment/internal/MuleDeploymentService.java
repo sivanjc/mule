@@ -49,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,6 +93,8 @@ public class MuleDeploymentService implements DeploymentService {
   private final DeploymentDirectoryWatcher deploymentDirectoryWatcher;
   private final DefaultArchiveDeployer<Application> applicationDeployer;
   private final DomainBundleArchiveDeployer domainBundleDeployer;
+
+  private Map<String, Map<String, String>> connectionPoolsInfo = new HashMap<>();
 
   public MuleDeploymentService(DefaultDomainFactory domainFactory, DefaultApplicationFactory applicationFactory,
                                Supplier<SchedulerService> artifactStartExecutorSupplier) {
@@ -139,6 +142,23 @@ public class MuleDeploymentService implements DeploymentService {
     return getProperties().containsKey(PARALLEL_DEPLOYMENT_PROPERTY);
   }
 
+  /**
+   * @param serviceManager the manager to do the lookup of the service in.
+   * @return the instance of the {@link SchedulerService} from within the given {@code serviceManager}.
+   */
+  public static SchedulerService findSchedulerService(ServiceRepository serviceManager) {
+    final List<Service> services = serviceManager.getServices();
+    return (SchedulerService) services.stream().filter(s -> s instanceof SchedulerService).findFirst().get();
+  }
+
+  public void addConnectionPoolInfo(String application, String configName, String info) {
+    Map<String, String> appConnectionPollsInfo;
+    if (!connectionPoolsInfo.containsKey(application)) {
+      connectionPoolsInfo.put(application, new HashMap<>());
+    }
+    connectionPoolsInfo.get(application).put(configName, info);
+  }
+
   private boolean isDeployingSelectedAppsInOrder() {
     return !isEmpty(System.getProperty(DEPLOYMENT_APPLICATION_PROPERTY));
   }
@@ -175,6 +195,16 @@ public class MuleDeploymentService implements DeploymentService {
   }
 
   @Override
+  public String getConnectionPoolsInfo(String applicationName) {
+    StringBuilder info = new StringBuilder();
+    this.connectionPoolsInfo.get(applicationName).entrySet().forEach(entry -> {
+      info.append("configuration:").append(entry.getKey()).append("\n");
+      info.append("info:").append(entry.getValue());
+    });
+    return info.toString();
+  }
+
+  @Override
   public Domain findDomain(String domainName) {
     return deploymentDirectoryWatcher.findArtifact(domainName, domains);
   }
@@ -191,7 +221,6 @@ public class MuleDeploymentService implements DeploymentService {
         .filter(application -> application.getDomain() != null && application.getDomain().getArtifactName().equals(domain))
         .collect(toList());
   }
-
 
   @Override
   public List<Application> getApplications() {
@@ -342,12 +371,6 @@ public class MuleDeploymentService implements DeploymentService {
     domainDeployer.undeployArtifact(domain.getArtifactName());
   }
 
-  private interface SynchronizedDeploymentAction {
-
-    void execute();
-
-  }
-
   private void deployTemplateMethod(final URI artifactArchiveUri, final Optional<Properties> deploymentProperties,
                                     File artifactDeploymentFolder, ArchiveDeployer archiveDeployer)
       throws IOException {
@@ -391,15 +414,6 @@ public class MuleDeploymentService implements DeploymentService {
         deploymentLock.unlock();
       }
     }
-  }
-
-  /**
-   * @param serviceManager the manager to do the lookup of the service in.
-   * @return the instance of the {@link SchedulerService} from within the given {@code serviceManager}.
-   */
-  public static SchedulerService findSchedulerService(ServiceRepository serviceManager) {
-    final List<Service> services = serviceManager.getServices();
-    return (SchedulerService) services.stream().filter(s -> s instanceof SchedulerService).findFirst().get();
   }
 
   @Override
@@ -450,5 +464,12 @@ public class MuleDeploymentService implements DeploymentService {
                                      applicationDeployer, this);
 
   }
+
+  private interface SynchronizedDeploymentAction {
+
+    void execute();
+
+  }
+
 
 }

@@ -6,7 +6,9 @@
  */
 package org.mule.runtime.core.internal.connection;
 
+import static java.lang.String.format;
 import static org.mule.runtime.api.util.Preconditions.checkState;
+
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.PoolingListener;
@@ -27,13 +29,13 @@ import org.slf4j.LoggerFactory;
 final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PoolingConnectionHandler.class);
-
-  private C connection;
   private final ObjectPool<C> pool;
   private final PoolingListener poolingListener;
   private final ConnectionProvider connectionProvider;
   private final AtomicBoolean released = new AtomicBoolean(false);
+  private C connection;
 
+  private
   /**
    * Creates a new instance
    *
@@ -54,6 +56,7 @@ final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
   @Override
   public C getConnection() throws ConnectionException {
     checkState(connection != null, "Connection has been either released or invalidated");
+    reportPoolStatus();
     return connection;
   }
 
@@ -113,5 +116,9 @@ final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
   @Override
   public void close() throws MuleException {
 
+  }
+
+  private void reportPoolStatus() {
+    String info = format("Pool info - numActive:[%s], numIdle:[%s]", this.pool.getNumActive(), this.pool.getNumIdle());
   }
 }
