@@ -31,6 +31,7 @@ import org.mule.runtime.api.service.Service;
 import org.mule.runtime.api.service.ServiceRepository;
 import org.mule.runtime.api.util.LazyValue;
 import org.mule.runtime.api.util.Preconditions;
+import org.mule.runtime.core.api.util.PoolConnectionReporter;
 import org.mule.runtime.deployment.model.api.DeploymentException;
 import org.mule.runtime.deployment.model.api.application.Application;
 import org.mule.runtime.deployment.model.api.domain.Domain;
@@ -49,7 +50,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,7 +94,6 @@ public class MuleDeploymentService implements DeploymentService {
   private final DefaultArchiveDeployer<Application> applicationDeployer;
   private final DomainBundleArchiveDeployer domainBundleDeployer;
 
-  private Map<String, Map<String, String>> connectionPoolsInfo = new HashMap<>();
 
   public MuleDeploymentService(DefaultDomainFactory domainFactory, DefaultApplicationFactory applicationFactory,
                                Supplier<SchedulerService> artifactStartExecutorSupplier) {
@@ -151,13 +150,7 @@ public class MuleDeploymentService implements DeploymentService {
     return (SchedulerService) services.stream().filter(s -> s instanceof SchedulerService).findFirst().get();
   }
 
-  public void addConnectionPoolInfo(String application, String configName, String info) {
-    Map<String, String> appConnectionPollsInfo;
-    if (!connectionPoolsInfo.containsKey(application)) {
-      connectionPoolsInfo.put(application, new HashMap<>());
-    }
-    connectionPoolsInfo.get(application).put(configName, info);
-  }
+
 
   private boolean isDeployingSelectedAppsInOrder() {
     return !isEmpty(System.getProperty(DEPLOYMENT_APPLICATION_PROPERTY));
@@ -196,12 +189,7 @@ public class MuleDeploymentService implements DeploymentService {
 
   @Override
   public String getConnectionPoolsInfo(String applicationName) {
-    StringBuilder info = new StringBuilder();
-    this.connectionPoolsInfo.get(applicationName).entrySet().forEach(entry -> {
-      info.append("configuration:").append(entry.getKey()).append("\n");
-      info.append("info:").append(entry.getValue());
-    });
-    return info.toString();
+    return PoolConnectionReporter.getInstance().getConnectionPoolInfo(applicationName);
   }
 
   @Override

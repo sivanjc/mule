@@ -19,6 +19,7 @@ import static org.mule.runtime.api.connection.ConnectionValidationResult.success
 
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.PoolingListener;
+import org.mule.runtime.core.api.MuleContext;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
@@ -50,11 +51,15 @@ public class PoolingConnectionHandlerTestCase extends AbstractMuleTestCase {
   @Mock
   private ConnectionProvider connectionProvider;
 
+  @Mock
+  private MuleContext muleContext;
+
   private PoolingConnectionHandler<Object> managedConnection;
 
   @Before
   public void before() {
-    managedConnection = new PoolingConnectionHandler<>(connection, pool, poolingListener, connectionProvider);
+    managedConnection =
+        new PoolingConnectionHandler<>(connection, pool, poolingListener, connectionProvider, muleContext, "test");
   }
 
   @Test

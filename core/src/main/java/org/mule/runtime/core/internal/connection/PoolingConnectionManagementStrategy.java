@@ -11,16 +11,18 @@ import static org.mule.runtime.api.config.PoolingProfile.INITIALISE_ALL;
 import static org.mule.runtime.api.config.PoolingProfile.INITIALISE_NONE;
 import static org.mule.runtime.api.config.PoolingProfile.INITIALISE_ONE;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+
 import org.mule.runtime.api.config.PoolingProfile;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionHandler;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.PoolingListener;
-import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.DefaultMuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.MuleContext;
 
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.PoolableObjectFactory;
@@ -41,6 +43,7 @@ final class PoolingConnectionManagementStrategy<C> extends ConnectionManagementS
   private final PoolingProfile poolingProfile;
   private final ObjectPool<C> pool;
   private final PoolingListener<C> poolingListener;
+  private final String id;
 
   /**
    * Creates a new instance
@@ -56,6 +59,7 @@ final class PoolingConnectionManagementStrategy<C> extends ConnectionManagementS
     this.poolingProfile = poolingProfile;
     this.poolingListener = poolingListener;
     pool = createPool();
+    id = generateId();
   }
 
   /**
@@ -67,7 +71,7 @@ final class PoolingConnectionManagementStrategy<C> extends ConnectionManagementS
   @Override
   public ConnectionHandler<C> getConnectionHandler() throws ConnectionException {
     try {
-      return new PoolingConnectionHandler<>(borrowConnection(), pool, poolingListener, connectionProvider);
+      return new PoolingConnectionHandler<>(borrowConnection(), pool, poolingListener, connectionProvider, muleContext, id);
     } catch (ConnectionException e) {
       throw e;
     } catch (NoSuchElementException e) {
@@ -154,6 +158,11 @@ final class PoolingConnectionManagementStrategy<C> extends ConnectionManagementS
   public PoolingProfile getPoolingProfile() {
     return poolingProfile;
   }
+
+  private String generateId() {
+    return UUID.randomUUID().toString();
+  }
+
 
   private class ObjectFactoryAdapter implements PoolableObjectFactory<C> {
 

@@ -6,17 +6,20 @@
  */
 package org.mule.runtime.core.internal.connection;
 
-import static java.lang.String.format;
 import static org.mule.runtime.api.util.Preconditions.checkState;
 
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.PoolingListener;
 import org.mule.runtime.api.exception.MuleException;
+import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.util.ConnectionPoolInfo;
+import org.mule.runtime.core.api.util.PoolConnectionReporter;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +38,9 @@ final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
   private final AtomicBoolean released = new AtomicBoolean(false);
   private C connection;
 
-  private
+  private String id;
+  private MuleContext muleContext;
+
   /**
    * Creates a new instance
    *
@@ -43,11 +48,13 @@ final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
    * @param pool       the pool from which the {@code connection} was obtained and to which it has to be returned
    */
   PoolingConnectionHandler(C connection, ObjectPool<C> pool, PoolingListener poolingListener,
-                           ConnectionProvider connectionProvider) {
+                           ConnectionProvider connectionProvider, MuleContext muleContext, String id) {
     this.connection = connection;
     this.pool = pool;
     this.poolingListener = poolingListener;
     this.connectionProvider = connectionProvider;
+    this.muleContext = muleContext;
+    this.id = id;
   }
 
   /**
@@ -75,6 +82,7 @@ final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
 
       pool.returnObject(connection);
       returnAttempted = true;
+      reportPoolStatus();
     } catch (Exception e) {
       LOGGER.warn("Could not return connection to the pool. Connection will be destroyed", e);
     } finally {
@@ -119,6 +127,17 @@ final class PoolingConnectionHandler<C> implements ConnectionHandlerAdapter<C> {
   }
 
   private void reportPoolStatus() {
-    String info = format("Pool info - numActive:[%s], numIdle:[%s]", this.pool.getNumActive(), this.pool.getNumIdle());
+    // String[] applicationId = muleContext.getId().split("\\.\\.");
+    String applicationId = muleContext.getConfiguration().getId();
+    if (applicationId != null) {
+      GenericObjectPool genericObjectPool = (GenericObjectPool) pool;
+      PoolConnectionReporter.getInstance().addConnectionPoolInfo(applicationId,
+                                                                 id,
+                                                                 new ConnectionPoolInfo(genericObjectPool.getNumActive(),
+                                                                                        genericObjectPool.getNumIdle(),
+                                                                                        genericObjectPool.getMaxActive(),
+                                                                                        genericObjectPool.getMaxIdle(),
+                                                                                        genericObjectPool.getMaxWait()));
+    }
   }
 }

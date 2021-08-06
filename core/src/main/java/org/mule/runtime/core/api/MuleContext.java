@@ -8,6 +8,7 @@ package org.mule.runtime.core.api;
 
 import org.mule.runtime.api.component.location.ConfigurationComponentLocator;
 import org.mule.runtime.api.config.custom.CustomizationService;
+import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.event.EventContext;
 import org.mule.runtime.api.exception.ErrorTypeRepository;
 import org.mule.runtime.api.lifecycle.InitialisationException;
@@ -61,6 +62,13 @@ import javax.transaction.TransactionManager;
 public interface MuleContext extends Lifecycle {
 
   /**
+   * Returns the Jta transaction manager used by this Mule server instance, or null if a transaction manager has not been set
+   *
+   * @return the Jta transaction manager used by this Mule server instance, or null if a transaction manager has not been set
+   */
+  TransactionManager getTransactionManager();
+
+  /**
    * Sets the Jta Transaction Manager to use with this Mule server instance
    *
    * @param manager the manager to use
@@ -69,13 +77,6 @@ public interface MuleContext extends Lifecycle {
    */
   @Deprecated
   void setTransactionManager(TransactionManager manager) throws Exception;
-
-  /**
-   * Returns the Jta transaction manager used by this Mule server instance, or null if a transaction manager has not been set
-   *
-   * @return the Jta transaction manager used by this Mule server instance, or null if a transaction manager has not been set
-   */
-  TransactionManager getTransactionManager();
 
   ServerNotificationManager getNotificationManager();
 
@@ -105,15 +106,6 @@ public interface MuleContext extends Lifecycle {
   boolean isDisposing();
 
   /**
-   * Sets the security manager used by this Mule instance to authenticate and authorise incoming and outgoing event traffic and
-   * service invocations
-   *
-   * @param securityManager the security manager used by this Mule instance to authenticate and authorise incoming and outgoing
-   *                        event traffic and service invocations
-   */
-  void setSecurityManager(SecurityManager securityManager) throws InitialisationException;
-
-  /**
    * Gets the security manager used by this Mule instance to authenticate and authorise incoming and outgoing event traffic and
    * service invocations
    *
@@ -122,9 +114,23 @@ public interface MuleContext extends Lifecycle {
    */
   SecurityManager getSecurityManager();
 
+  /**
+   * Sets the security manager used by this Mule instance to authenticate and authorise incoming and outgoing event traffic and
+   * service invocations
+   *
+   * @param securityManager the security manager used by this Mule instance to authenticate and authorise incoming and outgoing
+   *                        event traffic and service invocations
+   */
+  void setSecurityManager(SecurityManager securityManager) throws InitialisationException;
+
   SchedulerService getSchedulerService();
 
   SchedulerConfig getSchedulerBaseConfig();
+
+  /**
+   * Gets the queue manager used by mule for queuing events. This is used for service queues.
+   */
+  QueueManager getQueueManager();
 
   /**
    * Sets the queue manager used by mule for queuing events. This is used for service queues
@@ -133,14 +139,16 @@ public interface MuleContext extends Lifecycle {
    */
   void setQueueManager(QueueManager queueManager);
 
-  /**
-   * Gets the queue manager used by mule for queuing events. This is used for service queues.
-   */
-  QueueManager getQueueManager();
-
   ObjectStoreManager getObjectStoreManager();
 
   ExtensionManager getExtensionManager();
+
+  /**
+   * Sets artifact wide instance of {@link ExtensionManager}
+   *
+   * @param extensionManager manages the extensions available on the artifact. Non null.
+   */
+  void setExtensionManager(ExtensionManager extensionManager);
 
   /**
    * The instance of {@link ObjectSerializer} to be used to serialize/deserealize objects
@@ -179,9 +187,9 @@ public interface MuleContext extends Lifecycle {
    */
   long getStartDate();
 
-  void setExecutionClassLoader(ClassLoader cl);
-
   ClassLoader getExecutionClassLoader();
+
+  void setExecutionClassLoader(ClassLoader cl);
 
   boolean isStopped();
 
@@ -357,16 +365,14 @@ public interface MuleContext extends Lifecycle {
   ConfigurationComponentLocator getConfigurationComponentLocator();
 
   /**
-   * Sets artifact wide instance of {@link ExtensionManager}
-   *
-   * @param extensionManager manages the extensions available on the artifact. Non null.
-   */
-  void setExtensionManager(ExtensionManager extensionManager);
-
-  /**
    * @return the deployment properties.
    */
   Properties getDeploymentProperties();
 
+  default void addConnectionProvider(ConnectionProvider connectionProvider, String configName) {};
+
+  default Optional<String> getConnectionProviderConfig(ConnectionProvider connectionProvider) {
+    return Optional.empty();
+  }
 }
 

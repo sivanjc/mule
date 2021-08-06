@@ -72,6 +72,8 @@ public class DefaultConnectionProviderObjectBuilder<C> extends ConnectionProvide
     provider = applyConnectionManagement(provider);
     provider = applyErrorHandling(provider);
 
+    muleContext.addConnectionProvider(provider, ownerConfigName);
+
     return new Pair<>(provider, result);
   }
 

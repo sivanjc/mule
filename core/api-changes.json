@@ -1,4 +1,28 @@
 {
+  "4.5.0": {
+    "revapi": {
+      "ignore": [
+        {
+          "code": "java.method.addedToInterface",
+          "new": "method void org.mule.runtime.core.api.MuleContext::addConnectionProvider(org.mule.runtime.api.connection.ConnectionProvider, java.lang.String)",
+          "package": "org.mule.runtime.core.api",
+          "classSimpleName": "MuleContext",
+          "methodName": "addConnectionProvider",
+          "elementKind": "method",
+          "justification": ""
+        },
+        {
+          "code": "java.method.addedToInterface",
+          "new": "method java.util.Optional<java.lang.String> org.mule.runtime.core.api.MuleContext::getConnectionProviderConfig(org.mule.runtime.api.connection.ConnectionProvider)",
+          "package": "org.mule.runtime.core.api",
+          "classSimpleName": "MuleContext",
+          "methodName": "getConnectionProviderConfig",
+          "elementKind": "method",
+          "justification": ""
+        }
+      ]
+    }
+  },
   "4.4.0": {
     "revapi": {
       "ignore": [
