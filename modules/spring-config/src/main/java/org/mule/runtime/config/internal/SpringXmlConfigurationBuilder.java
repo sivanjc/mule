@@ -43,6 +43,7 @@ import org.mule.runtime.ast.api.util.AstTraversalDirection;
 import org.mule.runtime.ast.api.util.BaseArtifactAst;
 import org.mule.runtime.ast.api.xml.AstXmlParser;
 import org.mule.runtime.ast.api.xml.AstXmlParser.Builder;
+import org.mule.runtime.ast.internal.serialization.dto.ErrorTypeRepositoryDTO;
 import org.mule.runtime.config.api.ArtifactContextFactory;
 import org.mule.runtime.config.internal.artifact.SpringArtifactContext;
 import org.mule.runtime.config.internal.dsl.model.ConfigurationDependencyResolver;
@@ -74,6 +75,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -259,12 +261,90 @@ public class SpringXmlConfigurationBuilder extends AbstractResourceConfiguration
         artifactAst = toArtifactast(artifactDeclaration, extensions);
       }
 
-      return artifactAst;
+      // return artifactAst;
+      return testSerializationDeserialization(extensions, artifactAst);
     } catch (MuleRuntimeException e) {
       throw e;
     } catch (Exception e) {
       throw new MuleRuntimeException(e);
     }
+  }
+
+  protected ArtifactAst testSerializationDeserialization(Set<ExtensionModel> extensions, final ArtifactAst artifactAst) {
+    return new ArtifactAst() {
+
+      @Override
+      public void updatePropertiesResolver(UnaryOperator<String> newPropertiesResolver) {
+        artifactAst.updatePropertiesResolver(newPropertiesResolver);
+      }
+
+      @Override
+      public Stream<ComponentAst> topLevelComponentsStream() {
+        return artifactAst.topLevelComponentsStream();
+      }
+
+      @Override
+      public Spliterator<ComponentAst> topLevelComponentsSpliterator() {
+        return artifactAst.topLevelComponentsSpliterator();
+      }
+
+      @Override
+      public List<ComponentAst> topLevelComponents() {
+        return artifactAst.topLevelComponents();
+      }
+
+      @Override
+      public Stream<ComponentAst> recursiveStream(AstTraversalDirection direction) {
+        return artifactAst.recursiveStream(direction);
+      }
+
+      @Override
+      public Stream<ComponentAst> recursiveStream() {
+        return artifactAst.recursiveStream();
+      }
+
+      @Override
+      public Spliterator<ComponentAst> recursiveSpliterator(AstTraversalDirection direction) {
+        return artifactAst.recursiveSpliterator(direction);
+      }
+
+      @Override
+      public Spliterator<ComponentAst> recursiveSpliterator() {
+        return artifactAst.recursiveSpliterator();
+      }
+
+      @Override
+      public Optional<ArtifactAst> getParent() {
+        return artifactAst.getParent();
+      }
+
+      @Override
+      public Collection<ImportedResource> getImportedResources() {
+        return artifactAst.getImportedResources();
+      }
+
+      @Override
+      public ErrorTypeRepository getErrorTypeRepository() {
+        ErrorTypeRepository errorTypeRepository = artifactAst.getErrorTypeRepository();
+        // return errorTypeRepository;
+        return new ErrorTypeRepositoryDTO(errorTypeRepository.getAnyErrorType(),
+                                          errorTypeRepository.getSourceErrorType(),
+                                          errorTypeRepository.getSourceResponseErrorType(),
+                                          errorTypeRepository.getCriticalErrorType(),
+                                          errorTypeRepository.getErrorTypes(),
+                                          errorTypeRepository.getInternalErrorTypes());
+      }
+
+      @Override
+      public Stream<ComponentAst> filteredComponents(Predicate<ComponentAst> predicate) {
+        return artifactAst.filteredComponents(predicate);
+      }
+
+      @Override
+      public Set<ExtensionModel> dependencies() {
+        return artifactAst.dependencies();
+      }
+    };
   }
 
   private AstXmlParser createMuleXmlParser(Set<ExtensionModel> extensions,
