@@ -21,6 +21,7 @@ import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.util.MuleSystemProperties.SHARE_ERROR_TYPE_REPOSITORY_PROPERTY;
 import static org.mule.runtime.ast.api.util.MuleAstUtils.emptyArtifact;
 import static org.mule.runtime.config.api.dsl.ArtifactDeclarationUtils.toArtifactast;
+import static org.mule.runtime.container.api.MuleFoldersUtil.getExecutionFolder;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.DOMAIN;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.POLICY;
@@ -57,6 +58,7 @@ import org.mule.runtime.core.api.config.builders.AbstractResourceConfigurationBu
 import org.mule.runtime.core.api.extension.ExtensionManager;
 import org.mule.runtime.core.api.lifecycle.LifecycleManager;
 import org.mule.runtime.core.api.util.func.CheckedFunction;
+import org.mule.runtime.core.hackathon.AstDumper;
 import org.mule.runtime.core.internal.config.ParentMuleContextAwareConfigurationBuilder;
 import org.mule.runtime.core.internal.context.DefaultMuleContext;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
@@ -258,6 +260,8 @@ public class SpringXmlConfigurationBuilder extends AbstractResourceConfiguration
       } else {
         artifactAst = toArtifactast(artifactDeclaration, extensions);
       }
+
+      new AstDumper().dump(getExecutionFolder() + "/" + artifactProperties.get("app.name"), artifactAst);
 
       return artifactAst;
     } catch (MuleRuntimeException e) {
