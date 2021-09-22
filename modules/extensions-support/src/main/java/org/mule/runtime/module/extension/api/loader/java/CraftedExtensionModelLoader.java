@@ -17,6 +17,7 @@ import org.mule.runtime.core.api.util.ClassUtils;
 import org.mule.runtime.extension.api.loader.ExtensionLoadingContext;
 import org.mule.runtime.extension.api.loader.ExtensionLoadingDelegate;
 import org.mule.runtime.extension.api.loader.ExtensionModelLoader;
+import org.mule.runtime.module.extension.api.loader.AbstractJavaExtensionModelLoader;
 import org.mule.runtime.module.extension.internal.util.ReflectionCache;
 
 /**
@@ -32,7 +33,7 @@ import org.mule.runtime.module.extension.internal.util.ReflectionCache;
 public class CraftedExtensionModelLoader extends ExtensionModelLoader {
 
   public static final String CRAFTED_LOADER_ID = "crafted";
-  public static final String TYPE_PROPERTY_NAME = "type";
+  public static final String TYPE_PROPERTY_NAME = AbstractJavaExtensionModelLoader.TYPE_PROPERTY_NAME;
 
   @Override
   public String getId() {

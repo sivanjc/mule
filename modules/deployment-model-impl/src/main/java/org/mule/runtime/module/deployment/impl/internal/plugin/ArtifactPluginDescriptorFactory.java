@@ -8,11 +8,16 @@
 package org.mule.runtime.module.deployment.impl.internal.plugin;
 
 import static java.lang.String.format;
+import static java.lang.System.getProperty;
+import static java.util.Collections.singletonMap;
+import static org.mule.runtime.api.util.MuleSystemProperties.SYSTEM_PROPERTY_PREFIX;
 import static org.mule.runtime.api.util.Preconditions.checkArgument;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.PLUGIN;
 import static org.mule.runtime.core.internal.util.JarUtils.loadFileContentFrom;
 import static org.mule.runtime.deployment.model.api.plugin.ArtifactPluginDescriptor.MULE_ARTIFACT_PATH_INSIDE_JAR;
 import static org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor.MULE_ARTIFACT_JSON_DESCRIPTOR;
+import static org.mule.runtime.module.extension.api.loader.AbstractJavaExtensionModelLoader.TYPE_PROPERTY_NAME;
+import static org.mule.runtime.module.extension.api.loader.java.CraftedExtensionModelLoader.CRAFTED_LOADER_ID;
 
 import org.mule.runtime.api.deployment.meta.MuleArtifactLoaderDescriptor;
 import org.mule.runtime.api.deployment.meta.MulePluginModel;
@@ -35,11 +40,22 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.google.common.base.Splitter;
+
 /**
  * Creates {@link ArtifactPluginDescriptor} instances
  */
 public class ArtifactPluginDescriptorFactory
     extends AbstractArtifactDescriptorFactory<MulePluginModel, ArtifactPluginDescriptor> {
+
+  /**
+   * Allows to set an extension model loader for a mule-plugin when one wasn't defined in the plugin mule-artifact.json
+   * descriptor.
+   * 
+   * @since 4.4
+   */
+  private static final String CRAFTED_FALLBACK_KEY =
+      SYSTEM_PROPERTY_PREFIX + "extensionModelLoaderDescriptor." + CRAFTED_LOADER_ID + "Fallback";
 
   /**
    * Creates a default factory
@@ -133,6 +149,23 @@ public class ArtifactPluginDescriptorFactory
       loaderDescriber.addAttributes(extensionModelDescriptor.getAttributes());
       descriptor.setExtensionModelDescriptorProperty(loaderDescriber);
     });
+
+    if (!artifactModel.getExtensionModelLoaderDescriptor().isPresent()) {
+      String craftedFallbacks = getProperty(CRAFTED_FALLBACK_KEY);
+      if (craftedFallbacks != null) {
+        Map<String, String> craftedFallback = Splitter.on(";").withKeyValueSeparator('=').split(craftedFallbacks);
+        String pluginFallback = craftedFallback.get(descriptor.getBundleDescriptor().getGroupId() + ":"
+            + descriptor.getBundleDescriptor().getArtifactId() + ":" + descriptor.getBundleDescriptor().getVersion());
+
+        if (pluginFallback != null) {
+          LoaderDescriber loaderDescriber = new LoaderDescriber(CRAFTED_LOADER_ID);
+          loaderDescriber.addAttributes(singletonMap(TYPE_PROPERTY_NAME, pluginFallback));
+
+          descriptor.setExtensionModelDescriptorProperty(loaderDescriber);
+        }
+      }
+    }
+
     artifactModel.getLicense().ifPresent(descriptor::setLicenseModel);
   }
 
