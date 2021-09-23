@@ -31,7 +31,7 @@ public class AstDumper {
               .filter(x -> "flow-ref".equals(x.getIdentifier().getName()))
               .forEach(flowRefAst -> {
                 String targetName = flowRefAst.getParameter("General", "name").getRawValue();
-                astBuffers.getEdges().append(sourceName).append(",").append(targetName).append(",Directed,").append(count.get())
+                astBuffers.getEdges().append(sourceName).append(",").append(targetName).append(",flowRef,").append(count.get())
                     .append("\n");
                 count.set(count.get() + 1);
               });
@@ -61,7 +61,7 @@ public class AstDumper {
     listeners.forEach((queue, listenerFlows) -> {
       publishers.get(queue).forEach(publisherFlow -> {
         listenerFlows.forEach(listenerFlow -> astBuffers.getEdges().append(publisherFlow).append(",").append(listenerFlow)
-            .append(",Directed,").append(count.get())
+            .append(",vm,").append(count.get())
             .append("\n"));
       });
     });
