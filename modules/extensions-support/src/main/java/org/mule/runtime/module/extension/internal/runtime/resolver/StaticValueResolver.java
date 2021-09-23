@@ -47,4 +47,9 @@ public class StaticValueResolver<T> implements ValueResolver<T> {
   public boolean isContent() {
     return content;
   }
+
+  @Override
+  public String toString() {
+    return "StaticValueResolver('" + value + "'; content: " + content + ")";
+  }
 }

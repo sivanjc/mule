@@ -51,4 +51,10 @@ public class StaticLiteralValueResolver<T> implements ValueResolver<Literal<T>> 
   public boolean isContent() {
     return false;
   }
+
+
+  @Override
+  public String toString() {
+    return "StaticLiteralValueResolver('" + literal.getLiteralValue() + "')";
+  }
 }

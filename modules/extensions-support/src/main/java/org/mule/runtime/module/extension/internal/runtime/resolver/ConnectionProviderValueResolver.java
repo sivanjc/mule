@@ -7,6 +7,7 @@
 package org.mule.runtime.module.extension.internal.runtime.resolver;
 
 import static java.util.Optional.empty;
+
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.util.Pair;
 import org.mule.runtime.module.extension.internal.runtime.config.ConnectionProviderObjectBuilder;
@@ -14,7 +15,7 @@ import org.mule.runtime.module.extension.internal.runtime.config.ConnectionProvi
 import java.util.Optional;
 
 /**
- * Provides de capability to obtain (if there is any) the {@link ResolverSet} used to resolve the event.
+ * Provides the capability to obtain (if there is any) the {@link ResolverSet} used to resolve the event.
  * 
  * @param <C> the generic type of the connections to be handled
  * @since 4.0

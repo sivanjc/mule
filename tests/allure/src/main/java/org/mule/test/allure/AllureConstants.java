@@ -867,6 +867,12 @@ public interface AllureConstants {
 
     }
 
+    interface Types {
+
+      String TYPE_CATALOG = "Type catalog";
+
+    }
+
   }
 
   interface XmlSdk {
