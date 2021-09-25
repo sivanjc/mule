@@ -23,10 +23,12 @@ import static org.mule.runtime.api.metadata.DataType.STRING;
 import static org.mule.runtime.api.metadata.MediaType.ANY;
 import static org.mule.runtime.api.metadata.MediaType.APPLICATION_XML;
 import static org.mule.tck.junit4.matcher.DataTypeMatcher.like;
+
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.event.CoreEvent;
+import org.mule.runtime.core.api.transformer.DataTypeConversionResolver;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.runtime.core.internal.registry.MuleRegistry;
@@ -50,13 +52,13 @@ public class MuleMessageDataTypePropagationTestCase extends AbstractMuleTestCase
   public static final MediaType APPLICATION_XML_DEFAULT = APPLICATION_XML.withCharset(DEFAULT_ENCODING);
   public static final MediaType APPLICATION_XML_CUSTOM = APPLICATION_XML.withCharset(CUSTOM_ENCODING);
 
-  private MuleContextWithRegistry muleContext = mock(MuleContextWithRegistry.class, RETURNS_DEEP_STUBS);
+  private final MuleContextWithRegistry muleContext = mock(MuleContextWithRegistry.class, RETURNS_DEEP_STUBS);
   private ExtendedTransformationService transformationService;
 
   @Before
   public void setUp() throws Exception {
     when(muleContext.getConfiguration().getDefaultEncoding()).thenReturn(DEFAULT_ENCODING.name());
-    transformationService = new ExtendedTransformationService(muleContext);
+    transformationService = new ExtendedTransformationService(muleContext, mock(DataTypeConversionResolver.class), () -> UTF_8);
   }
 
   @Test

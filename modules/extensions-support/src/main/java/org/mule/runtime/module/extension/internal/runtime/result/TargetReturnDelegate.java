@@ -15,6 +15,7 @@ import org.mule.runtime.api.el.ExpressionLanguageSession;
 import org.mule.runtime.api.meta.model.ComponentModel;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.el.ExpressionManager;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.management.stats.CursorComponentDecoratorFactory;
@@ -49,9 +50,10 @@ public final class TargetReturnDelegate extends AbstractReturnDelegate {
                               ExpressionManager expressionManager,
                               CursorComponentDecoratorFactory componentDecoratorFactory,
                               CursorProviderFactory cursorProviderFactory,
+                              EncodingSupplier encodingSupplier,
                               MuleContext muleContext,
                               StreamingManager streamingManager) {
-    super(componentModel, componentDecoratorFactory, cursorProviderFactory, muleContext);
+    super(componentModel, componentDecoratorFactory, cursorProviderFactory, encodingSupplier, muleContext);
     this.expressionManager = expressionManager;
     this.target = target;
     this.targetValue = expressionManager.compile(targetValue, getTargetBindingContext(of("")));

@@ -129,9 +129,9 @@ import org.mule.runtime.module.extension.internal.runtime.execution.interceptor.
 import org.mule.runtime.module.extension.internal.runtime.objectbuilder.DefaultObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.objectbuilder.ObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.operation.DefaultExecutionMediator.ResultTransformer;
+import org.mule.runtime.module.extension.internal.runtime.operation.adapter.OperationTransactionalActionUtils;
 import org.mule.runtime.module.extension.internal.runtime.operation.retry.ComponentRetryPolicyTemplateResolver;
 import org.mule.runtime.module.extension.internal.runtime.operation.retry.RetryPolicyTemplateResolver;
-import org.mule.runtime.module.extension.internal.runtime.operation.adapter.OperationTransactionalActionUtils;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ConfigOverrideValueResolverWrapper;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ParameterValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
@@ -994,16 +994,19 @@ public abstract class ComponentMessageProcessor<T extends ComponentModel> extend
     if (isSanitizedPayload(sanitize(targetValue))) {
       return new PayloadTargetReturnDelegate(target, componentModel,
                                              componentDecoratorFactory, cursorProviderFactory,
+                                             encodingSupplier,
                                              muleContext);
     }
     return new TargetReturnDelegate(target, targetValue, componentModel, expressionManager,
                                     componentDecoratorFactory, cursorProviderFactory,
+                                    encodingSupplier,
                                     muleContext, streamingManager);
   }
 
   protected ValueReturnDelegate getValueReturnDelegate() {
     return new ValueReturnDelegate(componentModel,
                                    componentDecoratorFactory, cursorProviderFactory,
+                                   encodingSupplier,
                                    muleContext);
   }
 

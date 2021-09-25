@@ -6,27 +6,35 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.mule.runtime.core.api.transformer.Transformer;
-import org.mule.runtime.core.internal.transformer.simple.ObjectToByteArray;
-import org.mule.runtime.core.internal.transformer.simple.ObjectToInputStream;
 import org.mule.tck.core.transformer.AbstractTransformerTestCase;
 
 import java.io.ByteArrayInputStream;
 
 public class ByteArrayInputStreamTransformersTestCase extends AbstractTransformerTestCase {
 
+  @Override
   public Transformer getTransformer() throws Exception {
-    return new ObjectToInputStream();
+    ObjectToInputStream transformer = new ObjectToInputStream();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    return transformer;
   }
 
+  @Override
   public Transformer getRoundTripTransformer() throws Exception {
-    return new ObjectToByteArray();
+    ObjectToByteArray transformer = new ObjectToByteArray();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    return transformer;
   }
 
+  @Override
   public Object getTestData() {
     return TEST_MESSAGE.getBytes();
   }
 
+  @Override
   public Object getResultData() {
     return new ByteArrayInputStream(TEST_MESSAGE.getBytes());
   }

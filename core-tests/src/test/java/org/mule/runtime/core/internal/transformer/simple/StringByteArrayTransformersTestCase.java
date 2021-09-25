@@ -6,8 +6,9 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.mule.runtime.core.api.transformer.Transformer;
-import org.mule.runtime.core.internal.transformer.simple.ObjectToByteArray;
 import org.mule.runtime.core.privileged.transformer.simple.ByteArrayToObject;
 import org.mule.tck.core.transformer.AbstractTransformerTestCase;
 
@@ -15,18 +16,26 @@ import java.util.Arrays;
 
 public class StringByteArrayTransformersTestCase extends AbstractTransformerTestCase {
 
+  @Override
   public Transformer getTransformer() throws Exception {
-    return new ObjectToByteArray();
+    ObjectToByteArray transformer = new ObjectToByteArray();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    return transformer;
   }
 
+  @Override
   public Transformer getRoundTripTransformer() throws Exception {
-    return new ByteArrayToObject();
+    ByteArrayToObject transformer = new ByteArrayToObject();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    return transformer;
   }
 
+  @Override
   public Object getTestData() {
     return "Test";
   }
 
+  @Override
   public Object getResultData() {
     return "Test".getBytes();
   }

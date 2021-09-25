@@ -10,6 +10,7 @@ import static java.io.File.separator;
 import static java.lang.String.format;
 import static java.lang.System.clearProperty;
 import static java.lang.System.setProperty;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableMap;
@@ -109,14 +110,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.namespace.QName;
 
-import org.hamcrest.BaseMatcher;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import org.hamcrest.BaseMatcher;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
@@ -472,7 +474,7 @@ public class DataWeaveExpressionLanguageAdaptorTestCase extends AbstractWeaveExp
 
   @Test
   public void payloadExpressionShouldNotBeEvaluate() throws MuleException {
-    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry,
+    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry, () -> UTF_8,
                                            genericExpressionLanguageService, getFeatureFlaggingService())
                                                .evaluate("#[payload]", testEvent(), bindingContext);
     verify(genericExpressionLanguage, never()).evaluate(eq("payload"), any(BindingContext.class));
@@ -481,7 +483,7 @@ public class DataWeaveExpressionLanguageAdaptorTestCase extends AbstractWeaveExp
   @Test
   @Description("When calling evaluate with just a BindingContext (no Event), it is passed to DW. No new context is built based on the contexts of the passed one.")
   public void evaluateNoEventDoesntInstantiateExtraBindingContexts() {
-    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry,
+    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry, () -> UTF_8,
                                            genericExpressionLanguageService, getFeatureFlaggingService())
                                                .evaluate("#['Hello World']", null, bindingContext);
     verify(genericExpressionLanguage).evaluate(anyString(), eq(bindingContext));
@@ -490,7 +492,7 @@ public class DataWeaveExpressionLanguageAdaptorTestCase extends AbstractWeaveExp
   @Test
   @Description("When calling evaluate with just a BindingContext (no Event or DataType), it is passed to DW. No new context is built based on the contexts of the passed one.")
   public void evaluateWithDataTypeNoEventDoesntInstantiateExtraBindingContexts() {
-    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry,
+    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry, () -> UTF_8,
                                            genericExpressionLanguageService, getFeatureFlaggingService())
                                                .evaluate("#['Hello World']", OBJECT, null, bindingContext);
     verify(genericExpressionLanguage).evaluate(anyString(), eq(OBJECT), eq(bindingContext));
@@ -499,7 +501,7 @@ public class DataWeaveExpressionLanguageAdaptorTestCase extends AbstractWeaveExp
   @Test
   @Description("When calling evaluate with just a BindingContext (no Event, with DataType), it is passed to DW. No new context is built based on the contexts of the passed one.")
   public void evaluateNoLocationNoEventWithDataTypeDoesntInstantiateExtraBindingContexts() {
-    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry,
+    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry, () -> UTF_8,
                                            genericExpressionLanguageService, getFeatureFlaggingService())
                                                .evaluate("#['Hello World']", OBJECT, null, null, bindingContext, false);
     verify(genericExpressionLanguage).evaluate(anyString(), eq(OBJECT), eq(bindingContext));
@@ -508,7 +510,7 @@ public class DataWeaveExpressionLanguageAdaptorTestCase extends AbstractWeaveExp
   @Test
   @Description("When calling evaluate with just a BindingContext (no Event, no Location, no DataType), it is passed to DW. No new context is built based on the contexts of the passed one.")
   public void evaluateNoLocationNoEventDoesntInstantiateExtraBindingContexts() {
-    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry,
+    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry, () -> UTF_8,
                                            genericExpressionLanguageService, getFeatureFlaggingService())
                                                .evaluate("#['Hello World']", null, null, null, bindingContext);
     verify(genericExpressionLanguage).evaluate(anyString(), eq(bindingContext));
@@ -517,7 +519,7 @@ public class DataWeaveExpressionLanguageAdaptorTestCase extends AbstractWeaveExp
   @Test
   @Description("When calling evaluate with just a BindingContext (no Event, no Location), it is passed to DW. No new context is built based on the contexts of the passed one.")
   public void evaluateLogExpressionNoLocationNoEventDoesntInstantiateExtraBindingContexts() {
-    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry,
+    new DataWeaveExpressionLanguageAdaptor(mock(MuleContext.class, RETURNS_DEEP_STUBS), registry, () -> UTF_8,
                                            genericExpressionLanguageService, getFeatureFlaggingService())
                                                .evaluateLogExpression("#['Hello World']", null, null, bindingContext);
     verify(genericExpressionLanguage).evaluateLogExpression(anyString(), eq(bindingContext));

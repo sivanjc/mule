@@ -7,13 +7,16 @@
 package org.mule.runtime.core.internal.transformer.simple;
 
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,7 +31,13 @@ public class StringToEnumTestCase extends AbstractMuleTestCase {
     A, B
   }
 
-  private StringToEnum transformer = new StringToEnum(TestEnum.class);
+  private StringToEnum transformer;
+
+  @Before
+  public void before() {
+    transformer = new StringToEnum(TestEnum.class);
+    transformer.setEncodingSupplier(() -> UTF_8);
+  }
 
   @Test
   public void transform() throws Exception {

@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.api;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -13,10 +14,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mule.runtime.api.message.Message.of;
+
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
-import org.mule.runtime.core.api.config.MuleConfiguration;
+import org.mule.runtime.core.api.transformer.DataTypeConversionResolver;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
 import org.mule.tck.junit4.AbstractMuleTestCase;
@@ -30,9 +32,8 @@ public class TransformationServiceNullTransformationTestCase extends AbstractMul
   @Test
   public void transformerIsNeverCalledWithANullValue() throws MuleException {
     MuleContext muleContext = mock(MuleContext.class);
-    MuleConfiguration muleConfiguration = mock(MuleConfiguration.class);
-    when(muleContext.getConfiguration()).thenReturn(muleConfiguration);
-    ExtendedTransformationService transformationService = new ExtendedTransformationService(muleContext);
+    ExtendedTransformationService transformationService =
+        new ExtendedTransformationService(muleContext, mock(DataTypeConversionResolver.class), () -> UTF_8);
 
     Transformer transformer1 = mock(Transformer.class);
     when(transformer1.transform(any(Object.class))).thenReturn(null);

@@ -43,6 +43,7 @@ import org.mule.runtime.api.scheduler.SchedulerService;
 import org.mule.runtime.api.tx.TransactionType;
 import org.mule.runtime.api.util.LazyValue;
 import org.mule.runtime.core.api.SingleResourceTransactionFactoryManager;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.el.ExpressionManager;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -131,6 +132,9 @@ public class ExtensionMessageSource extends ExtensionComponent<SourceModel> impl
 
   @Inject
   private CursorDecoratorFactory cursorDecoratorFactory;
+
+  @Inject
+  private EncodingSupplier encodingSupplier;
 
   private final SourceModel sourceModel;
   private final SourceAdapterFactory sourceAdapterFactory;
@@ -282,6 +286,7 @@ public class ExtensionMessageSource extends ExtensionComponent<SourceModel> impl
         .setTransactionConfig(transactionConfig.get())
         .setSource(this)
         .setMuleContext(muleContext)
+        .setEncodingSupplier(encodingSupplier)
         .setListener(messageProcessor)
         .setProcessingManager(messageProcessingManager)
         .setProcessContext(messageProcessContext)

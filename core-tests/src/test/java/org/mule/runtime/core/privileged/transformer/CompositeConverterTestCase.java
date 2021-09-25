@@ -7,11 +7,10 @@
 package org.mule.runtime.core.privileged.transformer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.Every.everyItem;
-
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -21,15 +20,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.transformer.Converter;
-
 import org.mule.runtime.core.internal.transformer.simple.InputStreamToByteArray;
 import org.mule.runtime.core.privileged.transformer.simple.ByteArrayToObject;
-
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
@@ -40,8 +38,8 @@ import org.junit.Test;
 @SmallTest
 public class CompositeConverterTestCase extends AbstractMuleTestCase {
 
-  private Converter mockConverterA = mock(Converter.class);
-  private Converter mockConverterB = mock(Converter.class);
+  private final Converter mockConverterA = mock(Converter.class);
+  private final Converter mockConverterB = mock(Converter.class);
 
   @Test(expected = IllegalArgumentException.class)
   public void rejectsEmptyCompositeTransformer() throws Exception {
@@ -176,8 +174,10 @@ public class CompositeConverterTestCase extends AbstractMuleTestCase {
 
   @Test
   public void equalsReturnsTrueOnCompositeConvertersWithSameNameAndSameTransformationChain() {
-    Converter byteArrayToObjectConverter = new ByteArrayToObject();
-    Converter inputStreamToByteArrayConverter = new InputStreamToByteArray();
+    ByteArrayToObject byteArrayToObjectConverter = new ByteArrayToObject();
+    byteArrayToObjectConverter.setEncodingSupplier(() -> UTF_8);
+    InputStreamToByteArray inputStreamToByteArrayConverter = new InputStreamToByteArray();
+    inputStreamToByteArrayConverter.setEncodingSupplier(() -> UTF_8);
     CompositeConverter compositeConverterA = new CompositeConverter(byteArrayToObjectConverter, inputStreamToByteArrayConverter);
     CompositeConverter compositeConverterB = new CompositeConverter(byteArrayToObjectConverter, inputStreamToByteArrayConverter);
 
@@ -187,8 +187,10 @@ public class CompositeConverterTestCase extends AbstractMuleTestCase {
 
   @Test
   public void equalsReturnsFalseOnCompositeConvertersWithDifferentTransformationChain() {
-    Converter byteArrayToObjectConverter = new ByteArrayToObject();
-    Converter inputStreamToByteArrayConverter = new InputStreamToByteArray();
+    ByteArrayToObject byteArrayToObjectConverter = new ByteArrayToObject();
+    byteArrayToObjectConverter.setEncodingSupplier(() -> UTF_8);
+    InputStreamToByteArray inputStreamToByteArrayConverter = new InputStreamToByteArray();
+    inputStreamToByteArrayConverter.setEncodingSupplier(() -> UTF_8);
     CompositeConverter compositeConverterA = new CompositeConverter(byteArrayToObjectConverter, inputStreamToByteArrayConverter);
     CompositeConverter compositeConverterB = new CompositeConverter(inputStreamToByteArrayConverter, byteArrayToObjectConverter);
 
@@ -197,11 +199,15 @@ public class CompositeConverterTestCase extends AbstractMuleTestCase {
 
   @Test
   public void hashCodeForCompositeConvertersChangesWithDifferentTransformationChain() {
-    Converter byteArrayToObjectConverter = new ByteArrayToObject();
-    Converter inputStreamToByteArrayConverter = new InputStreamToByteArray();
+    ByteArrayToObject byteArrayToObjectConverter = new ByteArrayToObject();
+    byteArrayToObjectConverter.setEncodingSupplier(() -> UTF_8);
+    InputStreamToByteArray inputStreamToByteArrayConverter = new InputStreamToByteArray();
+    inputStreamToByteArrayConverter.setEncodingSupplier(() -> UTF_8);
 
-    Converter byteArrayToObjectConverter2 = new ByteArrayToObject();
-    Converter inputStreamToByteArrayConverter2 = new InputStreamToByteArray();
+    ByteArrayToObject byteArrayToObjectConverter2 = new ByteArrayToObject();
+    byteArrayToObjectConverter2.setEncodingSupplier(() -> UTF_8);
+    InputStreamToByteArray inputStreamToByteArrayConverter2 = new InputStreamToByteArray();
+    inputStreamToByteArrayConverter2.setEncodingSupplier(() -> UTF_8);
 
     int hashCodeConverterA = new CompositeConverter(byteArrayToObjectConverter, inputStreamToByteArrayConverter).hashCode();
 

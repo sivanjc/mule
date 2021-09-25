@@ -11,7 +11,6 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.hash;
 import static org.mule.runtime.api.metadata.DataType.builder;
 import static org.mule.runtime.core.api.config.i18n.CoreMessages.transformOnObjectUnsupportedTypeOfEndpoint;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.core.privileged.transformer.TransformerUtils.checkTransformerReturnClass;
 
 import org.mule.runtime.api.component.AbstractComponent;
@@ -22,6 +21,7 @@ import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.util.ClassUtils;
 import org.mule.runtime.core.api.util.StringMessageUtils;
@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.inject.Inject;
 import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
@@ -46,6 +47,11 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractTransformer extends AbstractComponent implements Transformer {
 
   protected MuleContext muleContext;
+
+  @Inject
+  private ExtendedTransformationService transformationService;
+
+  private EncodingSupplier encodingSupplier;
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -86,8 +92,7 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
     if (event != null && event.getMessage() != null) {
       try {
         return CoreEvent.builder(event)
-            .message(((ExtendedTransformationService) muleContext.getTransformationService())
-                .applyTransformers(event.getMessage(), event, this))
+            .message(transformationService.applyTransformers(event.getMessage(), event, this))
             .build();
       } catch (Exception e) {
         throw new MessageTransformerException(this, e, event.getMessage());
@@ -158,7 +163,7 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
     if (returnType == null) {
       synchronized (this) {
         if (returnType == null) {
-          returnType = builder().charset(getDefaultEncoding(muleContext)).build();
+          returnType = builder().charset(encodingSupplier.get()).build();
         }
       }
     }
@@ -219,9 +224,9 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
   private Charset getEncoding(Object src) {
     if (src instanceof Message) {
       return ((Message) src).getPayload().getDataType().getMediaType().getCharset()
-          .orElse(getDefaultEncoding(muleContext));
+          .orElse(encodingSupplier.get());
     } else {
-      return getDefaultEncoding(muleContext);
+      return encodingSupplier.get();
     }
   }
 
@@ -329,6 +334,11 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
   @Override
   public void setMuleContext(MuleContext context) {
     this.muleContext = context;
+  }
+
+  @Inject
+  public void setEncodingSupplier(EncodingSupplier encodingSupplier) {
+    this.encodingSupplier = encodingSupplier;
   }
 
   @Override

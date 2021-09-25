@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.api.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -13,12 +14,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mule.runtime.api.message.Message.of;
+
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
@@ -57,14 +58,14 @@ public class TransformationServiceTestCase extends AbstractMuleTestCase {
 
   }
 
-  private MuleContext muleContext = mock(MuleContext.class, RETURNS_DEEP_STUBS);
-  private DataTypeConversionResolver conversionResolver = mock(DataTypeConversionResolver.class);
+  private final MuleContext muleContext = mock(MuleContext.class);
+  private final DataTypeConversionResolver conversionResolver = mock(DataTypeConversionResolver.class);
   private ExtendedTransformationService transformationService;
 
   @Before
   public void setUp() throws Exception {
-    when(muleContext.getDataTypeConverterResolver()).thenReturn(conversionResolver);
-    this.transformationService = new ExtendedTransformationService(muleContext);
+    this.transformationService =
+        new ExtendedTransformationService(muleContext, conversionResolver, () -> UTF_8);
   }
 
   private static final DataType dataTypeB = DataType.fromType(B.class);

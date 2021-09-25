@@ -8,8 +8,8 @@ package org.mule.runtime.core.privileged.transformer;
 
 import static java.util.Arrays.asList;
 import static org.mule.runtime.api.metadata.MediaType.ANY;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.core.privileged.transformer.TransformerUtils.checkTransformerReturnClass;
+
 import org.mule.api.annotation.NoInstantiate;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
@@ -17,8 +17,10 @@ import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.DefaultTransformationService;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.transformer.Converter;
+import org.mule.runtime.core.api.transformer.DataTypeConversionResolver;
 import org.mule.runtime.core.api.transformer.MessageTransformer;
 import org.mule.runtime.core.api.transformer.MessageTransformerException;
 import org.mule.runtime.core.api.transformer.Transformer;
@@ -37,12 +39,17 @@ public class ExtendedTransformationService extends DefaultTransformationService 
 
   private static final Logger logger = LoggerFactory.getLogger(ExtendedTransformationService.class);
 
+  private final DataTypeConversionResolver dataTypeConversionResolver;
+
+  private final EncodingSupplier encodingSupplier;
 
   @Inject
-  public ExtendedTransformationService(MuleContext muleContext) {
-    super(muleContext);
+  public ExtendedTransformationService(MuleContext muleContext, DataTypeConversionResolver dataTypeConversionResolver,
+                                       EncodingSupplier encodingSupplier) {
+    super(muleContext, encodingSupplier);
+    this.dataTypeConversionResolver = dataTypeConversionResolver;
+    this.encodingSupplier = encodingSupplier;
   }
-
 
   /**
    * Applies a list of transformers returning the result of the transformation as a new message instance. If the list of
@@ -144,7 +151,7 @@ public class ExtendedTransformationService extends DefaultTransformationService 
 
           // Resolves implicit conversion if possible
           Transformer implicitTransformer =
-              muleContext.getDataTypeConverterResolver().resolve(originalSourceType, transformer.getSourceDataTypes());
+              dataTypeConversionResolver.resolve(originalSourceType, transformer.getSourceDataTypes());
 
           if (implicitTransformer != null) {
             if (logger.isDebugEnabled()) {
@@ -216,7 +223,7 @@ public class ExtendedTransformationService extends DefaultTransformationService 
     DataType original = message.getPayload().getDataType();
     MediaType mimeType = ANY.matches(transformed.getMediaType()) ? original.getMediaType() : transformed.getMediaType();
     Charset encoding = transformed.getMediaType().getCharset()
-        .orElse(message.getPayload().getDataType().getMediaType().getCharset().orElse(getDefaultEncoding(muleContext)));
+        .orElse(message.getPayload().getDataType().getMediaType().getCharset().orElse(encodingSupplier.get()));
 
     return DataType.builder().mediaType(mimeType).charset(encoding).build().getMediaType();
   }

@@ -37,6 +37,7 @@ import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.util.LazyValue;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.el.ExpressionManagerSession;
 import org.mule.runtime.core.api.el.ExtendedExpressionManager;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -67,6 +68,8 @@ public class DefaultExpressionManager implements ExtendedExpressionManager, Init
 
   @Inject
   private FeatureFlaggingService featureFlaggingService;
+
+  private EncodingSupplier encodingSupplier;
 
   private final OneTimeWarning parseWarning = new OneTimeWarning(LOGGER,
                                                                  "Expression parsing is deprecated, regular expressions should be used instead.");
@@ -130,7 +133,7 @@ public class DefaultExpressionManager implements ExtendedExpressionManager, Init
   }
 
   protected final DataWeaveExpressionLanguageAdaptor createWeaveExpressionLanguageAdaptor(DefaultExpressionLanguageFactoryService service) {
-    return new DataWeaveExpressionLanguageAdaptor(muleContext, registry, service, featureFlaggingService);
+    return new DataWeaveExpressionLanguageAdaptor(muleContext, registry, encodingSupplier, service, featureFlaggingService);
   }
 
   @Override
@@ -440,6 +443,11 @@ public class DefaultExpressionManager implements ExtendedExpressionManager, Init
   @Inject
   public void setStreamingManager(StreamingManager streamingManager) {
     this.streamingManager = streamingManager;
+  }
+
+  @Inject
+  public void setEncodingSupplier(EncodingSupplier encodingSupplier) {
+    this.encodingSupplier = encodingSupplier;
   }
 
   @Inject

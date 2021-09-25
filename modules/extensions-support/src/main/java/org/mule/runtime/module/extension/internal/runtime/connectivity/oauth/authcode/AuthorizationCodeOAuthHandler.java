@@ -13,7 +13,6 @@ import static java.util.Optional.of;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.util.Preconditions.checkArgument;
 import static org.mule.runtime.core.api.event.EventContextFactory.create;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.core.internal.event.DefaultEventContext.child;
 import static org.mule.runtime.core.privileged.processor.MessageProcessors.processWithChildContext;
 import static org.mule.runtime.dsl.api.component.config.DefaultComponentLocation.from;
@@ -28,6 +27,7 @@ import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.util.LazyValue;
 import org.mule.runtime.api.util.Pair;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.construct.Flow;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.util.func.CheckedFunction;
@@ -72,6 +72,9 @@ public class AuthorizationCodeOAuthHandler extends OAuthHandler<AuthorizationCod
 
   @Inject
   private Registry registry;
+
+  @Inject
+  private EncodingSupplier encodingSupplier;
 
   // TODO: MULE-10837 this should be a plain old @Inject
   private LazyValue<HttpService> httpService;
@@ -162,7 +165,7 @@ public class AuthorizationCodeOAuthHandler extends OAuthHandler<AuthorizationCod
 
     dancerBuilder
         .name(config.getOwnerConfigName())
-        .encoding(getDefaultEncoding(muleContext))
+        .encoding(encodingSupplier.get())
         .clientCredentials(config.getConsumerKey(), config.getConsumerSecret())
         .tokenUrl(config.getAccessTokenUrl())
         .responseExpiresInExpr(grantType.getExpirationRegex())

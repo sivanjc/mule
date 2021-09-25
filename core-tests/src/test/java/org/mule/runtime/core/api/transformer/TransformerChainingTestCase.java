@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.api.transformer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,10 +22,10 @@ import org.mule.runtime.core.privileged.transformer.ExtendedTransformationServic
 import org.mule.runtime.core.privileged.transformer.TransformerChain;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
+import java.nio.charset.Charset;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import java.nio.charset.Charset;
 
 public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
 
@@ -32,7 +33,8 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
 
   @Before
   public void setUp() throws Exception {
-    transformationService = new ExtendedTransformationService(muleContext);
+    transformationService =
+        new ExtendedTransformationService(muleContext, muleContext.getDataTypeConverterResolver(), () -> UTF_8);
   }
 
   @Test
@@ -41,7 +43,8 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
     assertNotNull(validTransformer);
 
     Message message = of(new Integer(0));
-    Transformer messageTransformer = new TransformerChain(validTransformer);
+    TransformerChain messageTransformer = new TransformerChain(validTransformer);
+    messageTransformer.setEncodingSupplier(() -> UTF_8);
     message = transformationService.applyTransformers(message, eventBuilder(muleContext).message(of(0)).build(),
                                                       messageTransformer);
 
@@ -56,7 +59,9 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
     assertNotNull(validTransformer);
 
     Message message = of(new Integer(0));
-    Transformer messageTransformer = new TransformerChain(validTransformer, validTransformer);
+    TransformerChain messageTransformer = new TransformerChain(validTransformer, validTransformer);
+    messageTransformer.setEncodingSupplier(() -> UTF_8);
+
     message = transformationService.applyTransformers(message, eventBuilder(muleContext).message(of(0)).build(),
                                                       singletonList(messageTransformer));
 
@@ -71,7 +76,8 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
     assertNotNull(validTransformer);
 
     Message message = of(new Integer(0));
-    Transformer messageTransformer = new TransformerChain(validTransformer, validTransformer, validTransformer);
+    TransformerChain messageTransformer = new TransformerChain(validTransformer, validTransformer, validTransformer);
+    messageTransformer.setEncodingSupplier(() -> UTF_8);
     message = transformationService.applyTransformers(message, eventBuilder(muleContext).message(of(0)).build(),
                                                       messageTransformer);
 
@@ -90,7 +96,8 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
     assertNotNull(validTransformer);
 
     Message message = of(new Integer(0));
-    Transformer messageTransformer = new TransformerChain(invalidTransformer, validTransformer);
+    TransformerChain messageTransformer = new TransformerChain(invalidTransformer, validTransformer);
+    messageTransformer.setEncodingSupplier(() -> UTF_8);
     transformationService.applyTransformers(message, eventBuilder(muleContext).message(of(0)).build(),
                                             messageTransformer);
   }
@@ -105,7 +112,8 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
     assertNotNull(validTransformer);
 
     Message message = of(new Integer(0));
-    Transformer messageTransformer = new TransformerChain(invalidTransformer, validTransformer);
+    TransformerChain messageTransformer = new TransformerChain(invalidTransformer, validTransformer);
+    messageTransformer.setEncodingSupplier(() -> UTF_8);
 
     try {
       transformationService.applyTransformers(message, eventBuilder(muleContext).message(of(0)).build(),
@@ -126,7 +134,8 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
     assertNotNull(validTransformer);
 
     Message message = of(new Integer(0));
-    Transformer messageTransformer = new TransformerChain(validTransformer, invalidTransformer);
+    TransformerChain messageTransformer = new TransformerChain(validTransformer, invalidTransformer);
+    messageTransformer.setEncodingSupplier(() -> UTF_8);
 
     try {
       transformationService.applyTransformers(message, eventBuilder(muleContext).message(of(0)).build(),
@@ -145,6 +154,7 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
         throw new RuntimeException("This transformer must not perform any transformations.");
       }
     };
+    transformer.setEncodingSupplier(() -> UTF_8);
 
     // Use this class as a bogus source type to enforce a simple invalid transformer
     transformer.registerSourceType(DataType.fromType(this.getClass()));
@@ -160,6 +170,7 @@ public class TransformerChainingTestCase extends AbstractMuleContextTestCase {
         return new Integer(((Integer) src).intValue() + 1);
       }
     };
+    transformer.setEncodingSupplier(() -> UTF_8);
 
     DataType integerDataType = DataType.fromType(Integer.class);
     transformer.registerSourceType(integerDataType);

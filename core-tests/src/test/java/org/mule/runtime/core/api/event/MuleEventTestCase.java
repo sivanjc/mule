@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.api.event;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -72,6 +73,8 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
     assertNotNull(serialized);
     ByteArrayToObject trans = new ByteArrayToObject();
     trans.setMuleContext(muleContext);
+    trans.setEncodingSupplier(() -> UTF_8);
+
     PrivilegedEvent deserialized = (PrivilegedEvent) trans.transform(serialized);
 
     // Assert that deserialized event is not null
@@ -82,8 +85,9 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
   }
 
   private Transformer createSerializableToByteArrayTransformer() {
-    Transformer transformer = new SerializableToByteArray();
+    SerializableToByteArray transformer = new SerializableToByteArray();
     transformer.setMuleContext(muleContext);
+    transformer.setEncodingSupplier(() -> UTF_8);
 
     return transformer;
   }
@@ -103,6 +107,7 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
     muleContext.start();
     ByteArrayToObject trans = new ByteArrayToObject();
     trans.setMuleContext(muleContext);
+    trans.setEncodingSupplier(() -> UTF_8);
 
     // Recreate and register artifacts (this would happen if using any kind of static config e.g. XML)
     createAndRegisterTransformersEndpointBuilderService();
@@ -291,6 +296,8 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
     assertNotNull(serialized);
     ByteArrayToObject trans = new ByteArrayToObject();
     trans.setMuleContext(muleContext);
+    trans.setEncodingSupplier(() -> UTF_8);
+
     CoreEvent deserialized = (CoreEvent) trans.transform(serialized);
 
     assertThat(deserialized.getSecurityContext().getAuthentication().getPrincipal(),

@@ -39,7 +39,9 @@ import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_STREAMING_G
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_STREAMING_MANAGER;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_TIME_SUPPLIER;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_TRANSACTION_FACTORY_LOCATOR;
+import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_TRANSFORMATION_SERVICE;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
+import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.core.internal.context.DefaultMuleContext.LOCAL_QUEUE_MANAGER_KEY;
 import static org.mule.runtime.core.internal.interception.InterceptorManager.INTERCEPTOR_MANAGER_REGISTRY_KEY;
 import static org.mule.runtime.core.internal.util.store.DefaultObjectStoreFactoryBean.createDefaultInMemoryObjectStore;
@@ -51,6 +53,7 @@ import org.mule.runtime.api.notification.NotificationListenerRegistry;
 import org.mule.runtime.api.scheduler.SchedulerContainerPoolsConfig;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.config.builders.AbstractConfigurationBuilder;
 import org.mule.runtime.core.api.context.MuleContextAware;
 import org.mule.runtime.core.api.event.EventContextService;
@@ -86,6 +89,7 @@ import org.mule.runtime.core.internal.util.queue.TransactionalQueueManager;
 import org.mule.runtime.core.internal.util.store.MuleObjectStoreManager;
 import org.mule.runtime.core.internal.value.MuleValueProviderService;
 import org.mule.runtime.core.privileged.registry.RegistrationException;
+import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
 
 /**
  * Configures defaults required by Mule. This configuration builder is used to configure mule with these defaults when no other
@@ -134,7 +138,8 @@ public class DefaultsConfigurationBuilder extends AbstractConfigurationBuilder {
     registerObject(OBJECT_PROCESSING_TIME_WATCHER, new DefaultProcessingTimeWatcher(), muleContext);
     registerObject(OBJECT_PAYLOAD_STATISTICS_DECORATOR_FACTORY, new PayloadStatisticsCursorDecoratorFactory(), muleContext);
 
-    registerObject(OBJECT_CONVERTER_RESOLVER, new DynamicDataTypeConversionResolver(muleContext), muleContext);
+    DynamicDataTypeConversionResolver dataTypeConversionResolver = new DynamicDataTypeConversionResolver(muleContext);
+    registerObject(OBJECT_CONVERTER_RESOLVER, dataTypeConversionResolver, muleContext);
 
     registerObject(DEFAULT_OBJECT_SERIALIZER_NAME, new JavaObjectSerializer(), muleContext);
 
@@ -149,6 +154,11 @@ public class DefaultsConfigurationBuilder extends AbstractConfigurationBuilder {
     }
 
     registerObject(OBJECT_STREAMING_GHOST_BUSTER, new StreamingGhostBuster(), muleContext);
+
+    registerObject(OBJECT_TRANSFORMATION_SERVICE, new ExtendedTransformationService(muleContext, dataTypeConversionResolver,
+                                                                                    () -> getDefaultEncoding(muleContext)),
+                   muleContext);
+
     registerObject(OBJECT_STREAMING_MANAGER, new DefaultStreamingManager(), muleContext);
     registerObject(OBJECT_EXPRESSION_MANAGER, new DefaultExpressionManager(), muleContext);
     registerObject(OBJECT_TIME_SUPPLIER, new LocalTimeSupplier(), muleContext);

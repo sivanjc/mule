@@ -7,6 +7,7 @@
 package org.mule.runtime.core.internal.config.bootstrap;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.mule.runtime.core.api.config.i18n.CoreMessages.transformerNotImplementDiscoverable;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.setMuleContextIfNeeded;
 
 import org.mule.runtime.api.exception.MuleException;
@@ -14,7 +15,6 @@ import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.DataTypeParamsBuilder;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
-import org.mule.runtime.core.api.config.i18n.CoreMessages;
 import org.mule.runtime.core.api.transformer.Converter;
 import org.mule.runtime.core.api.transformer.DiscoverableTransformer;
 import org.mule.runtime.core.api.transformer.Transformer;
@@ -52,8 +52,11 @@ public class SimpleRegistryBootstrap extends AbstractRegistryBootstrap {
       throws Exception {
     Transformer trans = ClassUtils.instantiateClass(transformerClass);
     if (!(trans instanceof DiscoverableTransformer)) {
-      throw new RegistrationException(CoreMessages.transformerNotImplementDiscoverable(trans));
+      throw new RegistrationException(transformerNotImplementDiscoverable(trans));
     }
+
+    muleContext.getInjector().inject(trans);
+
     if (returnClass != null) {
       DataTypeParamsBuilder builder = DataType.builder().type(returnClass);
       if (isNotEmpty(bootstrapProperty.getMimeType())) {

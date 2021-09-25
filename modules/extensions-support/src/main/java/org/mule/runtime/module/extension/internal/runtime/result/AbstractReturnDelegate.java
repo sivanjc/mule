@@ -10,7 +10,6 @@ import static org.apache.commons.io.IOUtils.EOF;
 import static org.mule.runtime.api.metadata.MediaType.parseDefinedInApp;
 import static org.mule.runtime.api.metadata.MediaTypeUtils.parseCharset;
 import static org.mule.runtime.core.api.util.StreamingUtils.supportsStreaming;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.core.internal.util.message.MessageUtils.messageCollection;
 import static org.mule.runtime.core.internal.util.message.MessageUtils.messageIterator;
 import static org.mule.runtime.extension.api.util.ExtensionMetadataTypeUtils.isJavaCollection;
@@ -34,6 +33,7 @@ import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.streaming.CursorProvider;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.management.stats.CursorComponentDecoratorFactory;
 import org.mule.runtime.core.api.streaming.CursorProviderFactory;
@@ -102,6 +102,7 @@ public abstract class AbstractReturnDelegate implements ReturnDelegate {
   protected AbstractReturnDelegate(ComponentModel componentModel,
                                    CursorComponentDecoratorFactory componentDecoratorFactory,
                                    CursorProviderFactory cursorProviderFactory,
+                                   EncodingSupplier encodingSupplier,
                                    MuleContext muleContext) {
 
     if (componentModel instanceof HasOutputModel) {
@@ -123,7 +124,7 @@ public abstract class AbstractReturnDelegate implements ReturnDelegate {
     this.componentDecoratorFactory = componentDecoratorFactory;
     this.cursorProviderFactory = cursorProviderFactory;
 
-    defaultEncoding = getDefaultEncoding(muleContext);
+    defaultEncoding = encodingSupplier.get();
     defaultMediaType = getDefaultMediaType(componentModel);
   }
 
@@ -309,7 +310,7 @@ public abstract class AbstractReturnDelegate implements ReturnDelegate {
 
     private final ConnectionHandler<?> connectionHandler;
     private final Runnable onClose;
-    private AtomicBoolean alreadyClosed = new AtomicBoolean(false);
+    private final AtomicBoolean alreadyClosed = new AtomicBoolean(false);
 
     private ConnectedInputStreamWrapper(InputStream delegate, ConnectionHandler<?> connectionHandler, Runnable onClose) {
       super(delegate);

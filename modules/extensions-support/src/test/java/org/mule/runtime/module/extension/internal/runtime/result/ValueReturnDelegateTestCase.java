@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.result;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -29,7 +30,9 @@ public class ValueReturnDelegateTestCase extends ValueReturnDelegateContractTest
   @Override
   protected ReturnDelegate createReturnDelegate() throws InitialisationException {
     return new ValueReturnDelegate(componentModel, componentDecoratorFactory,
-                                   getCursorProviderFactory(), muleContext);
+                                   getCursorProviderFactory(),
+                                   () -> UTF_8,
+                                   muleContext);
   }
 
   @Override

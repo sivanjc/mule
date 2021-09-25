@@ -10,23 +10,24 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.util.Preconditions.checkArgument;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.module.extension.internal.runtime.connectivity.oauth.ExtensionsOAuthUtils.toCredentialsLocation;
 
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.util.func.CheckedFunction;
 import org.mule.runtime.extension.api.connectivity.oauth.ClientCredentialsGrantType;
 import org.mule.runtime.module.extension.internal.runtime.connectivity.oauth.OAuthHandler;
-import org.mule.runtime.module.extension.internal.runtime.connectivity.oauth.authcode.AuthorizationCodeConfig;
 import org.mule.runtime.module.extension.internal.store.LazyObjectStoreToMapAdapter;
 import org.mule.runtime.oauth.api.ClientCredentialsOAuthDancer;
-import org.mule.runtime.oauth.api.listener.ClientCredentialsListener;
 import org.mule.runtime.oauth.api.builder.OAuthClientCredentialsDancerBuilder;
+import org.mule.runtime.oauth.api.listener.ClientCredentialsListener;
 import org.mule.runtime.oauth.api.state.ResourceOwnerOAuthContext;
 
 import java.util.List;
 import java.util.Objects;
+
+import javax.inject.Inject;
 
 /**
  * {@link OAuthHandler} implementation for the client credentials grant type
@@ -34,6 +35,9 @@ import java.util.Objects;
  * @since 4.2.1
  */
 public class ClientCredentialsOAuthHandler extends OAuthHandler<ClientCredentialsOAuthDancer> {
+
+  @Inject
+  private EncodingSupplier encodingSupplier;
 
   /**
    * Becomes aware of the given {@code config} and makes sure that the access token callback and authorization endpoints are
@@ -129,7 +133,7 @@ public class ClientCredentialsOAuthHandler extends OAuthHandler<ClientCredential
 
     dancerBuilder
         .name(config.getOwnerConfigName())
-        .encoding(getDefaultEncoding(muleContext))
+        .encoding(encodingSupplier.get())
         .clientCredentials(config.getClientId(), config.getClientSecret())
         .tokenUrl(config.getTokenUrl())
         .responseExpiresInExpr(grantType.getExpirationRegex())

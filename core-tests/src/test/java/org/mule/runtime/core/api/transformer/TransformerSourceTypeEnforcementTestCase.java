@@ -6,19 +6,21 @@
  */
 package org.mule.runtime.core.api.transformer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
-import com.google.common.base.Charsets;
-
 import java.nio.charset.Charset;
+
+import com.google.common.base.Charsets;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +28,8 @@ import org.junit.Test;
 @SmallTest
 public class TransformerSourceTypeEnforcementTestCase extends AbstractMuleTestCase {
 
-  private MuleContext muleContext = mock(MuleContext.class);
-  private MuleConfiguration muleConfiguration = mock(MuleConfiguration.class);
+  private final MuleContext muleContext = mock(MuleContext.class);
+  private final MuleConfiguration muleConfiguration = mock(MuleConfiguration.class);
 
   @Before
   public void setUp() throws Exception {
@@ -78,6 +80,7 @@ public class TransformerSourceTypeEnforcementTestCase extends AbstractMuleTestCa
       }
     };
 
+    result.setEncodingSupplier(() -> UTF_8);
     result.sourceTypes.add(DataType.BYTE_ARRAY);
     result.setMuleContext(muleContext);
     result.setIgnoreBadInput(ignoreBadInput);

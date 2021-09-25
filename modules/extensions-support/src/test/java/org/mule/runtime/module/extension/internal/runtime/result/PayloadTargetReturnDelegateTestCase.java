@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.result;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -19,6 +21,7 @@ public class PayloadTargetReturnDelegateTestCase extends TargetReturnDelegateTes
   @Override
   protected ReturnDelegate createReturnDelegate() {
     return new PayloadTargetReturnDelegate(TARGET, componentModel, componentDecoratorFactory, getCursorProviderFactory(),
+                                           () -> UTF_8,
                                            muleContext);
   }
 

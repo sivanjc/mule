@@ -13,7 +13,6 @@ import static org.mule.runtime.api.el.BindingContextUtils.addFlowNameBindingsToB
 import static org.mule.runtime.api.metadata.DataType.fromType;
 import static org.mule.runtime.api.util.MuleSystemProperties.MULE_EXPRESSIONS_COMPILATION_FAIL_DEPLOYMENT;
 import static org.mule.runtime.core.api.config.i18n.CoreMessages.expressionEvaluationFailed;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.core.internal.el.ExpressionLanguageUtils.isSanitizedPayload;
 import static org.mule.runtime.core.internal.el.ExpressionLanguageUtils.sanitize;
 
@@ -33,6 +32,7 @@ import org.mule.runtime.api.el.ValidationResult;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.expression.ExpressionRuntimeException;
 import org.mule.runtime.core.internal.el.DefaultBindingContextBuilder;
@@ -58,10 +58,11 @@ public class DataWeaveExpressionLanguageAdaptor implements ExtendedExpressionLan
 
   @Inject
   public DataWeaveExpressionLanguageAdaptor(MuleContext muleContext, Registry registry,
+                                            EncodingSupplier encodingSupplier,
                                             DefaultExpressionLanguageFactoryService service,
                                             FeatureFlaggingService featureFlaggingService) {
     this.expressionExecutor = service.create(ExpressionLanguageConfiguration.builder()
-        .defaultEncoding(getDefaultEncoding(muleContext))
+        .defaultEncoding(encodingSupplier.get())
         .featureFlaggingService(featureFlaggingService)
         .build());
     this.muleContext = muleContext;

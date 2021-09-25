@@ -19,6 +19,7 @@ import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.transformation.TransformationService;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.transformer.MessageTransformerException;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.transformer.TransformerException;
@@ -38,11 +39,23 @@ import javax.inject.Inject;
 @NoExtend
 public class DefaultTransformationService implements TransformationService {
 
-  protected MuleContext muleContext;
+  private final MuleContext muleContext;
+  private final EncodingSupplier encodingSupplier;
 
   @Inject
-  public DefaultTransformationService(MuleContext muleContext) {
+  public DefaultTransformationService(MuleContext muleContext, EncodingSupplier encodingSupplier) {
     this.muleContext = muleContext;
+    this.encodingSupplier = encodingSupplier;
+  }
+
+  /**
+   * @deprecated from 4.5 use {@link #DefaultTransformationService(MuleContext, EncodingSupplier)} instead.
+   * @param muleContext
+   */
+  @Inject
+  @Deprecated
+  public DefaultTransformationService(MuleContext muleContext) {
+    this(muleContext, () -> getDefaultEncoding(muleContext));
   }
 
   /**
@@ -153,7 +166,7 @@ public class DefaultTransformationService implements TransformationService {
   }
 
   protected Charset resolveEncoding(Message message) {
-    return message.getPayload().getDataType().getMediaType().getCharset().orElse(getDefaultEncoding(muleContext));
+    return message.getPayload().getDataType().getMediaType().getCharset().orElse(encodingSupplier.get());
   }
 
   @Override

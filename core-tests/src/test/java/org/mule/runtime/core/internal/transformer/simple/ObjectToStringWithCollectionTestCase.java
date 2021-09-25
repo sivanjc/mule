@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.tck.core.transformer.AbstractTransformerTestCase;
 
@@ -16,12 +18,14 @@ public class ObjectToStringWithCollectionTestCase extends AbstractTransformerTes
 
   @Override
   public Transformer getTransformer() throws Exception {
-    return new ObjectToString();
+    ObjectToString transformer = new ObjectToString();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    return transformer;
   }
 
   @Override
   public Object getTestData() {
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     list.add("one");
     list.add(null);
     list.add("three");

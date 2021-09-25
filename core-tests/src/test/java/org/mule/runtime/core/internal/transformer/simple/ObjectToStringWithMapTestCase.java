@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.tck.core.transformer.AbstractTransformerTestCase;
 
@@ -14,10 +16,14 @@ import java.util.TreeMap;
 
 public class ObjectToStringWithMapTestCase extends AbstractTransformerTestCase {
 
+  @Override
   public Transformer getTransformer() throws Exception {
-    return new ObjectToString();
+    ObjectToString transformer = new ObjectToString();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    return transformer;
   }
 
+  @Override
   public Object getTestData() {
     // TreeMap guarantees the order of keys. This is important for creating a test result
     // that is guaranteed to be comparable to the output of getResultData.
@@ -27,10 +33,12 @@ public class ObjectToStringWithMapTestCase extends AbstractTransformerTestCase {
     return map;
   }
 
+  @Override
   public Object getResultData() {
     return "{existingValue=VALUE, nonexistingValue=null}";
   }
 
+  @Override
   public Transformer getRoundTripTransformer() throws Exception {
     // we do not want round trip transforming tested
     return null;

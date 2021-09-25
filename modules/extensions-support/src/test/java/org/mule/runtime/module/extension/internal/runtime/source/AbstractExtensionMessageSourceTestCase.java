@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.source;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.empty;
@@ -91,12 +92,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+
 import org.mockito.Mock;
-import org.slf4j.Logger;
 
 public abstract class AbstractExtensionMessageSourceTestCase extends AbstractMuleContextTestCase {
 
@@ -285,6 +288,7 @@ public abstract class AbstractExtensionMessageSourceTestCase extends AbstractMul
         .setListener(messageProcessor)
         .setSource(messageSource)
         .setProcessContext(messageProcessContext)
+        .setEncodingSupplier(() -> UTF_8)
         .setApplicationName(muleContext.getConfiguration().getId())
         .setNotificationDispatcher(notificationDispatcher)
         .setTransactionFactoryManager(muleContext.getTransactionFactoryManager())

@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.result;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -39,6 +40,7 @@ import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -87,7 +89,9 @@ public class TargetOutputMessageReturnDelegateTestCase extends AbstractMuleConte
 
   private TargetReturnDelegate createDelegate(String expression) {
     return new TargetReturnDelegate(TARGET, expression, componentModel, expressionManager,
-                                    componentDecoratorFactory, getDefaultCursorStreamProviderFactory(), muleContext,
+                                    componentDecoratorFactory, getDefaultCursorStreamProviderFactory(),
+                                    () -> UTF_8,
+                                    muleContext,
                                     streamingManager);
   }
 

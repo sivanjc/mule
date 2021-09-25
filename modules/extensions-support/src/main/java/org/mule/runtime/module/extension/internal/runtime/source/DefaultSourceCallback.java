@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.mule.runtime.api.metadata.MediaType.parseDefinedInApp;
 import static org.mule.runtime.api.metadata.MediaTypeUtils.parseCharset;
 import static org.mule.runtime.api.util.Preconditions.checkArgument;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.runtime.module.extension.internal.ExtensionProperties.ENCODING_PARAMETER_NAME;
 import static org.mule.runtime.module.extension.internal.ExtensionProperties.MIME_TYPE_PARAMETER_NAME;
 import static org.mule.runtime.module.extension.internal.util.MediaTypeUtils.getDefaultMediaType;
@@ -26,6 +25,7 @@ import org.mule.runtime.api.notification.NotificationDispatcher;
 import org.mule.runtime.api.util.Preconditions;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.SingleResourceTransactionFactoryManager;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.streaming.CursorProviderFactory;
 import org.mule.runtime.core.api.transaction.TransactionConfig;
@@ -99,6 +99,11 @@ class DefaultSourceCallback<T, A> implements SourceCallbackAdapter<T, A> {
 
     public Builder<T, A> setMuleContext(MuleContext muleContext) {
       product.muleContext = muleContext;
+      return this;
+    }
+
+    public Builder<T, A> setEncodingSupplier(EncodingSupplier encodingSupplier) {
+      product.encodingSupplier = encodingSupplier;
       return this;
     }
 
@@ -185,6 +190,7 @@ class DefaultSourceCallback<T, A> implements SourceCallbackAdapter<T, A> {
   private ConfigurationInstance configurationInstance;
   private Processor listener;
   private MuleContext muleContext;
+  private EncodingSupplier encodingSupplier;
   private String applicationName;
   private NotificationDispatcher notificationDispatcher;
   private SingleResourceTransactionFactoryManager transactionFactoryManager;
@@ -207,7 +213,7 @@ class DefaultSourceCallback<T, A> implements SourceCallbackAdapter<T, A> {
   private DefaultSourceCallback() {}
 
   private final RunOnce resolveInitializationParams = Once.of(() -> {
-    defaultEncoding = getDefaultEncoding(muleContext);
+    defaultEncoding = encodingSupplier.get();
 
     Map<String, Object> initialisationParameters = messageSource.getInitialisationParameters();
 
@@ -244,7 +250,7 @@ class DefaultSourceCallback<T, A> implements SourceCallbackAdapter<T, A> {
     SourceCallbackContextAdapter contextAdapter = (SourceCallbackContextAdapter) context;
     validateNotifications(contextAdapter);
     MediaType mediaType = resolveMediaType(result);
-    PayloadMediaTypeResolver payloadMediaTypeResolver = new PayloadMediaTypeResolver(getDefaultEncoding(muleContext),
+    PayloadMediaTypeResolver payloadMediaTypeResolver = new PayloadMediaTypeResolver(encodingSupplier.get(),
                                                                                      defaultMediaType,
                                                                                      encodingParam,
                                                                                      mimeTypeInitParam);

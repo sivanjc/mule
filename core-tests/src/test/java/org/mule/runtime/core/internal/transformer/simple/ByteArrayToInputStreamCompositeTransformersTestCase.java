@@ -6,9 +6,9 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
-import org.mule.runtime.core.api.transformer.Converter;
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.api.util.IOUtils;
 import org.mule.runtime.core.privileged.transformer.CompositeConverter;
@@ -19,19 +19,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import io.qameta.allure.Issue;
 import org.junit.Test;
+
+import io.qameta.allure.Issue;
 
 @Issue("MULE-19279")
 public class ByteArrayToInputStreamCompositeTransformersTestCase extends AbstractMuleContextTestCase {
 
   private CompositeConverter transformer;
-  private String testMessage = "Hello ե���:��";
+  private final String testMessage = "Hello ե���:��";
 
   @Override
   protected void doSetUp() throws Exception {
-    Converter objectToOutputHandler = new ObjectToOutputHandler();
-    Converter objectToInputStream = new ObjectToInputStream();
+    ObjectToOutputHandler objectToOutputHandler = new ObjectToOutputHandler();
+    objectToOutputHandler.setEncodingSupplier(() -> UTF_8);
+    ObjectToInputStream objectToInputStream = new ObjectToInputStream();
+    objectToInputStream.setEncodingSupplier(() -> UTF_8);
     transformer = new CompositeConverter(objectToOutputHandler, objectToInputStream);
     transformer.setMuleContext(muleContext);
   }

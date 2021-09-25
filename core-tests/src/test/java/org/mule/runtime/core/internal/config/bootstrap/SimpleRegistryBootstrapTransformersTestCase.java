@@ -9,15 +9,19 @@ package org.mule.runtime.core.internal.config.bootstrap;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
+import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
+
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.config.bootstrap.BootstrapServiceDiscoverer;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.internal.config.builders.DefaultsConfigurationBuilder;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
+import org.mule.runtime.core.internal.registry.MuleRegistry;
 import org.mule.runtime.core.internal.registry.TransformerResolver;
 import org.mule.runtime.core.internal.transformer.AbstractDiscoverableTransformer;
 import org.mule.runtime.core.internal.transformer.ResolverException;
@@ -38,8 +42,11 @@ public class SimpleRegistryBootstrapTransformersTestCase extends AbstractMuleCon
     properties.setProperty("core.transformer.1", ExpectedKeyTransformer.class.getName());
     properties.setProperty("custom1", CustomKeyTransformer.class.getName());
 
+    MuleRegistry registry = ((MuleContextWithRegistry) muleContext).getRegistry();
     TestTransformerResolver transformerResolver = new TestTransformerResolver();
-    ((MuleContextWithRegistry) muleContext).getRegistry().registerObject("testTransformerResolver", transformerResolver);
+    registry.registerObject("testTransformerResolver", transformerResolver);
+    EncodingSupplier encodingSupplier = () -> getDefaultEncoding(muleContext);
+    registry.registerObject("encodingSupplier", encodingSupplier);
 
     final BootstrapServiceDiscoverer bootstrapServiceDiscoverer = new TestBootstrapServiceDiscoverer(properties);
     muleContext.setBootstrapServiceDiscoverer(bootstrapServiceDiscoverer);
@@ -87,7 +94,7 @@ public class SimpleRegistryBootstrapTransformersTestCase extends AbstractMuleCon
 
   private static class TestTransformerResolver implements TransformerResolver {
 
-    private List<Transformer> transformers = new ArrayList<>();
+    private final List<Transformer> transformers = new ArrayList<>();
 
     @Override
     public Transformer resolve(DataType source, DataType result) throws ResolverException {

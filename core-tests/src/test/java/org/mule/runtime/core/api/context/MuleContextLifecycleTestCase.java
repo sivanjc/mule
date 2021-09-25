@@ -11,7 +11,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.api.context.notification.MuleContextNotification.CONTEXT_STARTED;
@@ -24,7 +23,6 @@ import org.mule.runtime.api.artifact.Registry;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Disposable;
 import org.mule.runtime.api.lifecycle.Initialisable;
-import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.LifecycleException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.lifecycle.Stoppable;
@@ -41,7 +39,6 @@ import org.mule.runtime.core.internal.context.DefaultMuleContextBuilder;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.runtime.core.internal.context.notification.DefaultNotificationListenerRegistry;
 import org.mule.runtime.core.internal.lifecycle.MuleContextLifecycleManager;
-import org.mule.runtime.core.internal.util.JdkVersionUtils;
 import org.mule.tck.config.TestServicesConfigurationBuilder;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 
@@ -393,7 +390,7 @@ public class MuleContextLifecycleTestCase extends AbstractMuleTestCase {
 
   private static class SensingLifecycleManager extends MuleContextLifecycleManager {
 
-    private List<String> appliedLifecyclePhases;
+    private final List<String> appliedLifecyclePhases;
 
     public SensingLifecycleManager() {
       super();
@@ -471,36 +468,6 @@ public class MuleContextLifecycleTestCase extends AbstractMuleTestCase {
     @Override
     public void onStop(MuleContext context, Registry registry) {
       wasStopped.set(true);
-    }
-  }
-
-  @Test(expected = InitialisationException.class)
-  public void testIsInValidJdk() throws InitialisationException {
-    try {
-      JdkVersionUtils.validateJdk();
-    } catch (RuntimeException e) {
-      fail("Jdk version or vendor is invalid. Update the valid versions");
-    }
-
-    String javaVersion = System.setProperty("java.version", "1.5.0_12");
-    try {
-      try {
-        JdkVersionUtils.validateJdk();
-        fail("Test is invalid because the Jdk version or vendor is supposed to now be invalid");
-      } catch (RuntimeException e) {
-        // expected
-      }
-
-      MuleContext ctx = ctxBuilder.buildMuleContext();
-      assertFalse(ctx.isInitialised());
-      assertFalse(ctx.isInitialising());
-      assertFalse(ctx.isStarted());
-      assertFalse(ctx.isDisposed());
-      assertFalse(ctx.isDisposing());
-
-      ctx.initialise();
-    } finally {
-      System.setProperty("java.version", javaVersion);
     }
   }
 }

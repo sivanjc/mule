@@ -4,7 +4,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.core.internal.util;
+package org.mule.runtime.module.launcher.internal.jdk;
 
 import static java.lang.System.getProperty;
 import static org.junit.Assert.assertEquals;
@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.mule.runtime.core.api.config.MuleManifest;
+import org.mule.runtime.core.internal.util.JdkVersionUtils;
 import org.mule.runtime.core.internal.util.JdkVersionUtils.JdkVersion;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 

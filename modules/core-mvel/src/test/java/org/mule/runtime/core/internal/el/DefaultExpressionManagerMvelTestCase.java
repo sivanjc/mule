@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.internal.el;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,9 +37,6 @@ import org.mule.tck.junit4.AbstractMuleContextTestCase;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +45,9 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
 
 @Feature(EXPRESSION_LANGUAGE)
 @Story(SUPPORT_MVEL_DW)
@@ -103,6 +104,7 @@ public class DefaultExpressionManagerMvelTestCase extends AbstractMuleContextTes
     expressionManager = new DefaultExpressionManager();
     ((DefaultExpressionManager) expressionManager).setRegistry(registry);
     ((DefaultExpressionManager) expressionManager).setStreamingManager(streamingManager);
+    ((DefaultExpressionManager) expressionManager).setEncodingSupplier(() -> UTF_8);
     initialiseIfNeeded(expressionManager, false, muleContext);
     final CoreEvent event = testEvent();
 

@@ -12,7 +12,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.SET_VARIABLE_WITH_NULL_VALUE;
 import static org.mule.runtime.api.metadata.DataType.STRING;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 
 import org.mule.runtime.api.config.FeatureFlaggingService;
 import org.mule.runtime.api.exception.MuleException;
@@ -21,6 +20,7 @@ import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.metadata.TypedValue;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.el.ExtendedExpressionManager;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.streaming.StreamingManager;
@@ -50,7 +50,9 @@ public abstract class AbstractAddVariablePropertyProcessor<T> extends SimpleMess
   private StreamingManager streamingManager;
 
   @Inject
-  FeatureFlaggingService featureFlaggingService;
+  private FeatureFlaggingService featureFlaggingService;
+
+  private EncodingSupplier encodingSupplier;
 
   @Override
   public void initialise() throws InitialisationException {
@@ -106,9 +108,9 @@ public abstract class AbstractAddVariablePropertyProcessor<T> extends SimpleMess
   private Charset getEncoding(Object src) {
     if (src instanceof Message) {
       return ((Message) src).getPayload().getDataType().getMediaType().getCharset()
-          .orElse(getDefaultEncoding(muleContext));
+          .orElse(encodingSupplier.get());
     } else {
-      return getDefaultEncoding(muleContext);
+      return encodingSupplier.get();
     }
   }
 
@@ -158,5 +160,10 @@ public abstract class AbstractAddVariablePropertyProcessor<T> extends SimpleMess
   @Inject
   public void setExpressionManager(ExtendedExpressionManager expressionManager) {
     this.expressionManager = expressionManager;
+  }
+
+  @Inject
+  public void setEncodingSupplier(EncodingSupplier encodingSupplier) {
+    this.encodingSupplier = encodingSupplier;
   }
 }

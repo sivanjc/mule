@@ -3,6 +3,18 @@
     "revapi": {
       "ignore": [
         {
+          "code": "java.field.visibilityReduced",
+          "old": "field org.mule.runtime.core.api.DefaultTransformationService.muleContext",
+          "new": "field org.mule.runtime.core.api.DefaultTransformationService.muleContext",
+          "oldVisibility": "protected",
+          "newVisibility": "private",
+          "package": "org.mule.runtime.core.api",
+          "classSimpleName": "DefaultTransformationService",
+          "fieldName": "muleContext",
+          "elementKind": "field",
+          "justification": "False positive, this class is @NoExtend"
+        },
+        {
           "code": "java.class.removed",
           "old": "class org.mule.runtime.core.privileged.el.context.EventVariablesMapContext",
           "package": "org.mule.runtime.core.privileged.el.context",

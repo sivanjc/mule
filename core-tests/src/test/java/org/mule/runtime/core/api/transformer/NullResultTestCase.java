@@ -6,17 +6,26 @@
  */
 package org.mule.runtime.core.api.transformer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
+
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.tck.core.transformer.AbstractTransformerTestCase;
 
 import java.nio.charset.Charset;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class NullResultTestCase extends AbstractTransformerTestCase {
 
-  private final NullResultTransformer transformer = new NullResultTransformer();
+  private NullResultTransformer transformer;
+
+  @Before
+  public void before() {
+    transformer = new NullResultTransformer();
+    transformer.setEncodingSupplier(() -> UTF_8);
+  }
 
   @Override
   public Object getTestData() {

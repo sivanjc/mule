@@ -6,8 +6,10 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class LocalDateToDateTestCase extends AbstractMuleContextTestCase {
   @Override
   protected void doSetUp() throws Exception {
     transformer = new LocalDateToDate();
+    transformer.setEncodingSupplier(() -> UTF_8);
     transformer.setMuleContext(muleContext);
   }
 

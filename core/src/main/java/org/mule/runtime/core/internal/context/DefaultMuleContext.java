@@ -8,12 +8,11 @@ package org.mule.runtime.core.internal.context;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.SystemUtils.JAVA_VERSION;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.BATCH_FIXED_AGGREGATOR_TRANSACTION_RECORD_BUFFER;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.ENABLE_POLICY_ISOLATION;
+import static org.mule.runtime.api.config.MuleRuntimeFeature.ENTITY_RESOLVER_FAIL_ON_FIRST_ERROR;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.HANDLE_SPLITTER_EXCEPTION;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.HONOUR_RESERVED_PROPERTIES;
-import static org.mule.runtime.api.config.MuleRuntimeFeature.ENTITY_RESOLVER_FAIL_ON_FIRST_ERROR;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.SET_VARIABLE_WITH_NULL_VALUE;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.serialization.ObjectSerializer.DEFAULT_OBJECT_SERIALIZER_NAME;
@@ -34,7 +33,6 @@ import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_SECURITY_MA
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_STORE_MANAGER;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_TRANSACTION_MANAGER;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_TRANSFORMATION_SERVICE;
-import static org.mule.runtime.core.api.config.i18n.CoreMessages.invalidJdk;
 import static org.mule.runtime.core.api.config.i18n.CoreMessages.objectIsNull;
 import static org.mule.runtime.core.api.context.notification.MuleContextNotification.CONTEXT_DISPOSED;
 import static org.mule.runtime.core.api.context.notification.MuleContextNotification.CONTEXT_DISPOSING;
@@ -49,11 +47,10 @@ import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNee
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
 import static org.mule.runtime.core.api.management.stats.AllStatistics.configureComputeConnectionErrorsInStats;
 import static org.mule.runtime.core.api.util.UUID.getClusterUUID;
-import static org.mule.runtime.core.internal.profiling.AbstractProfilingService.configureEnableProfilingService;
 import static org.mule.runtime.core.internal.logging.LogUtil.log;
+import static org.mule.runtime.core.internal.profiling.AbstractProfilingService.configureEnableProfilingService;
 import static org.mule.runtime.core.internal.transformer.simple.ObjectToString.configureToStringTransformerTransformIteratorElements;
 import static org.mule.runtime.core.internal.util.FunctionalUtils.safely;
-import static org.mule.runtime.core.internal.util.JdkVersionUtils.getSupportedJdks;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.mule.runtime.api.component.location.ConfigurationComponentLocator;
@@ -129,7 +126,6 @@ import org.mule.runtime.core.internal.registry.MuleRegistry;
 import org.mule.runtime.core.internal.registry.MuleRegistryHelper;
 import org.mule.runtime.core.internal.registry.Registry;
 import org.mule.runtime.core.internal.transformer.DynamicDataTypeConversionResolver;
-import org.mule.runtime.core.internal.util.JdkVersionUtils;
 import org.mule.runtime.core.internal.util.splash.ArtifactShutdownSplashScreen;
 import org.mule.runtime.core.internal.util.splash.ArtifactStartupSplashScreen;
 import org.mule.runtime.core.internal.util.splash.ServerShutdownSplashScreen;
@@ -138,7 +134,6 @@ import org.mule.runtime.core.internal.util.splash.SplashScreen;
 import org.mule.runtime.core.privileged.PrivilegedMuleContext;
 import org.mule.runtime.core.privileged.exception.ErrorTypeLocator;
 import org.mule.runtime.core.privileged.registry.RegistrationException;
-import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
 
 import java.util.Collection;
 import java.util.List;
@@ -298,10 +293,6 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
     }
   }
 
-  public DefaultMuleContext() {
-    transformationService = new ExtendedTransformationService(this);
-  }
-
   @Override
   public void initialise() throws InitialisationException {
     synchronized (lifecycleStateLock) {
@@ -309,12 +300,6 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
 
       if (getNotificationManager() == null) {
         throw new MuleRuntimeException(objectIsNull(OBJECT_NOTIFICATION_MANAGER));
-      }
-
-      try {
-        JdkVersionUtils.validateJdk();
-      } catch (RuntimeException e) {
-        throw new InitialisationException(invalidJdk(JAVA_VERSION, getSupportedJdks()), this);
       }
 
       try {
@@ -328,9 +313,7 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
         getLifecycleManager().fireLifecycle(Initialisable.PHASE_NAME);
         fireNotification(new MuleContextNotification(this, CONTEXT_INITIALISED));
         final org.mule.runtime.api.artifact.Registry apiRegistry = getApiRegistry();
-        listeners.forEach(l -> {
-          l.onInitialization(this, apiRegistry);
-        });
+        listeners.forEach(l -> l.onInitialization(this, apiRegistry));
 
         lifecycleStrategy.initialise(this);
 

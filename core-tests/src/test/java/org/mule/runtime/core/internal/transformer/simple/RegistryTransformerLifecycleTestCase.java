@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
 import static org.mule.runtime.api.component.AbstractComponent.LOCATION_KEY;
@@ -35,6 +36,7 @@ public class RegistryTransformerLifecycleTestCase extends AbstractMuleContextTes
   @Test
   public void testLifecycleInTransientRegistry() throws Exception {
     TransformerLifecycleTracker transformer = new TransformerLifecycleTracker();
+    transformer.setEncodingSupplier(() -> UTF_8);
     transformer.setProperty("foo");
     ((MuleContextWithRegistry) muleContext).getRegistry().registerTransformer(transformer);
     muleContext.dispose();

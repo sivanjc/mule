@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.internal.routing;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -163,6 +164,7 @@ public class IdempotentMessageValidatorTestCase extends AbstractMuleContextTestC
     // Evaluate DW expression outside MessageValidator
     ExpressionLanguageAdaptor expressionLanguageAdaptor =
         new DataWeaveExpressionLanguageAdaptor(muleContext, mock(Registry.class),
+                                               () -> UTF_8,
                                                new WeaveDefaultExpressionLanguageFactoryService(null),
                                                getFeatureFlaggingService());
     TypedValue<?> hashedValue = expressionLanguageAdaptor.evaluate(dwHashExpression, event, NULL_BINDING_CONTEXT);
@@ -202,6 +204,7 @@ public class IdempotentMessageValidatorTestCase extends AbstractMuleContextTestC
     // Evaluate DW expression outside MessageValidator
     ExpressionLanguageAdaptor expressionLanguageAdaptor =
         new DataWeaveExpressionLanguageAdaptor(muleContext, mock(Registry.class),
+                                               () -> UTF_8,
                                                new WeaveDefaultExpressionLanguageFactoryService(null),
                                                getFeatureFlaggingService());
     TypedValue<Object> hashedValue = expressionLanguageAdaptor.evaluate(dwHashExpression, event, NULL_BINDING_CONTEXT);

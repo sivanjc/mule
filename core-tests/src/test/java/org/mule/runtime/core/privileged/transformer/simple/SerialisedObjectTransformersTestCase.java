@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.privileged.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.tck.core.transformer.AbstractTransformerTestCase;
@@ -15,20 +17,22 @@ import org.apache.commons.lang3.SerializationUtils;
 
 public class SerialisedObjectTransformersTestCase extends AbstractTransformerTestCase {
 
-  private Orange testObject = new Orange(new Integer(4), new Double(14.3), "nice!");
+  private final Orange testObject = new Orange(new Integer(4), new Double(14.3), "nice!");
 
   @Override
   public Transformer getTransformer() throws Exception {
-    SerializableToByteArray transfromer = new SerializableToByteArray();
-    ((MuleContextWithRegistry) muleContext).getRegistry().registerObject(String.valueOf(transfromer.hashCode()), transfromer);
-    return transfromer;
+    SerializableToByteArray transformer = new SerializableToByteArray();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    ((MuleContextWithRegistry) muleContext).getRegistry().registerObject(String.valueOf(transformer.hashCode()), transformer);
+    return transformer;
   }
 
   @Override
   public Transformer getRoundTripTransformer() throws Exception {
-    ByteArrayToSerializable transfromer = new ByteArrayToSerializable();
-    ((MuleContextWithRegistry) muleContext).getRegistry().registerObject(String.valueOf(transfromer.hashCode()), transfromer);
-    return transfromer;
+    ByteArrayToSerializable transformer = new ByteArrayToSerializable();
+    transformer.setEncodingSupplier(() -> UTF_8);
+    ((MuleContextWithRegistry) muleContext).getRegistry().registerObject(String.valueOf(transformer.hashCode()), transformer);
+    return transformer;
   }
 
   @Override

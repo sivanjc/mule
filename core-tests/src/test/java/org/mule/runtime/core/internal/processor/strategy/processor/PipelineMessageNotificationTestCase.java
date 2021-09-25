@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.internal.processor.strategy.processor;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -52,6 +53,7 @@ import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.management.stats.AllStatistics;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.source.MessageSource;
+import org.mule.runtime.core.api.transformer.DataTypeConversionResolver;
 import org.mule.runtime.core.internal.construct.DefaultFlowBuilder.DefaultFlow;
 import org.mule.runtime.core.internal.exception.ContributedErrorTypeLocator;
 import org.mule.runtime.core.internal.exception.ErrorHandler;
@@ -77,6 +79,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
 import org.mockito.ArgumentMatcher;
 
 @RunWith(Parameterized.class)
@@ -105,7 +108,8 @@ public class PipelineMessageNotificationTestCase extends AbstractReactiveProcess
     notificationFirer = getNotificationDispatcher(muleContext);
     when(muleContext.getDefaultErrorHandler(empty())).thenReturn(new ErrorHandlerFactory().createDefault(notificationFirer));
     mockErrorTypeLocator();
-    when(muleContext.getTransformationService()).thenReturn(new ExtendedTransformationService(muleContext));
+    when(muleContext.getTransformationService())
+        .thenReturn(new ExtendedTransformationService(muleContext, mock(DataTypeConversionResolver.class), () -> UTF_8));
   }
 
   private void mockErrorTypeLocator() {

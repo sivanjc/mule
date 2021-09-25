@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.manager;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.metadata.DataType.fromFunction;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
@@ -78,6 +79,8 @@ public final class ExtensionActivator implements Startable, Stoppable {
           if (enumTypes.add(enumClass)) {
             try {
               StringToEnum stringToEnum = new StringToEnum(enumClass);
+              // This transformer doesn't use the encoding, so a fixed value is fine.
+              stringToEnum.setEncodingSupplier(() -> UTF_8);
               registerObject(muleContext, getName(stringToEnum), stringToEnum, Transformer.class);
             } catch (MuleException e) {
               throw new MuleRuntimeException(createStaticMessage("Could not register transformer for enum "

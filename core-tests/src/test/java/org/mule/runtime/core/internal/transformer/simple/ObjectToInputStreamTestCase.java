@@ -6,8 +6,10 @@
  */
 package org.mule.runtime.core.internal.transformer.simple;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.api.util.IOUtils;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
@@ -28,6 +30,7 @@ public class ObjectToInputStreamTestCase extends AbstractMuleContextTestCase {
   protected void doSetUp() throws Exception {
     transformer = new ObjectToInputStream();
     transformer.setMuleContext(muleContext);
+    transformer.setEncodingSupplier(() -> UTF_8);
   }
 
   @Test

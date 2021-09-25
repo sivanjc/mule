@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.core.api.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.containsString;
@@ -204,7 +205,7 @@ public class MessagingExceptionResolverTestCase extends AbstractMuleTestCase {
   @Issue("MULE-18041")
   public void resolveSuppressedMuleException() {
     ErrorType expected = DISPATCH;
-    Throwable exception = new DispatchException(createStaticMessage("DISPATCH PROBLEM"), new ValidateResponse(),
+    Throwable exception = new DispatchException(createStaticMessage("DISPATCH PROBLEM"), createValidateResponse(),
                                                 suppressIfPresent(CONNECTION_EXCEPTION,
                                                                   CONNECTION_EXCEPTION.getClass()));
     MessagingException me = newMessagingException(exception, event, processor);
@@ -219,7 +220,7 @@ public class MessagingExceptionResolverTestCase extends AbstractMuleTestCase {
   @Issue("MULE-18041")
   public void resolveSuppressedMuleExceptionLoggingCause() {
     ErrorType expected = DISPATCH;
-    Throwable exception = new DispatchException(createStaticMessage("DISPATCH PROBLEM"), new ValidateResponse(),
+    Throwable exception = new DispatchException(createStaticMessage("DISPATCH PROBLEM"), createValidateResponse(),
                                                 suppressIfPresent(CONNECTION_EXCEPTION,
                                                                   CONNECTION_EXCEPTION.getClass()));
     MessagingException me = newMessagingException(exception, event, processor);
@@ -234,7 +235,7 @@ public class MessagingExceptionResolverTestCase extends AbstractMuleTestCase {
   @Issue("MULE-18041")
   public void resolveSuppressedMessagingExceptionLoggingCause() {
     ErrorType expected = DISPATCH;
-    Throwable exception = new DispatchException(createStaticMessage("DISPATCH PROBLEM"), new ValidateResponse(),
+    Throwable exception = new DispatchException(createStaticMessage("DISPATCH PROBLEM"), createValidateResponse(),
                                                 suppressIfPresent(new MessagingException(createStaticMessage("CONNECTION PROBLEM"),
                                                                                          event),
                                                                   MessagingException.class));
@@ -244,6 +245,12 @@ public class MessagingExceptionResolverTestCase extends AbstractMuleTestCase {
     assertExceptionErrorType(resolved, expected);
     assertExceptionMessage(resolved.getMessage(), "DISPATCH PROBLEM");
     assertExceptionMessage(resolved.getInfo().get(INFO_CAUSED_BY_KEY).toString(), "CONNECTION PROBLEM");
+  }
+
+  protected ValidateResponse createValidateResponse() {
+    ValidateResponse validateResponse = new ValidateResponse();
+    validateResponse.setEncodingSupplier(() -> UTF_8);
+    return validateResponse;
   }
 
   private void assertExceptionMessage(String result, String expected) {

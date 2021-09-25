@@ -14,7 +14,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mule.runtime.api.metadata.MediaType.TEXT;
-import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 import static org.mule.tck.probe.PollingProber.check;
 
 import org.mule.functional.api.flow.FlowRunner;
@@ -23,6 +22,7 @@ import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
+import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.tck.junit4.rule.SystemProperty;
@@ -31,6 +31,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,6 +47,9 @@ public class ContentTypeHandlingTestCase extends AbstractExtensionFunctionalTest
 
   @Rule
   public SystemProperty customEncodingProperty = new SystemProperty("customEncoding", customEncoding.name());
+
+  @Inject
+  private EncodingSupplier encodingSupplier;
 
   @Override
   protected String getConfigFile() {
@@ -203,7 +208,7 @@ public class ContentTypeHandlingTestCase extends AbstractExtensionFunctionalTest
   }
 
   private void assertDefaultEncoding(DataType dataType) throws Exception {
-    assertThat(dataType.getMediaType().getCharset().get(), is(getDefaultEncoding(muleContext)));
+    assertThat(dataType.getMediaType().getCharset().get(), is(encodingSupplier.get()));
   }
 
   private void assertDefaultMimeType(DataType dataType) throws Exception {
