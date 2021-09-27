@@ -9,7 +9,6 @@ package org.mule.test.runner.api;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.io.File.separator;
-import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.test.runner.api.MulePluginBasedLoaderFinder.META_INF_MULE_PLUGIN;
 import static org.mule.test.runner.utils.RunnerModuleUtils.assureSdkApiInClassLoader;
@@ -19,7 +18,6 @@ import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.util.LazyValue;
 import org.mule.runtime.core.api.Injector;
 import org.mule.runtime.core.api.config.DefaultMuleConfiguration;
-import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
 import org.mule.runtime.core.api.extension.ExtensionManager;
 import org.mule.runtime.core.internal.context.DefaultMuleContext;
 import org.mule.runtime.core.internal.lifecycle.MuleLifecycleInterceptor;
@@ -121,11 +119,6 @@ class ExtensionPluginMetadataGenerator {
       @Override
       public Injector getInjector() {
         return registryCreator.get();
-      }
-
-      @Override
-      public ArtifactType getArtifactType() {
-        return APP;
       }
 
     };
