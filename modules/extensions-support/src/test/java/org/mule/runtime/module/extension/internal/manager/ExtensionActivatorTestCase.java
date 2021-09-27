@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.module.extension.internal.manager;
 
+import static java.util.Collections.emptySet;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -21,7 +22,6 @@ import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 import org.mule.test.heisenberg.extension.HeisenbergExtension;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +41,7 @@ public class ExtensionActivatorTestCase extends AbstractMuleTestCase {
 
     ExtensionModel extensionModel =
         new DefaultJavaExtensionModelLoader().loadExtensionModel(HeisenbergExtension.class.getClassLoader(),
-                                                                 new DefaultDslResolvingContext(Collections.emptySet()),
+                                                                 new DefaultDslResolvingContext(emptySet()),
                                                                  attributes);
 
     ExtensionActivator extensionActivator = new ExtensionActivator(mockMuleContext());

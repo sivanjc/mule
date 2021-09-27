@@ -24,6 +24,7 @@ import static org.mule.runtime.core.api.config.MuleManifest.getProductVersion;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_STORE_MANAGER;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.api.event.EventContextFactory.create;
+import static org.mule.runtime.core.api.util.UUID.getUUID;
 import static org.mule.tck.MuleTestUtils.getTestFlow;
 import static org.mule.tck.junit4.AbstractMuleTestCase.TEST_CONNECTOR_LOCATION;
 import static org.reflections.ReflectionUtils.getAllFields;
@@ -43,21 +44,19 @@ import org.mule.runtime.api.meta.MuleVersion;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.notification.NotificationDispatcher;
 import org.mule.runtime.api.notification.NotificationListenerRegistry;
+import org.mule.runtime.api.profiling.ProfilingService;
 import org.mule.runtime.api.scheduler.SchedulerService;
 import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.core.api.Injector;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.construct.FlowConstruct;
-import org.mule.runtime.core.internal.profiling.DefaultProfilingService;
-import org.mule.runtime.api.profiling.ProfilingService;
 import org.mule.runtime.core.api.el.ExtendedExpressionManager;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.extension.ExtensionManager;
 import org.mule.runtime.core.api.streaming.StreamingManager;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.transformer.TransformerException;
-import org.mule.runtime.core.api.util.UUID;
 import org.mule.runtime.core.internal.context.DefaultMuleContext;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.runtime.core.internal.exception.ContributedErrorTypeLocator;
@@ -65,6 +64,7 @@ import org.mule.runtime.core.internal.exception.ContributedErrorTypeRepository;
 import org.mule.runtime.core.internal.exception.OnErrorPropagateHandler;
 import org.mule.runtime.core.internal.interception.InterceptorManager;
 import org.mule.runtime.core.internal.message.InternalEvent;
+import org.mule.runtime.core.internal.profiling.DefaultProfilingService;
 import org.mule.runtime.core.internal.registry.MuleRegistry;
 import org.mule.runtime.core.internal.registry.MuleRegistryHelper;
 import org.mule.runtime.core.privileged.PrivilegedMuleContext;
@@ -179,8 +179,9 @@ public class MuleContextUtils {
     final MuleContextWithRegistry muleContext =
         mock(DefaultMuleContext.class,
              withSettings().defaultAnswer(RETURNS_DEEP_STUBS).extraInterfaces(PrivilegedMuleContext.class).lenient());
-    when(muleContext.getUniqueIdString()).thenReturn(UUID.getUUID());
+    when(muleContext.getUniqueIdString()).thenReturn(getUUID());
     when(muleContext.getDefaultErrorHandler(empty())).thenReturn(new OnErrorPropagateHandler());
+    when(muleContext.getArtifactType()).thenReturn(APP);
 
     StreamingManager streamingManager = mock(StreamingManager.class, RETURNS_DEEP_STUBS);
     try {
