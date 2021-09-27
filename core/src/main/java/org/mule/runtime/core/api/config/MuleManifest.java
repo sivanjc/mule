@@ -141,6 +141,7 @@ public class MuleManifest {
         if ((url.toExternalForm().contains("mule-core")
             && !url.toExternalForm().contains("tests.jar")
             && !url.toExternalForm().contains("mule-core-mvel")
+            && !url.toExternalForm().contains("mule-core-transformers")
             && !url.toExternalForm().contains("mule-core-components"))
             || url.toExternalForm().contains("mule-runtime-extension-model")
             || url.toExternalForm().contains("mule-runtime-ee-extension-model")

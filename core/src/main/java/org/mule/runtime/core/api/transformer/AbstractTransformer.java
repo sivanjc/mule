@@ -33,6 +33,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.xml.transform.stream.StreamSource;
@@ -48,8 +49,10 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
 
   protected MuleContext muleContext;
 
+  // fetch this lazily to avoid eager failing on domains where this object is not available
+  // this would fail only when/if a transformer is used as a processor, which is no longer allowed
   @Inject
-  private ExtendedTransformationService transformationService;
+  private Supplier<ExtendedTransformationService> transformationService;
 
   private EncodingSupplier encodingSupplier;
 
@@ -92,7 +95,7 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
     if (event != null && event.getMessage() != null) {
       try {
         return CoreEvent.builder(event)
-            .message(transformationService.applyTransformers(event.getMessage(), event, this))
+            .message(transformationService.get().applyTransformers(event.getMessage(), event, this))
             .build();
       } catch (Exception e) {
         throw new MessageTransformerException(this, e, event.getMessage());
