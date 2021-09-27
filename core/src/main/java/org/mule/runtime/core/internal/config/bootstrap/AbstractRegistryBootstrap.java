@@ -13,6 +13,7 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getCause;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.ALL;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APPLY_TO_ARTIFACT_TYPE_PARAMETER_KEY;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.DOMAIN;
@@ -29,6 +30,9 @@ import org.mule.runtime.core.api.transaction.TransactionFactory;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.util.PropertiesUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,9 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base class for an object will load objects defined in a file called <code>registry-bootstrap.properties</code> into the local
@@ -171,11 +172,8 @@ public abstract class AbstractRegistryBootstrap implements Initialisable {
 
     try {
       registerUnnamedObjects(unnamedObjects);
-      // Transformers do not belong in domains
-      if (this.artifactType.equals(APP) || this.artifactType.equals(POLICY)) {
-        registerTransformers();
-        registerTransformers(transformers);
-      }
+      registerTransformers();
+      registerTransformers(transformers);
       registerObjects(namedObjects);
       registerTransactionFactories(singleTransactionFactories, muleContext);
     } catch (Exception e1) {

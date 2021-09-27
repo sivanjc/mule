@@ -9,8 +9,6 @@ package org.mule.runtime.module.extension.internal.manager;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.metadata.DataType.fromFunction;
-import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
-import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.POLICY;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.startIfNeeded;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.stopIfNeeded;
@@ -74,26 +72,22 @@ public final class ExtensionActivator implements Startable, Stoppable {
     parameterClasses.addAll(getParameterClasses(extensionModel, classLoader));
     parameterClasses.addAll(getSubtypeClasses(extensionModel, classLoader));
 
-    // Transformers do not belong in domains
-    if (muleContext.getArtifactType().equals(APP) || muleContext.getArtifactType().equals(POLICY)) {
-      parameterClasses.stream()
-          .filter(type -> Enum.class.isAssignableFrom(type))
-          .forEach(type -> {
-            final Class<Enum> enumClass = (Class<Enum>) type;
-            if (enumTypes.add(enumClass)) {
-              try {
-                StringToEnum stringToEnum = new StringToEnum(enumClass);
-                // This transformer doesn't use the encoding, so a fixed value is fine.
-                stringToEnum.setEncodingSupplier(() -> UTF_8);
-                registerObject(muleContext, getName(stringToEnum), stringToEnum, Transformer.class);
-              } catch (MuleException e) {
-                throw new MuleRuntimeException(createStaticMessage("Could not register transformer for enum "
-                    + enumClass.getName()), e);
-              }
+    parameterClasses.stream()
+        .filter(type -> Enum.class.isAssignableFrom(type))
+        .forEach(type -> {
+          final Class<Enum> enumClass = (Class<Enum>) type;
+          if (enumTypes.add(enumClass)) {
+            try {
+              StringToEnum stringToEnum = new StringToEnum(enumClass);
+              // This transformer doesn't use the encoding, so a fixed value is fine.
+              stringToEnum.setEncodingSupplier(() -> UTF_8);
+              registerObject(muleContext, getName(stringToEnum), stringToEnum, Transformer.class);
+            } catch (MuleException e) {
+              throw new MuleRuntimeException(createStaticMessage("Could not register transformer for enum "
+                  + enumClass.getName()), e);
             }
-          });
-    }
-
+          }
+        });
   }
 
   private void registerExpressionFunctions(ExtensionModel extensionModel) {
