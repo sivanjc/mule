@@ -14,12 +14,14 @@ import static org.mule.runtime.core.api.config.i18n.CoreMessages.transformOnObje
 import static org.mule.runtime.core.api.util.SystemUtils.getDefaultEncoding;
 
 import org.mule.api.annotation.NoExtend;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.core.api.config.EncodingSupplier;
+import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.transformer.MessageTransformerException;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.transformer.TransformerException;
@@ -28,6 +30,7 @@ import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -177,6 +180,62 @@ public class DefaultTransformationService implements TransformationService {
   @Override
   public Message transform(Message message, DataType outputDataType) {
     return transformThrowingRuntimeException(() -> this.internalTransform(message, outputDataType));
+  }
+
+  /**
+   * Applies a list of transformers returning the result of the transformation as a new message instance. If the list of
+   * transformers is empty or transformation would be redundant then the same message instances will be returned.
+   *
+   *
+   * @param message
+   * @param event        the event being processed
+   * @param transformers the transformers to apply to the message payload
+   *
+   * @return the result of transformation
+   * @throws TransformerException if a transformation error occurs or one or more of the transformers passed in a are incompatible
+   *                              with the message payload
+   * @deprecated since 4.5 this is to be used internally only
+   */
+  @Deprecated
+  public Message applyTransformers(final Message message, final CoreEvent event,
+                                   final List<? extends Transformer> transformers)
+      throws MuleException {
+    return message;
+  }
+
+  /**
+   * Applies a list of transformers returning the result of the transformation as a new message instance. If the list of
+   * transformers is empty or transformation would be redundant then the same message instances will be returned.
+   *
+   *
+   * @param message
+   * @param event        the event being processed
+   * @param transformers the transformers to apply to the message payload
+   *
+   * @return the result of transformation
+   * @throws TransformerException if a transformation error occurs or one or more of the transformers passed in a are incompatible
+   *                              with the message payload
+   * @deprecated since 4.5 this is to be used internally only
+   */
+  @Deprecated
+  public Message applyTransformers(final Message message, final CoreEvent event, final Transformer... transformers)
+      throws MuleException {
+    return message;
+  }
+
+  /**
+   * Obtains a {@link String} representation of the message payload for logging without throwing exception.
+   * <p/>
+   * If the existing payload is consumable (i.e. can't be read twice) then the existing payload of the message will be replaced
+   * with a byte[] representation as part of this operations.
+   *
+   * @return message payload as object
+   * @param message
+   * @deprecated since 4.5 this is to be used internally only
+   */
+  @Deprecated
+  public String getPayloadForLogging(Message message) {
+    return message.toString();
   }
 
   private <T> T transformThrowingRuntimeException(CheckedSupplier<T> supplier) {

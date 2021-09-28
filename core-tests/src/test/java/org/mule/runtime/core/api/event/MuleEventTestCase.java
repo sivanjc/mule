@@ -6,14 +6,10 @@
  */
 package org.mule.runtime.core.api.event;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mule.runtime.api.message.Message.of;
@@ -23,25 +19,10 @@ import static org.mule.test.allure.AllureConstants.MuleEvent.MULE_EVENT;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.TypedValue;
-import org.mule.runtime.api.security.Authentication;
-import org.mule.runtime.api.security.DefaultMuleAuthentication;
 import org.mule.runtime.api.security.SecurityContext;
-import org.mule.runtime.core.api.security.DefaultMuleCredentials;
-import org.mule.runtime.core.api.transformer.AbstractTransformer;
-import org.mule.runtime.core.api.transformer.Transformer;
-import org.mule.runtime.core.api.transformer.TransformerException;
-import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
-import org.mule.runtime.core.internal.security.DefaultSecurityContextFactory;
 import org.mule.runtime.core.privileged.event.PrivilegedEvent;
-import org.mule.runtime.core.privileged.transformer.simple.ByteArrayToObject;
-import org.mule.runtime.core.privileged.transformer.simple.SerializableToByteArray;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
-import java.io.ByteArrayInputStream;
-import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -53,7 +34,6 @@ import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Issue;
 
-
 @Feature(MULE_EVENT)
 public class MuleEventTestCase extends AbstractMuleContextTestCase {
 
@@ -64,99 +44,6 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
   public void teardown() {
     currentMuleContext.set(null);
   }
-
-  @Test
-  public void serialization() throws Exception {
-    Transformer transformer = createSerializableToByteArrayTransformer();
-    transformer.setMuleContext(muleContext);
-    Serializable serialized = (Serializable) createSerializableToByteArrayTransformer().transform(testEvent());
-    assertNotNull(serialized);
-    ByteArrayToObject trans = new ByteArrayToObject();
-    trans.setMuleContext(muleContext);
-    trans.setEncodingSupplier(() -> UTF_8);
-
-    PrivilegedEvent deserialized = (PrivilegedEvent) trans.transform(serialized);
-
-    // Assert that deserialized event is not null
-    assertNotNull(deserialized);
-
-    // Assert that deserialized event has session with same id
-    assertNotNull(deserialized.getSession());
-  }
-
-  private Transformer createSerializableToByteArrayTransformer() {
-    SerializableToByteArray transformer = new SerializableToByteArray();
-    transformer.setMuleContext(muleContext);
-    transformer.setEncodingSupplier(() -> UTF_8);
-
-    return transformer;
-  }
-
-  @Test
-  public void testEventSerializationRestart() throws Exception {
-    // Create and register artifacts
-    CoreEvent event = createEventToSerialize();
-
-    // Serialize
-    Serializable serialized = (Serializable) createSerializableToByteArrayTransformer().transform(event);
-    assertNotNull(serialized);
-
-    // Simulate mule cold restart
-    muleContext.dispose();
-    muleContext = createMuleContext();
-    muleContext.start();
-    ByteArrayToObject trans = new ByteArrayToObject();
-    trans.setMuleContext(muleContext);
-    trans.setEncodingSupplier(() -> UTF_8);
-
-    // Recreate and register artifacts (this would happen if using any kind of static config e.g. XML)
-    createAndRegisterTransformersEndpointBuilderService();
-
-    // Deserialize
-    PrivilegedEvent deserialized = (PrivilegedEvent) trans.transform(serialized);
-
-    // Assert that deserialized event is not null
-    assertNotNull(deserialized);
-
-    // Assert that deserialized event has session with same id
-    assertNotNull(deserialized.getSession());
-  }
-
-  private CoreEvent createEventToSerialize() throws Exception {
-    createAndRegisterTransformersEndpointBuilderService();
-    return testEvent();
-  }
-
-  @Test
-  public void testMuleEventSerializationWithRawPayload() throws Exception {
-    StringBuilder payload = new StringBuilder();
-    // to reproduce issue we must try to serialize something with a payload bigger than 1020 bytes
-    for (int i = 0; i < 108; i++) {
-      payload.append("1234567890");
-    }
-    PrivilegedEvent testEvent = this.<PrivilegedEvent.Builder>getEventBuilder()
-        .message(of(new ByteArrayInputStream(payload.toString().getBytes()))).build();
-    currentMuleContext.set(muleContext);
-    byte[] serializedEvent = muleContext.getObjectSerializer().getExternalProtocol().serialize(testEvent);
-    testEvent = muleContext.getObjectSerializer().getExternalProtocol().deserialize(serializedEvent);
-
-    assertArrayEquals((byte[]) testEvent.getMessage().getPayload().getValue(), payload.toString().getBytes());
-  }
-
-  private void createAndRegisterTransformersEndpointBuilderService() throws Exception {
-    Transformer trans1 = new TestEventTransformer();
-    trans1.setName("OptimusPrime");
-    ((MuleContextWithRegistry) muleContext).getRegistry().registerTransformer(trans1);
-
-    Transformer trans2 = new TestEventTransformer();
-    trans2.setName("Bumblebee");
-    ((MuleContextWithRegistry) muleContext).getRegistry().registerTransformer(trans2);
-
-    List<Transformer> transformers = new ArrayList<>();
-    transformers.add(trans1);
-    transformers.add(trans2);
-  }
-
 
   @Test
   public void testFlowVarNamesAddImmutable() throws Exception {
@@ -286,29 +173,6 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
   }
 
   @Test
-  public void securityContextSerialization() throws Exception {
-    Transformer transformer = createSerializableToByteArrayTransformer();
-    transformer.setMuleContext(muleContext);
-
-    CoreEvent event = CoreEvent.builder(testEvent()).securityContext(createTestAuthentication()).build();
-
-    Serializable serialized = (Serializable) createSerializableToByteArrayTransformer().transform(event);
-    assertNotNull(serialized);
-    ByteArrayToObject trans = new ByteArrayToObject();
-    trans.setMuleContext(muleContext);
-    trans.setEncodingSupplier(() -> UTF_8);
-
-    CoreEvent deserialized = (CoreEvent) trans.transform(serialized);
-
-    assertThat(deserialized.getSecurityContext().getAuthentication().getPrincipal(),
-               is(event.getSecurityContext().getAuthentication().getPrincipal()));
-    assertThat(deserialized.getSecurityContext().getAuthentication().getProperties().get("key1"),
-               is(event.getSecurityContext().getAuthentication().getProperties().get("key1")));
-    assertThat(deserialized.getSecurityContext().getAuthentication().getCredentials(),
-               is(event.getSecurityContext().getAuthentication().getCredentials()));
-  }
-
-  @Test
   @Description("Validates that the correlation IDs are unique")
   @Issue("MULE-17926")
   public void uniqueCorrelationIDs() throws MuleException {
@@ -317,21 +181,6 @@ public class MuleEventTestCase extends AbstractMuleContextTestCase {
 
     assertThat("Duplicated correlationID", firstEvent.getContext().getCorrelationId(),
                not(is(secondEvent.getContext().getCorrelationId())));
-  }
-
-  private SecurityContext createTestAuthentication() {
-    Authentication auth = new DefaultMuleAuthentication(new DefaultMuleCredentials("dan", new char[] {'d', 'f'}));
-    SecurityContext securityContext =
-        new DefaultSecurityContextFactory().create(auth.setProperties(singletonMap("key1", "value1")));
-    return securityContext;
-  }
-
-  private static class TestEventTransformer extends AbstractTransformer {
-
-    @Override
-    public Object doTransform(Object src, Charset encoding) throws TransformerException {
-      return "Transformed Test Data";
-    }
   }
 
 }

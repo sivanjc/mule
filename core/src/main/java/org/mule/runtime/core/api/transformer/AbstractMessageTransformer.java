@@ -13,7 +13,7 @@ import static org.mule.runtime.core.api.config.i18n.CoreMessages.noCurrentEventF
 import static org.mule.runtime.core.api.config.i18n.CoreMessages.transformOnObjectUnsupportedTypeOfEndpoint;
 import static org.mule.runtime.core.api.event.EventContextFactory.create;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.disposeIfNeeded;
-import static org.mule.runtime.core.privileged.transformer.TransformerUtils.checkTransformerReturnClass;
+import static org.mule.runtime.core.internal.transformer.TransformerUtils.checkTransformerReturnClass;
 import static org.mule.runtime.dsl.api.component.config.DefaultComponentLocation.from;
 
 import org.mule.runtime.api.event.EventContext;
@@ -38,8 +38,9 @@ import java.nio.charset.Charset;
  * message payload.
  *
  * @see InternalMessage
+ * @deprecated since 4.5 this is to be used internally only
  */
-
+@Deprecated
 public abstract class AbstractMessageTransformer extends AbstractTransformer implements MessageTransformer {
 
   private MuleClientFlowConstruct flowConstruct;

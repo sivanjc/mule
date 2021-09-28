@@ -21,12 +21,12 @@ import java.util.Iterator;
 
 import javax.transaction.xa.Xid;
 
+import com.google.common.collect.Multimap;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.google.common.collect.Multimap;
 
 public class XaTxQueueTransactionJournalTestCase extends AbstractMuleContextTestCase {
 
@@ -56,7 +56,7 @@ public class XaTxQueueTransactionJournalTestCase extends AbstractMuleContextTest
     assertThat(allEntries.get(TX_ID).size(), is(1));
     XaQueueTxJournalEntry logEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(logEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) logEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) logEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(logEntry.isAdd(), is(true));
   }
 
@@ -72,7 +72,7 @@ public class XaTxQueueTransactionJournalTestCase extends AbstractMuleContextTest
     assertThat(allEntries.get(TX_ID).size(), is(1));
     XaQueueTxJournalEntry journalEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(journalEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) journalEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) journalEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(journalEntry.isAddFirst(), is(true));
   }
 
@@ -88,7 +88,7 @@ public class XaTxQueueTransactionJournalTestCase extends AbstractMuleContextTest
     assertThat(allEntries.get(TX_ID).size(), is(1));
     XaQueueTxJournalEntry journalEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(journalEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) journalEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) journalEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(journalEntry.isRemove(), is(true));
   }
 
@@ -159,7 +159,7 @@ public class XaTxQueueTransactionJournalTestCase extends AbstractMuleContextTest
     assertThat(allEntries.get(TX_ID).size(), is(numberOfOffers));
     XaQueueTxJournalEntry journalEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(journalEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) journalEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) journalEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(journalEntry.isAdd(), is(true));
   }
 

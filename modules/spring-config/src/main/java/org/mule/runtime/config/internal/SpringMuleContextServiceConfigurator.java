@@ -145,7 +145,7 @@ import org.mule.runtime.core.internal.util.store.DefaultObjectStoreFactoryBean;
 import org.mule.runtime.core.internal.util.store.MuleObjectStoreManager;
 import org.mule.runtime.core.internal.value.MuleValueProviderService;
 import org.mule.runtime.core.privileged.exception.ErrorTypeLocator;
-import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
+import org.mule.runtime.core.privileged.transformer.simple.ExtendedTransformationService;
 import org.mule.runtime.module.extension.internal.data.sample.MuleSampleDataService;
 import org.mule.runtime.module.service.internal.manager.LazyServiceProxy;
 

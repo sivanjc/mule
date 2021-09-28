@@ -11,14 +11,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.hamcrest.Matchers.both;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -30,7 +27,6 @@ import static org.mule.runtime.api.metadata.DataType.OBJECT;
 import static org.mule.runtime.api.metadata.DataType.STRING;
 import static org.mule.runtime.api.metadata.DataType.fromFunction;
 import static org.mule.runtime.api.metadata.DataType.fromType;
-import static org.mule.runtime.api.metadata.MediaType.XML;
 import static org.mule.runtime.core.api.config.MuleProperties.COMPATIBILITY_PLUGIN_INSTALLED;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 import static org.mule.runtime.dsl.api.component.config.DefaultComponentLocation.fromSingleComponent;
@@ -45,10 +41,8 @@ import org.mule.runtime.api.el.DefaultExpressionLanguageFactoryService;
 import org.mule.runtime.api.el.ExpressionFunction;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.InitialisationException;
-import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.FunctionParameter;
-import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.construct.FlowConstruct;
@@ -60,7 +54,6 @@ import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 import org.mule.weave.v2.el.WeaveDefaultExpressionLanguageFactoryService;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -255,50 +248,6 @@ public class DefaultExpressionManagerTestCase extends AbstractMuleContextTestCas
     assertThat(expressionManager.parseLogTemplate("current message is #[message]", testEvent(), TEST_CONNECTOR_LOCATION,
                                                   NULL_BINDING_CONTEXT),
                is(equalToIgnoringLineBreaks(expectedOutput)));
-  }
-
-  @Test
-  @Description("Verifies that XML content can be used for logging in DW.")
-  public void parseLogXml() throws MuleException {
-    CoreEvent event = getEventBuilder().message(Message.builder().value("<?xml version='1.0' encoding='US-ASCII'?>\n"
-        + "<wsc_fields>\n"
-        + "  <operation>echo</operation>\n"
-        + "  <body_test>test</body_test>\n"
-        + "</wsc_fields>")
-        .mediaType(XML)
-        .build())
-        .build();
-    assertThat(expressionManager.parseLogTemplate("this is #[payload.wsc_fields.operation]", event, TEST_CONNECTOR_LOCATION,
-                                                  NULL_BINDING_CONTEXT),
-               is("this is \"echo\""));
-  }
-
-  @Test
-  @Description("Verifies that JSON content can be used for logging in DW.")
-  public void parseLogJsonWithEscapedStrings() throws MuleException {
-    System.out.println("{\"key1\": \"{\\\"key1\\\": \\\"value1\\\"}\"}");
-
-    CoreEvent event = getEventBuilder().message(Message.builder()
-        .value("{\"key1\": \"{\\\"key1\\\": \\\"value1\\\"}\"}")
-        .mediaType(MediaType.JSON)
-        .build())
-        .build();
-    assertThat(expressionManager.parseLogTemplate("this is #[payload]", event, TEST_CONNECTOR_LOCATION,
-                                                  NULL_BINDING_CONTEXT),
-               is("this is {\"key1\": \"{\\\"key1\\\": \\\"value1\\\"}\"}"));
-  }
-
-  @Test
-  @Description("Verifies that streams are logged in DW but not in MVEL.")
-  public void parseLogStream() throws MuleException {
-    ByteArrayInputStream stream = new ByteArrayInputStream("hello".getBytes());
-    CoreEvent event = getEventBuilder().message(Message.of(stream)).build();
-    assertThat(expressionManager.parseLogTemplate("this is #[payload]", event, TEST_CONNECTOR_LOCATION,
-                                                  NULL_BINDING_CONTEXT),
-               is("this is hello"));
-    assertThat(expressionManager.parseLogTemplate("this is #[mel:payload]", event, TEST_CONNECTOR_LOCATION,
-                                                  NULL_BINDING_CONTEXT),
-               both(startsWith("this is ")).and(containsString(stream.getClass().getSimpleName())));
   }
 
   @Test

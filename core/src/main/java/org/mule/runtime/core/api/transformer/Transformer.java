@@ -8,11 +8,12 @@ package org.mule.runtime.core.api.transformer;
 
 import static org.mule.runtime.core.api.processor.ReactiveProcessor.ProcessingType.CPU_INTENSIVE;
 import static org.mule.runtime.core.api.processor.ReactiveProcessor.ProcessingType.IO_RW;
-import org.mule.runtime.api.metadata.DataType;
-import org.mule.runtime.api.meta.NameableObject;
-import org.mule.runtime.core.api.context.MuleContextAware;
+
 import org.mule.runtime.api.lifecycle.Disposable;
 import org.mule.runtime.api.lifecycle.Initialisable;
+import org.mule.runtime.api.meta.NameableObject;
+import org.mule.runtime.api.metadata.DataType;
+import org.mule.runtime.core.api.context.MuleContextAware;
 import org.mule.runtime.core.api.processor.Processor;
 
 import java.nio.charset.Charset;
@@ -20,7 +21,10 @@ import java.util.List;
 
 /**
  * <code>Transformer</code> can be chained together to covert message payloads from one object type to another.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
+@Deprecated
 public interface Transformer extends Processor, Initialisable, Disposable, NameableObject, MuleContextAware {
 
   /**

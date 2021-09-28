@@ -10,6 +10,9 @@ package org.mule.runtime.core.api.transformer;
  * A interface to denote that a transformer is discoverable. A Transformer can implement this interface so that when a
  * transformation is being 'discovered' for a payload type the transformers implementing this interface will be included in the
  * search.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
+@Deprecated
 public interface DiscoverableTransformer extends Converter {
 }

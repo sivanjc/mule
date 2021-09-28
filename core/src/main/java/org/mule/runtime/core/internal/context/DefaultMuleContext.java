@@ -14,6 +14,7 @@ import static org.mule.runtime.api.config.MuleRuntimeFeature.ENTITY_RESOLVER_FAI
 import static org.mule.runtime.api.config.MuleRuntimeFeature.HANDLE_SPLITTER_EXCEPTION;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.HONOUR_RESERVED_PROPERTIES;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.SET_VARIABLE_WITH_NULL_VALUE;
+import static org.mule.runtime.api.config.MuleRuntimeFeature.TO_STRING_TRANSFORMER_TRANSFORM_ITERATOR_ELEMENTS;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.api.serialization.ObjectSerializer.DEFAULT_OBJECT_SERIALIZER_NAME;
 import static org.mule.runtime.core.api.config.MuleProperties.LOCAL_OBJECT_STORE_MANAGER;
@@ -49,7 +50,6 @@ import static org.mule.runtime.core.api.management.stats.AllStatistics.configure
 import static org.mule.runtime.core.api.util.UUID.getClusterUUID;
 import static org.mule.runtime.core.internal.logging.LogUtil.log;
 import static org.mule.runtime.core.internal.profiling.AbstractProfilingService.configureEnableProfilingService;
-import static org.mule.runtime.core.internal.transformer.simple.ObjectToString.configureToStringTransformerTransformIteratorElements;
 import static org.mule.runtime.core.internal.util.FunctionalUtils.safely;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -1197,6 +1197,20 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
   private static void configureBatchFixedAggregatorTransactionRecordBuffer() {
     FeatureFlaggingRegistry featureFlaggingRegistry = FeatureFlaggingRegistry.getInstance();
     featureFlaggingRegistry.registerFeatureFlag(BATCH_FIXED_AGGREGATOR_TRANSACTION_RECORD_BUFFER, featureContext -> false);
+  }
+
+
+  /**
+   * Configures the {@link MuleRuntimeFeature#TO_STRING_TRANSFORMER_TRANSFORM_ITERATOR_ELEMENTS} feature flag.
+   *
+   * @since 4.4
+   */
+  public static void configureToStringTransformerTransformIteratorElements() {
+    FeatureFlaggingRegistry featureFlaggingRegistry = FeatureFlaggingRegistry.getInstance();
+    featureFlaggingRegistry.registerFeatureFlag(TO_STRING_TRANSFORMER_TRANSFORM_ITERATOR_ELEMENTS,
+                                                featureContext -> featureContext.getArtifactMinMuleVersion()
+                                                    .filter(muleVersion -> muleVersion.atLeast("4.4.0"))
+                                                    .isPresent());
   }
 
   /**

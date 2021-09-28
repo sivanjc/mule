@@ -26,13 +26,13 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Random;
 
+import com.google.common.collect.Multimap;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-
-import com.google.common.collect.Multimap;
 
 public class LocalTxQueueTransactionJournalTestCase extends AbstractMuleContextTestCase {
 
@@ -67,7 +67,7 @@ public class LocalTxQueueTransactionJournalTestCase extends AbstractMuleContextT
     assertThat(allEntries.get(TX_ID).size(), is(1));
     LocalQueueTxJournalEntry logEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(logEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) logEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) logEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(logEntry.isAdd(), is(true));
   }
 
@@ -83,7 +83,7 @@ public class LocalTxQueueTransactionJournalTestCase extends AbstractMuleContextT
     assertThat(allEntries.get(TX_ID).size(), is(1));
     LocalQueueTxJournalEntry journalEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(journalEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) journalEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) journalEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(journalEntry.isAddFirst(), is(true));
   }
 
@@ -99,7 +99,7 @@ public class LocalTxQueueTransactionJournalTestCase extends AbstractMuleContextT
     assertThat(allEntries.get(TX_ID).size(), is(1));
     LocalQueueTxJournalEntry journalEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(journalEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) journalEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) journalEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(journalEntry.isRemove(), is(true));
   }
 
@@ -170,7 +170,7 @@ public class LocalTxQueueTransactionJournalTestCase extends AbstractMuleContextT
     assertThat(allEntries.get(TX_ID).size(), is(numberOfOffers));
     LocalQueueTxJournalEntry journalEntry = allEntries.get(TX_ID).iterator().next();
     assertThat(journalEntry.getQueueName(), is(QUEUE_NAME));
-    assertThat(getPayloadAsString(((CoreEvent) journalEntry.getValue()).getMessage()), is(TEST_PAYLOAD));
+    assertThat(((CoreEvent) journalEntry.getValue()).getMessage().getPayload().getValue(), is(TEST_PAYLOAD));
     assertThat(journalEntry.isAdd(), is(true));
   }
 

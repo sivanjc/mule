@@ -9,7 +9,7 @@ package org.mule.runtime.core.api.util.compression;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.mule.runtime.core.api.util.IOUtils.closeQuietly;
 
-import org.mule.runtime.core.internal.transformer.compression.GZIPCompressorInputStream;
+import org.mule.runtime.core.internal.util.compression.GZIPCompressorInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <code>GZipCompression</code> is a CompressionStrategy implementation using the GZip library included in the JDK java.util.zip.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
+@Deprecated
 public final class GZipCompression implements CompressionStrategy {
 
   public static final int DEFAULT_BUFFER_SIZE = 32768;
@@ -41,6 +44,7 @@ public final class GZipCompression implements CompressionStrategy {
    * @return true if the array is compressed or false otherwise
    * @throws java.io.IOException if the byte array couldn't be read
    */
+  @Override
   public boolean isCompressed(byte[] bytes) throws IOException {
     if ((bytes == null) || (bytes.length < 2)) {
       return false;
@@ -57,6 +61,7 @@ public final class GZipCompression implements CompressionStrategy {
    * @throws java.io.IOException if it fails to write to a GZIPOutputStream
    * @see java.util.zip.GZIPOutputStream
    */
+  @Override
   public byte[] compressByteArray(byte[] bytes) throws IOException {
     // TODO add strict behaviour as option
     if (bytes == null || isCompressed(bytes)) {
@@ -98,6 +103,7 @@ public final class GZipCompression implements CompressionStrategy {
     }
   }
 
+  @Override
   public InputStream compressInputStream(InputStream is) throws IOException {
     return new GZIPCompressorInputStream(is);
   }
@@ -110,6 +116,7 @@ public final class GZipCompression implements CompressionStrategy {
    * @throws java.io.IOException if it fails to read from a GZIPInputStream
    * @see java.util.zip.GZIPInputStream
    */
+  @Override
   public byte[] uncompressByteArray(byte[] bytes) throws IOException {
     if (!isCompressed(bytes)) {
       // nothing to uncompress
@@ -153,6 +160,7 @@ public final class GZipCompression implements CompressionStrategy {
     }
   }
 
+  @Override
   public InputStream uncompressInputStream(InputStream is) throws IOException {
     return new GZIPInputStream(is);
   }

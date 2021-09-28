@@ -12,7 +12,10 @@ import java.nio.charset.Charset;
 
 /**
  * A transformer intended to transform Mule messages rather than arbitrary objects
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
+@Deprecated
 public interface MessageTransformer extends Transformer {
 
   /**

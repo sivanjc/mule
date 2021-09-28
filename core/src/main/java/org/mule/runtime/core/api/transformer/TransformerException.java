@@ -9,15 +9,17 @@ package org.mule.runtime.core.api.transformer;
 import org.mule.api.annotation.NoExtend;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.i18n.I18nMessage;
-import org.mule.runtime.core.privileged.transformer.TransformerUtils;
+import org.mule.runtime.core.internal.transformer.TransformerUtils;
 
 import java.util.List;
 
 /**
  * <code>TransformerException</code> is a simple exception that is thrown by transformers.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
-
 @NoExtend
+@Deprecated
 public class TransformerException extends MuleException {
 
   private static final String TRANSFORMER = "Transformer";

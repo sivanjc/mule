@@ -13,8 +13,11 @@ import java.util.List;
 
 /**
  * Resolves a conversion from one data type to another returning a converter {@link Transformer} that is able to convert the data.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
 @NoImplement
+@Deprecated
 public interface DataTypeConversionResolver {
 
   Transformer resolve(DataType sourceType, List<DataType> targetDataTypes);

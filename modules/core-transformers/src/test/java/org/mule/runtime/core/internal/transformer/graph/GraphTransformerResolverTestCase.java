@@ -16,11 +16,11 @@ import static org.junit.Assert.assertTrue;
 import org.mule.runtime.core.api.transformer.Converter;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.tck.size.SmallTest;
-import org.mule.runtime.core.privileged.transformer.CompositeConverter;
 import org.mule.runtime.core.internal.registry.TransformerResolver;
 import org.mule.runtime.core.internal.transformer.ResolverException;
 import org.mule.runtime.core.internal.transformer.builder.MockConverterBuilder;
 import org.mule.runtime.core.internal.transformer.builder.MockTransformerBuilder;
+import org.mule.runtime.core.privileged.transformer.CompositeConverter;
 
 import org.junit.Test;
 

@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.core.internal.transformer.compression;
 
+import org.mule.runtime.core.internal.util.compression.GZIPCompressorInputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

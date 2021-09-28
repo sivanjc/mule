@@ -17,14 +17,7 @@ import static org.mule.test.allure.AllureConstants.ExpressionLanguageFeature.Exp
 
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.el.ExtendedExpressionManager;
-import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
-
-import java.io.ByteArrayInputStream;
-
-import io.qameta.allure.Description;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,6 +26,10 @@ import org.junit.rules.ExpectedException;
 
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
 
 @Feature(EXPRESSION_LANGUAGE)
 @Story(SUPPORT_MVEL_DW)
@@ -64,16 +61,6 @@ public class DefaultExpressionManagerDefaultTestCase extends AbstractMuleContext
     assertThat(expressionManager.parseLogTemplate("this is #[payload]", testEvent(), TEST_CONNECTOR_LOCATION,
                                                   NULL_BINDING_CONTEXT),
                is(format("this is %s", TEST_PAYLOAD)));
-  }
-
-  @Test
-  @Description("Verifies that streams are logged in DW but not in MVEL.")
-  public void parseLogStream() throws MuleException {
-    ByteArrayInputStream stream = new ByteArrayInputStream("hello".getBytes());
-    CoreEvent event = getEventBuilder().message(of(stream)).build();
-    assertThat(expressionManager.parseLogTemplate("this is #[payload]", event, TEST_CONNECTOR_LOCATION,
-                                                  NULL_BINDING_CONTEXT),
-               is("this is hello"));
   }
 
   @Test

@@ -14,8 +14,11 @@ import org.mule.runtime.api.message.Message;
 /**
  * An exception that occurred while transforming a message, thrown by {@link MessageTransformer}s.
  *
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  * @since 4.0
  */
+@Deprecated
 public final class MessageTransformerException extends MuleException implements ErrorMessageAwareException {
 
   private transient Transformer transformer;

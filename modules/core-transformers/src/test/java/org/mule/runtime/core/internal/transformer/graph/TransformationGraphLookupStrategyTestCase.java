@@ -19,8 +19,8 @@ import static org.mule.runtime.api.metadata.DataType.builder;
 
 import org.mule.runtime.core.api.transformer.Converter;
 import org.mule.tck.size.SmallTest;
-import org.mule.runtime.core.privileged.transformer.CompositeConverter;
 import org.mule.runtime.core.internal.transformer.builder.MockConverterBuilder;
+import org.mule.runtime.core.privileged.transformer.CompositeConverter;
 
 import java.util.List;
 

@@ -8,6 +8,10 @@ package org.mule.runtime.core.api.util.compression;
 
 import java.io.IOException;
 
+/*
+ * @deprecated since 4.5 this is to be used internally only
+ */
+@Deprecated
 public final class InvalidZipFileException extends IOException {
 
   public InvalidZipFileException(String message) {

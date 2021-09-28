@@ -21,6 +21,7 @@ import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.message.Message;
+import org.mule.runtime.core.api.DefaultTransformationService;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.execution.ExecutionCallback;
@@ -36,16 +37,15 @@ import org.mule.runtime.core.privileged.routing.DefaultRouterResultsHandler;
 import org.mule.runtime.core.privileged.routing.OutboundRouter;
 import org.mule.runtime.core.privileged.routing.RouterResultsHandler;
 import org.mule.runtime.core.privileged.routing.RoutingException;
-import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.cache.Cache;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.cache.Cache;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <code>AbstractOutboundRouter</code> is a base router class that tracks statistics about message processing through the router.
@@ -70,7 +70,7 @@ public abstract class AbstractOutboundRouter extends AbstractMessageProcessorOwn
   protected AtomicBoolean initialised = new AtomicBoolean(false);
   protected AtomicBoolean started = new AtomicBoolean(false);
 
-  private Cache<Processor, MessageProcessorChain> processorChainCache = newBuilder().build();
+  private final Cache<Processor, MessageProcessorChain> processorChainCache = newBuilder().build();
 
   @Override
   public CoreEvent process(final CoreEvent event) throws MuleException {
@@ -119,7 +119,7 @@ public abstract class AbstractOutboundRouter extends AbstractMessageProcessorOwn
         if (resultMessage != null) {
           try {
             logger.trace("Response payload: \n"
-                + truncate(((ExtendedTransformationService) muleContext.getTransformationService())
+                + truncate(((DefaultTransformationService) muleContext.getTransformationService())
                     .getPayloadForLogging(resultMessage), 100, false));
           } catch (Exception e) {
             logger.trace("Response payload: \n(unable to retrieve payload: " + e.getMessage());

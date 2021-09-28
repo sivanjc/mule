@@ -16,13 +16,11 @@ import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.streaming.bytes.CursorStreamProvider;
 import org.mule.runtime.api.streaming.object.CursorIterator;
 import org.mule.runtime.api.streaming.object.CursorIteratorProvider;
-import org.mule.runtime.core.api.config.FeatureFlaggingRegistry;
 import org.mule.runtime.core.api.message.OutputHandler;
 import org.mule.runtime.core.api.transformer.AbstractTransformer;
 import org.mule.runtime.core.api.transformer.DiscoverableTransformer;
 import org.mule.runtime.core.api.transformer.TransformerException;
 import org.mule.runtime.core.api.util.StringMessageUtils;
-import org.mule.runtime.api.config.MuleRuntimeFeature;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -151,18 +149,5 @@ public class ObjectToString extends AbstractTransformer implements DiscoverableT
   @Inject
   public void setFeatureFlags(FeatureFlaggingService featureFlags) {
     this.featureFlags = featureFlags;
-  }
-
-  /**
-   * Configures the {@link MuleRuntimeFeature#TO_STRING_TRANSFORMER_TRANSFORM_ITERATOR_ELEMENTS} feature flag.
-   *
-   * @since 4.4
-   */
-  public static void configureToStringTransformerTransformIteratorElements() {
-    FeatureFlaggingRegistry featureFlaggingRegistry = FeatureFlaggingRegistry.getInstance();
-    featureFlaggingRegistry.registerFeatureFlag(TO_STRING_TRANSFORMER_TRANSFORM_ITERATOR_ELEMENTS,
-                                                featureContext -> featureContext.getArtifactMinMuleVersion()
-                                                    .filter(muleVersion -> muleVersion.atLeast("4.4.0"))
-                                                    .isPresent());
   }
 }

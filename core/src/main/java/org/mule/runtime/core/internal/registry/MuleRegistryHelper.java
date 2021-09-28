@@ -510,11 +510,13 @@ public class MuleRegistryHelper implements MuleRegistry {
 
     @Override
     public int compare(TransformerResolver transformerResolver, TransformerResolver transformerResolver1) {
-      if (transformerResolver.getClass().equals(TypeBasedTransformerResolver.class)) {
+      if (transformerResolver.getClass().getName()
+          .equals("org.mule.runtime.core.internal.registry.TypeBasedTransformerResolver")) {
         return 1;
       }
 
-      if (transformerResolver1.getClass().equals(TypeBasedTransformerResolver.class)) {
+      if (transformerResolver1.getClass().getName()
+          .equals("org.mule.runtime.core.internal.registry.TypeBasedTransformerResolver")) {
         return -1;
       }
       return 0;

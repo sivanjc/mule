@@ -13,8 +13,11 @@ import java.io.InputStream;
 
 /**
  * <code>CompressionStrategy</code> is a base interface for Different compression strategies
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
 @NoImplement
+@Deprecated
 public interface CompressionStrategy {
 
   /**

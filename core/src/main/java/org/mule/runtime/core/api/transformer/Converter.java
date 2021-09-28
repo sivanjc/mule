@@ -12,7 +12,10 @@ import static org.mule.runtime.core.api.processor.ReactiveProcessor.ProcessingTy
 /**
  * Defines a {@link Transformer} that is a data type converters, ie: convert data from a type to another without modifying the
  * meaning of the data.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
+@Deprecated
 public interface Converter extends Transformer {
 
   int MAX_PRIORITY_WEIGHTING = 10;

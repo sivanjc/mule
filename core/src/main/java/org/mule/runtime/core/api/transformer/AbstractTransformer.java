@@ -11,7 +11,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.hash;
 import static org.mule.runtime.api.metadata.DataType.builder;
 import static org.mule.runtime.core.api.config.i18n.CoreMessages.transformOnObjectUnsupportedTypeOfEndpoint;
-import static org.mule.runtime.core.privileged.transformer.TransformerUtils.checkTransformerReturnClass;
+import static org.mule.runtime.core.internal.transformer.TransformerUtils.checkTransformerReturnClass;
 
 import org.mule.runtime.api.component.AbstractComponent;
 import org.mule.runtime.api.exception.MuleException;
@@ -20,13 +20,13 @@ import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
+import org.mule.runtime.core.api.DefaultTransformationService;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.EncodingSupplier;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.util.ClassUtils;
 import org.mule.runtime.core.api.util.StringMessageUtils;
-import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
-import org.mule.runtime.core.privileged.transformer.TransformerUtils;
+import org.mule.runtime.core.internal.transformer.TransformerUtils;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -43,8 +43,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <code>AbstractTransformer</code> is a base class for all transformers. Transformations transform one object into another.
+ * 
+ * @deprecated since 4.5 this is to be used internally only
  */
-
+@Deprecated
 public abstract class AbstractTransformer extends AbstractComponent implements Transformer {
 
   protected MuleContext muleContext;
@@ -52,7 +54,7 @@ public abstract class AbstractTransformer extends AbstractComponent implements T
   // fetch this lazily to avoid eager failing on domains where this object is not available
   // this would fail only when/if a transformer is used as a processor, which is no longer allowed
   @Inject
-  private Supplier<ExtendedTransformationService> transformationService;
+  private Supplier<DefaultTransformationService> transformationService;
 
   private EncodingSupplier encodingSupplier;
 

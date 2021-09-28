@@ -23,7 +23,7 @@ import org.mule.runtime.core.internal.config.bootstrap.ObjectBootstrapProperty;
 import org.mule.runtime.core.internal.config.bootstrap.SimpleRegistryBootstrap;
 import org.mule.runtime.core.internal.config.bootstrap.TransformerBootstrapProperty;
 import org.mule.runtime.core.internal.registry.Registry;
-import org.mule.runtime.core.privileged.transformer.TransformerUtils;
+import org.mule.runtime.core.internal.transformer.TransformerUtils;
 
 import java.util.function.BiConsumer;
 
