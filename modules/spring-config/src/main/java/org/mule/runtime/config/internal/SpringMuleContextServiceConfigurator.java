@@ -106,7 +106,6 @@ import org.mule.runtime.core.api.config.DefaultMuleConfiguration;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
 import org.mule.runtime.core.api.context.notification.MuleContextNotification;
 import org.mule.runtime.core.api.context.notification.MuleContextNotificationListener;
-import org.mule.runtime.core.internal.profiling.DefaultProfilingService;
 import org.mule.runtime.core.api.event.EventContextService;
 import org.mule.runtime.core.api.registry.SpiServiceRegistry;
 import org.mule.runtime.core.api.streaming.DefaultStreamingManager;
@@ -133,6 +132,7 @@ import org.mule.runtime.core.internal.metadata.MuleMetadataService;
 import org.mule.runtime.core.internal.metadata.cache.DefaultPersistentMetadataCacheManager;
 import org.mule.runtime.core.internal.policy.DefaultPolicyManager;
 import org.mule.runtime.core.internal.processor.interceptor.DefaultProcessorInterceptorManager;
+import org.mule.runtime.core.internal.profiling.DefaultProfilingService;
 import org.mule.runtime.core.internal.security.DefaultMuleSecurityManager;
 import org.mule.runtime.core.internal.streaming.StreamingGhostBuster;
 import org.mule.runtime.core.internal.time.LocalTimeSupplier;
@@ -145,7 +145,7 @@ import org.mule.runtime.core.internal.util.store.DefaultObjectStoreFactoryBean;
 import org.mule.runtime.core.internal.util.store.MuleObjectStoreManager;
 import org.mule.runtime.core.internal.value.MuleValueProviderService;
 import org.mule.runtime.core.privileged.exception.ErrorTypeLocator;
-import org.mule.runtime.core.privileged.transformer.simple.ExtendedTransformationService;
+import org.mule.runtime.core.privileged.transformer.ExtendedTransformationService;
 import org.mule.runtime.module.extension.internal.data.sample.MuleSampleDataService;
 import org.mule.runtime.module.service.internal.manager.LazyServiceProxy;
 
@@ -156,14 +156,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * This class configured all the services available in a {@code MuleContext}.

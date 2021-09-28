@@ -30,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>org.mule.runtime</groupId>
-            <artifactId>mule-core-trnasformers</artifactId>
+            <artifactId>mule-core-transformers</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
