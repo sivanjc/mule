@@ -28,6 +28,7 @@ import org.mule.runtime.api.i18n.I18nMessage;
 import org.mule.runtime.container.api.MuleFoldersUtil;
 import org.mule.runtime.core.api.config.i18n.CoreMessages;
 import org.mule.runtime.core.api.util.SystemUtils;
+import org.mule.runtime.core.internal.DefaultAstConsumptionService;
 import org.mule.runtime.core.internal.context.DefaultMuleContext;
 import org.mule.runtime.core.internal.lock.ServerLockFactory;
 import org.mule.runtime.deployment.model.internal.artifact.extension.ExtensionModelLoaderManager;
@@ -95,6 +96,7 @@ public class MuleContainer {
   private final ToolingService toolingService;
   private final MuleCoreExtensionManagerServer coreExtensionManager;
   private final TroubleshootingService troubleshootingService;
+  private final DefaultAstConsumptionService astConsumptionService;
   private ServerLockFactory muleLockFactory;
   private final MuleArtifactResourcesRegistry artifactResourcesRegistry = new MuleArtifactResourcesRegistry.Builder().build();
   private static MuleLog4jContextFactory log4jContextFactory;
@@ -139,6 +141,7 @@ public class MuleContainer {
                                                        artifactResourcesRegistry.getApplicationFactory(),
                                                        () -> findSchedulerService(serviceManager));
     this.troubleshootingService = new DefaultTroubleshootingService(deploymentService);
+    this.astConsumptionService = DefaultAstConsumptionService.getInstance();
     this.repositoryService = new RepositoryServiceFactory().createRepositoryService();
 
     this.toolingService = new DefaultToolingService(artifactResourcesRegistry.getDomainRepository(),
@@ -151,14 +154,15 @@ public class MuleContainer {
                                                                           new ReflectionMuleCoreExtensionDependencyResolver());
     this.muleLockFactory = artifactResourcesRegistry.getRuntimeLockFactory();
 
-    artifactResourcesRegistry.getContainerClassLoader().dispose();
+    this.artifactResourcesRegistry.getContainerClassLoader().dispose();
   }
 
   public MuleContainer(DeploymentService deploymentService, RepositoryService repositoryService, ToolingService toolingService,
                        MuleCoreExtensionManagerServer coreExtensionManager, ServiceManager serviceManager,
-                       ExtensionModelLoaderManager extensionModelLoaderManager, TroubleshootingService troubleshootingService) {
+                       ExtensionModelLoaderManager extensionModelLoaderManager, TroubleshootingService troubleshootingService,
+                       DefaultAstConsumptionService astConsumptionService) {
     this(new String[0], deploymentService, repositoryService, toolingService, coreExtensionManager, serviceManager,
-         extensionModelLoaderManager, troubleshootingService);
+         extensionModelLoaderManager, troubleshootingService, astConsumptionService);
   }
 
   /**
@@ -167,7 +171,7 @@ public class MuleContainer {
   public MuleContainer(String[] args, DeploymentService deploymentService, RepositoryService repositoryService,
                        ToolingService toolingService, MuleCoreExtensionManagerServer coreExtensionManager,
                        ServiceManager serviceManager, ExtensionModelLoaderManager extensionModelLoaderManager,
-                       TroubleshootingService troubleshootingService)
+                       TroubleshootingService troubleshootingService, DefaultAstConsumptionService astConsumptionService)
       throws IllegalArgumentException {
     // TODO(pablo.kraan): remove the args argument and use the already existing setters to set everything needed
     init(args);
@@ -179,6 +183,7 @@ public class MuleContainer {
     this.extensionModelLoaderManager = extensionModelLoaderManager;
     this.toolingService = toolingService;
     this.troubleshootingService = troubleshootingService;
+    this.astConsumptionService = astConsumptionService;
   }
 
   protected void init(String[] args) throws IllegalArgumentException {
@@ -251,6 +256,7 @@ public class MuleContainer {
       coreExtensionManager.setToolingService(toolingService);
       coreExtensionManager.setServiceRepository(serviceManager);
       coreExtensionManager.setTroubleshootingService(troubleshootingService);
+      coreExtensionManager.setAstConsumptionService(astConsumptionService);
 
       validateLicense();
       showSplashScreen();

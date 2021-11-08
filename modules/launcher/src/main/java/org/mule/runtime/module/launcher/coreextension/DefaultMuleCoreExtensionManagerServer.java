@@ -13,6 +13,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.service.ServiceRepository;
+import org.mule.runtime.ast.api.AstConsumptionService;
 import org.mule.runtime.container.api.ArtifactClassLoaderManagerAware;
 import org.mule.runtime.container.api.CoreExtensionsAware;
 import org.mule.runtime.container.api.MuleCoreExtension;
@@ -52,6 +53,7 @@ public class DefaultMuleCoreExtensionManagerServer implements MuleCoreExtensionM
   private ServiceRepository serviceRepository;
   private EventContextService eventContextService;
   private TroubleshootingService troubleshootingService;
+  private AstConsumptionService astConsumptionService;
 
   private List<MuleCoreExtension> initializedCoreExtensions = new ArrayList<>();
   private List<MuleCoreExtension> startedCoreExtensions = new ArrayList<>();
@@ -189,6 +191,7 @@ public class DefaultMuleCoreExtensionManagerServer implements MuleCoreExtensionM
     return new ContainerInjectorBuilder()
         .withDeploymentService(deploymentService)
         .withTroubleshootingService(troubleshootingService)
+        .withAstConsumptionService(astConsumptionService)
         .withRepositoryService(repositoryService)
         .withServiceRepository(serviceRepository)
         .withCoreExtensions(coreExtensions)
@@ -231,6 +234,11 @@ public class DefaultMuleCoreExtensionManagerServer implements MuleCoreExtensionM
   @Override
   public void setTroubleshootingService(TroubleshootingService troubleshootingService) {
     this.troubleshootingService = troubleshootingService;
+  }
+
+  @Override
+  public void setAstConsumptionService(AstConsumptionService astConsumptionService) {
+    this.astConsumptionService = astConsumptionService;
   }
 
   /**

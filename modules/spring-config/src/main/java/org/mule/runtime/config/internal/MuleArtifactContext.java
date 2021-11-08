@@ -60,6 +60,7 @@ import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.stereotype.HasStereotypeModel;
 import org.mule.runtime.api.util.Pair;
 import org.mule.runtime.ast.api.ArtifactAst;
+import org.mule.runtime.ast.api.AstConsumptionService;
 import org.mule.runtime.ast.api.ComponentAst;
 import org.mule.runtime.ast.api.validation.Validation;
 import org.mule.runtime.ast.api.validation.ValidationResult;
@@ -85,6 +86,7 @@ import org.mule.runtime.core.api.extension.ExtensionManager;
 import org.mule.runtime.core.api.transaction.TransactionManagerFactory;
 import org.mule.runtime.core.api.transformer.Converter;
 import org.mule.runtime.core.api.util.IOUtils;
+import org.mule.runtime.core.internal.DefaultAstConsumptionService;
 import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.runtime.core.internal.exception.ContributedErrorTypeLocator;
 import org.mule.runtime.core.internal.exception.ContributedErrorTypeRepository;
@@ -108,6 +110,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor;
@@ -155,6 +158,9 @@ public class MuleArtifactContext extends AbstractRefreshableConfigApplicationCon
   protected List<ConfigurableObjectProvider> objectProviders = new ArrayList<>();
   private org.mule.runtime.core.internal.registry.Registry originalRegistry;
   private final ExtensionManager extensionManager;
+
+  // @Inject
+  private AstConsumptionService astConsumptionService;
 
   /**
    * Parses configuration files creating a spring ApplicationContext which is used as a parent registry using the SpringRegistry
@@ -210,6 +216,9 @@ public class MuleArtifactContext extends AbstractRefreshableConfigApplicationCon
       throw new MuleRuntimeException(e);
     }
     registerErrors(applicationModel);
+    this.astConsumptionService = DefaultAstConsumptionService.getInstance();
+    // this.astConsumptionService = getMuleRegistry().lookupByType(AstConsumptionService.class)
+    // .getOrDefault(AstConsumptionService.AST_CONSUMPTION_SERVICE_KEY, null);
   }
 
   protected MuleRegistry getMuleRegistry() {
@@ -446,6 +455,11 @@ public class MuleArtifactContext extends AbstractRefreshableConfigApplicationCon
     // This should only be done once at the initial application model creation, called from Spring
     List<Pair<ComponentAst, Optional<String>>> objectProvidersByName =
         lookObjectProvidersComponentModels(applicationModel, springComponentModels);
+
+
+    astConsumptionService
+        .registerArtifactAstByApplicationName(applicationModel,
+                                              (String) this.configurationProperties.resolveProperty("app.name").orElse("Null"));
 
     objectProvidersByName.stream()
         .map(pair -> springComponentModels.get(pair.getFirst()).getObjectInstance())

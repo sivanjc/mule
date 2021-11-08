@@ -83,7 +83,7 @@ public class MuleContainerTestCase extends AbstractMuleTestCase {
 
   private MuleContainer createMuleContainer() {
     return new MuleContainer(deploymentService, repositoryService, toolingService, coreExtensionManager, serviceManager,
-                             extensionModelLoaderManager, troubleshootingService) {
+                             extensionModelLoaderManager, troubleshootingService, null) {
 
       @Override
       Map<String, Object> getCommandLineOptions(String[] args) {

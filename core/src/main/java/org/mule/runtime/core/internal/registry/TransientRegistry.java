@@ -9,6 +9,7 @@ package org.mule.runtime.core.internal.registry;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getMessage;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.mule.runtime.api.config.FeatureFlaggingService.FEATURE_FLAGGING_SERVICE_KEY;
+import static org.mule.runtime.ast.api.AstConsumptionService.AST_CONSUMPTION_SERVICE_KEY;
 import static org.mule.runtime.core.api.config.FeatureFlaggingRegistry.getInstance;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_MULE_CONTEXT;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_NOTIFICATION_HANDLER;
@@ -25,6 +26,7 @@ import org.mule.runtime.core.api.config.FeatureContext;
 import org.mule.runtime.core.api.config.FeatureFlaggingRegistry;
 import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.core.internal.DefaultAstConsumptionService;
 import org.mule.runtime.core.internal.config.FeatureFlaggingServiceBuilder;
 import org.mule.runtime.core.internal.lifecycle.LifecycleInterceptor;
 import org.mule.runtime.core.internal.lifecycle.phases.NotInLifecyclePhase;
@@ -75,8 +77,10 @@ public abstract class TransientRegistry extends AbstractRegistry {
           .withFeatureContextFlags(ffRegistry.getFeatureFlagConfigurations())
           .build();
       defaultEntries.put(FEATURE_FLAGGING_SERVICE_KEY, featureFlaggingService);
+
     }
 
+    defaultEntries.put(AST_CONSUMPTION_SERVICE_KEY, DefaultAstConsumptionService.getInstance());
     defaultEntries.put("_muleLifecycleStateInjectorProcessor",
                        new LifecycleStateInjectorProcessor(getLifecycleManager().getState()));
     defaultEntries.put("_muleLifecycleManager", getLifecycleManager());
