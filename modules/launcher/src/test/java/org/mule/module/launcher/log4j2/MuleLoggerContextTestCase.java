@@ -64,8 +64,8 @@ public class MuleLoggerContextTestCase extends AbstractMuleTestCase
                                                                    null);
 
         loggerConfig.addAppender(testAppender, null, null);
-        loggerConfig.start();
         context.getConfiguration().addLogger(CATEGORY, loggerConfig);
+        context.getConfiguration().start();
         context.updateLoggers();
     }
 
