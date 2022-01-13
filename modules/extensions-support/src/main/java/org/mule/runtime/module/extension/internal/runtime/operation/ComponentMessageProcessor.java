@@ -1233,7 +1233,7 @@ public abstract class ComponentMessageProcessor<T extends ComponentModel> extend
 
     CoreEvent initializerEvent = NullEventFactory.getNullEvent(muleContext);
     try {
-      return resolver.resolve(ValueResolvingContext.builder(initializerEvent).build());
+      return SdkOperationTransactionalActionUtils.from(resolver.resolve(ValueResolvingContext.builder(initializerEvent).build()));
     } finally {
       ((BaseEventContext) initializerEvent.getContext()).success();
     }

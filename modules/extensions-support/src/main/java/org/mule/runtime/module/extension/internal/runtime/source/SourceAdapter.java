@@ -78,6 +78,7 @@ import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSetRe
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolvingContext;
 import org.mule.runtime.module.extension.internal.runtime.source.legacy.LegacySourceWrapper;
+import org.mule.runtime.module.extension.internal.runtime.source.legacy.SourceTransactionalActionUtils;
 import org.mule.runtime.module.extension.internal.runtime.source.poll.PollingSourceWrapper;
 import org.mule.runtime.module.extension.internal.runtime.source.poll.RestartContext;
 import org.mule.runtime.module.extension.internal.runtime.source.poll.Restartable;
@@ -541,16 +542,31 @@ public class SourceAdapter implements Lifecycle, Restartable {
   }
 
   public SourceTransactionalAction getTransactionalAction() {
-    return getNonCallbackParameterValue(getTransactionalActionFieldName(), SourceTransactionalAction.class)
-        .orElse(NONE);
+    Optional<Object> transactionalAction = getNonCallbackParameterValue(getTransactionalActionFieldName());
+    if (transactionalAction.isPresent()) {
+      try {
+        return SourceTransactionalActionUtils.from(transactionalAction.get());
+      } catch (Exception e) {
+        throw new IllegalStateException("The resolved value is not a " + SourceTransactionalAction.class.getSimpleName(), e);
+      }
+    } else {
+      return NONE;
+    }
   }
 
   TransactionType getTransactionalType() {
-    return getNonCallbackParameterValue(getTransactionTypeFieldName(), TransactionType.class)
-        .orElse(LOCAL);
+    Optional<Object> transactionalType = getNonCallbackParameterValue(getTransactionTypeFieldName());
+    if (transactionalType.isPresent()) {
+      if (transactionalType.get() instanceof TransactionType) {
+        return (TransactionType) transactionalType.get();
+      }
+      throw new IllegalStateException("The resolved value is not a " + TransactionType.class.getSimpleName());
+    } else {
+      return LOCAL;
+    }
   }
 
-  private <T> Optional<T> getNonCallbackParameterValue(String fieldName, Class<T> type) {
+  private <T> Optional<T> getNonCallbackParameterValue(String fieldName) {
     ValueResolver<T> valueResolver = (ValueResolver<T>) nonCallbackParameters.getResolvers().get(fieldName);
 
     if (valueResolver == null) {
@@ -563,18 +579,12 @@ public class SourceAdapter implements Lifecycle, Restartable {
     try (ValueResolvingContext context = ValueResolvingContext.builder(initialiserEvent, expressionManager).build()) {
       object = valueResolver.resolve(context);
     } catch (MuleException e) {
-      throw new MuleRuntimeException(createStaticMessage("Unable to get the " + type.getSimpleName()
-          + " value for Message Source"), e);
+      throw new MuleRuntimeException(createStaticMessage("Unable to get the " + fieldName + " value for Message Source"), e);
     } finally {
       if (initialiserEvent != null) {
         ((BaseEventContext) initialiserEvent.getContext()).success();
       }
     }
-
-    if (!(type.isInstance(object))) {
-      throw new IllegalStateException("The resolved value is not a " + type.getSimpleName());
-    }
-
     return of(object);
   }
 
