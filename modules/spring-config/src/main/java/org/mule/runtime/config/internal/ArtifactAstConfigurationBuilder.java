@@ -95,6 +95,11 @@ public class ArtifactAstConfigurationBuilder extends AbstractConfigurationBuilde
          DefaultMemoryManagementService.getInstance());
   }
 
+  public ArtifactAstConfigurationBuilder(ArtifactAst artifactAst, Map<String, String> artifactProperties)
+      throws ConfigurationException {
+    this(artifactAst, artifactProperties, ArtifactType.APP, false);
+  }
+
   @Override
   protected void doConfigure(MuleContext muleContext) throws Exception {
     if (emptyArtifact().equals(artifactAst) && artifactType == DOMAIN) {

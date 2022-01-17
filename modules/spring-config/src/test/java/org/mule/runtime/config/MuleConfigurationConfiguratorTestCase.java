@@ -6,6 +6,7 @@
  */
 package org.mule.runtime.config;
 
+import static org.mule.runtime.ast.api.util.MuleAstUtils.emptyArtifact;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_MULE_CONFIGURATION;
 import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_TIME_SUPPLIER;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.disposeIfNeeded;
@@ -27,7 +28,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.mule.runtime.api.config.custom.ServiceConfigurator;
 import org.mule.runtime.api.time.TimeSupplier;
-import org.mule.runtime.config.internal.SpringXmlConfigurationBuilder;
+import org.mule.runtime.config.internal.ArtifactAstConfigurationBuilder;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
 import org.mule.runtime.core.api.config.ConfigurationException;
@@ -83,7 +84,7 @@ public class MuleConfigurationConfiguratorTestCase extends AbstractMuleTestCase 
                              public void addServiceConfigurator(ServiceConfigurator serviceConfigurator) {}
                            },
                            new MockExtensionManagerConfigurationBuilder(),
-                           new SpringXmlConfigurationBuilder(new String[0], emptyMap()));
+                           new ArtifactAstConfigurationBuilder(emptyArtifact(), emptyMap()));
     muleContext.start();
     muleContext.getRegistry().lookupByType(Calendar.class);
   }
