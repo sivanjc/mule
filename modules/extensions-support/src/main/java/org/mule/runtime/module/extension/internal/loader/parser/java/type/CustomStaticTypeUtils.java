@@ -61,8 +61,6 @@ import java.util.Set;
  */
 public class CustomStaticTypeUtils {
 
-  private static final MetadataTypeEnricher enricher = new MetadataTypeEnricher();
-
   /**
    * resolves the output type of a given operation.
    *
@@ -378,7 +376,7 @@ public class CustomStaticTypeUtils {
     Class<?> clazz = getType(declarationType)
         .orElseThrow(() -> new IllegalStateException("Could not find class in type [" + declarationType + "]"));
     Set<TypeAnnotation> a = new HashSet<>(asList(new ClassInformationAnnotation(clazz), new CustomDefinedStaticTypeAnnotation()));
-    return enricher.enrich(target, a);
+    return new MetadataTypeEnricher().enrich(target, a);
   }
 
   private static MetadataType resolveType(MetadataType annotationType, MetadataType declarationType) {
