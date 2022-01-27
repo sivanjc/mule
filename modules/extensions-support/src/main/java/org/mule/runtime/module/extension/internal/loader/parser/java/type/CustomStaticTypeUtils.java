@@ -372,7 +372,7 @@ public class CustomStaticTypeUtils {
     return empty();
   }
 
-  private static MetadataType enrichCustomType(MetadataType declarationType, MetadataType target) {
+  private synchronized static MetadataType enrichCustomType(MetadataType declarationType, MetadataType target) {
     Class<?> clazz = getType(declarationType)
         .orElseThrow(() -> new IllegalStateException("Could not find class in type [" + declarationType + "]"));
     Set<TypeAnnotation> a = new HashSet<>(asList(new ClassInformationAnnotation(clazz), new CustomDefinedStaticTypeAnnotation()));
@@ -401,7 +401,7 @@ public class CustomStaticTypeUtils {
     }
   }
 
-  private static Optional<MetadataType> getJsonType(String schema) {
+  private synchronized static Optional<MetadataType> getJsonType(String schema) {
     String schemaContent;
     try (InputStream is = getSchemaContent(schema)) {
       schemaContent = IOUtils.toString(is);
@@ -415,7 +415,7 @@ public class CustomStaticTypeUtils {
     return type;
   }
 
-  private static Optional<MetadataType> getXmlType(String schema, String qname) {
+  private synchronized static Optional<MetadataType> getXmlType(String schema, String qname) {
     if (isNotBlank(schema)) {
       if (isBlank(qname)) {
         throw new IllegalStateException("[" + schema + "] was specified but no associated QName to find in schema");
