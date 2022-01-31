@@ -6,6 +6,10 @@
  */
 package org.mule.runtime.config.api.dsl.model.properties;
 
+import static org.mule.runtime.api.config.MuleRuntimeFeature.AST_BASED_PROPERTIES_API;
+
+import org.mule.runtime.api.config.DeprecationInfo;
+
 /**
  * Represents a configuration attribute.
  *
@@ -14,6 +18,7 @@ package org.mule.runtime.config.api.dsl.model.properties;
  * @deprecated since 4.4, use org.mule.runtime.properties.api.ConfigurationProperty instead.
  */
 @Deprecated
+@DeprecationInfo(feature = AST_BASED_PROPERTIES_API)
 public interface ConfigurationProperty extends org.mule.runtime.properties.api.ConfigurationProperty {
 
   /**

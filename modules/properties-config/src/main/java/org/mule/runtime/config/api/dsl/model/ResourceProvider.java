@@ -6,7 +6,10 @@
  */
 package org.mule.runtime.config.api.dsl.model;
 
+import static org.mule.runtime.api.config.MuleRuntimeFeature.AST_BASED_PROPERTIES_API;
+
 import org.mule.api.annotation.NoImplement;
+import org.mule.runtime.api.config.DeprecationInfo;
 
 /**
  * Represents a generic resource provider, to be used instead of the artifact class loader.
@@ -15,6 +18,7 @@ import org.mule.api.annotation.NoImplement;
  */
 @NoImplement
 @Deprecated
+@DeprecationInfo(feature = AST_BASED_PROPERTIES_API)
 public interface ResourceProvider extends org.mule.runtime.properties.api.ResourceProvider {
 
 }

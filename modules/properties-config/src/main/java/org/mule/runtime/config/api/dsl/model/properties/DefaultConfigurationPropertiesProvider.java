@@ -6,14 +6,17 @@
  */
 package org.mule.runtime.config.api.dsl.model.properties;
 
+import static org.mule.runtime.api.config.MuleRuntimeFeature.AST_BASED_PROPERTIES_API;
+import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 
 import org.mule.runtime.api.component.AbstractComponent;
 import org.mule.runtime.api.component.location.ComponentLocation;
+import org.mule.runtime.api.config.DeprecationInfo;
 import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.config.internal.dsl.model.config.DefaultConfigurationProperty;
@@ -41,6 +44,7 @@ import org.yaml.snakeyaml.parser.ParserException;
  * @deprecated since 4.4, use org.mule.runtime.properties.api.DefaultConfigurationPropertiesProvider instead.
  */
 @Deprecated
+@DeprecationInfo(feature = AST_BASED_PROPERTIES_API)
 public class DefaultConfigurationPropertiesProvider
     extends AbstractComponent
     implements org.mule.runtime.config.api.dsl.model.properties.ConfigurationPropertiesProvider, Initialisable {
