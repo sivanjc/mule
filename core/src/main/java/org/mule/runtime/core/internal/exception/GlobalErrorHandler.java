@@ -13,14 +13,28 @@ import org.mule.runtime.core.privileged.exception.TemplateOnErrorHandler;
 import org.reactivestreams.Publisher;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
 public class GlobalErrorHandler extends ErrorHandler {
 
+  private Consumer<Exception> consumer;
+
   @Override
   public Publisher<CoreEvent> apply(Exception exception) {
     throw new IllegalStateException("GlobalErrorHandlers should be used only as template for local ErrorHandlers");
+  }
+
+  @Override
+  public Consumer<Exception> router(Function<Publisher<CoreEvent>, Publisher<CoreEvent>> publisherPostProcessor,
+                                    Consumer<CoreEvent> continueCallback, Consumer<Throwable> propagateCallback) {
+    if (consumer == null) {
+      consumer = super.router(publisherPostProcessor, continueCallback, propagateCallback);
+    }
+
+    return consumer;
   }
 
   public ErrorHandler createLocalErrorHandler(Location flowLocation) {
