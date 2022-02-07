@@ -38,6 +38,7 @@ import static reactor.core.publisher.Flux.from;
 import org.mule.api.annotation.NoExtend;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.ConfigurationProperties;
+import org.mule.runtime.api.component.location.ConfigurationComponentLocator;
 import org.mule.runtime.api.component.location.Location;
 import org.mule.runtime.api.exception.ErrorTypeRepository;
 import org.mule.runtime.api.exception.MuleRuntimeException;
@@ -95,6 +96,8 @@ public abstract class TemplateOnErrorHandler extends AbstractDeclaredExceptionLi
 
   private static final Pattern ERROR_HANDLER_LOCATION_PATTERN = compile(".*/.*/.*");
 
+  private boolean fromGlobalErrorHandler = false;
+
   @Inject
   private ExpressionManager expressionManager;
 
@@ -119,6 +122,8 @@ public abstract class TemplateOnErrorHandler extends AbstractDeclaredExceptionLi
   private Function<Function<Publisher<CoreEvent>, Publisher<CoreEvent>>, FluxSink<CoreEvent>> fluxFactory;
 
   private final CopyOnWriteArrayList<String> suppressedErrorTypeMatches = new CopyOnWriteArrayList<>();
+
+  protected TemplateOnErrorHandler() {}
 
   private final class OnErrorHandlerFluxObjectFactory
       implements Function<Function<Publisher<CoreEvent>, Publisher<CoreEvent>>, FluxSink<CoreEvent>>, Disposable {
@@ -281,8 +286,8 @@ public abstract class TemplateOnErrorHandler extends AbstractDeclaredExceptionLi
   protected void doInitialise() throws InitialisationException {
     super.doInitialise();
     Optional<ProcessingStrategy> processingStrategy = empty();
-    if (flowLocation.isPresent()) {
-      processingStrategy = getProcessingStrategy(locator, flowLocation.get());
+    if (fromGlobalErrorHandler) {
+      processingStrategy = getProcessingStrategyFromGlobalErrorHandler(locator);
     } else if (getLocation() != null) {
       processingStrategy = getProcessingStrategy(locator, this);
     }
@@ -300,6 +305,11 @@ public abstract class TemplateOnErrorHandler extends AbstractDeclaredExceptionLi
         errorHandlerLocation = errorHandlerLocation.substring(0, errorHandlerLocation.lastIndexOf('/'));
       }
     }
+  }
+
+  private Optional<ProcessingStrategy> getProcessingStrategyFromGlobalErrorHandler(
+                                                                                   ConfigurationComponentLocator locator) {
+    return Optional.of(new OnRuntimeProcessingStrategy(locator));
   }
 
   @Override
@@ -550,5 +560,10 @@ public abstract class TemplateOnErrorHandler extends AbstractDeclaredExceptionLi
 
   protected ErrorTypeRepository getErrorTypeRepository() {
     return errorTypeRepository;
+  }
+
+  public TemplateOnErrorHandler setFromGlobalErrorHandler(boolean fromGlobalErrorHandler) {
+    this.fromGlobalErrorHandler = fromGlobalErrorHandler;
+    return this;
   }
 }

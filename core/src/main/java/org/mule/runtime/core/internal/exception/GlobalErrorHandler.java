@@ -7,6 +7,7 @@
 package org.mule.runtime.core.internal.exception;
 
 import org.mule.runtime.api.component.location.Location;
+import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.privileged.exception.MessagingExceptionHandlerAcceptor;
 import org.mule.runtime.core.privileged.exception.TemplateOnErrorHandler;
@@ -35,6 +36,20 @@ public class GlobalErrorHandler extends ErrorHandler {
     }
 
     return consumer;
+  }
+
+  @Override
+  public void initialise() throws InitialisationException {
+    setFromGlobalErrorHandler();
+    super.initialise();
+  }
+
+  private void setFromGlobalErrorHandler() {
+    List<MessagingExceptionHandlerAcceptor> listeners =
+        this.getExceptionListeners().stream().map(exceptionListener -> (exceptionListener instanceof TemplateOnErrorHandler)
+            ? ((TemplateOnErrorHandler) exceptionListener).setFromGlobalErrorHandler(true)
+            : exceptionListener).collect(toList());
+    this.setExceptionListeners(listeners);
   }
 
   public ErrorHandler createLocalErrorHandler(Location flowLocation) {
