@@ -13,6 +13,7 @@ import org.mule.runtime.api.profiling.ProfilingDataConsumerDiscoveryStrategy;
 import org.mule.runtime.api.profiling.ProfilingDataConsumer;
 import org.mule.runtime.core.internal.profiling.consumer.LoggerComponentProcessingStrategyDataConsumer;
 import org.mule.runtime.core.internal.profiling.consumer.LoggerComponentThreadingDataConsumer;
+import org.mule.runtime.core.internal.profiling.consumer.OpenTelemetryComponentProcessingDataConsumer;
 import org.mule.runtime.core.internal.profiling.consumer.TaskSchedulingLoggerDataConsumer;
 
 import java.util.Set;
@@ -26,9 +27,7 @@ public class DefaultProfilingDataConsumerDiscoveryStrategy implements ProfilingD
 
   @Override
   public Set<ProfilingDataConsumer<?>> discover() {
-    return of(new LoggerComponentProcessingStrategyDataConsumer(),
-              new LoggerComponentThreadingDataConsumer(),
-              new TaskSchedulingLoggerDataConsumer());
+    return of(new OpenTelemetryComponentProcessingDataConsumer());
   }
 
 }
