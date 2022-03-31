@@ -165,7 +165,6 @@ public class DefaultApplicationFactory extends AbstractDeployableArtifactFactory
                                                                            licenseValidator),
                                           new DefaultPolicyInstanceProviderFactory(serviceRepository,
                                                                                    classLoaderRepository,
-                                                                                   extensionModelLoaderRepository,
                                                                                    getArtifactConfigurationProcessor()));
     DefaultMuleApplication delegate =
         new DefaultMuleApplication(descriptor, applicationClassLoader, artifactPlugins, domainRepository,
