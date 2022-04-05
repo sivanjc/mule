@@ -6,12 +6,13 @@
  */
 package org.mule.runtime.core.internal.profiling.consumer.tracing.span.builder;
 
-import static java.lang.System.currentTimeMillis;
-
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.profiling.tracing.Span;
 import org.mule.runtime.api.profiling.tracing.SpanIdentifier;
+
+import org.mule.runtime.core.internal.profiling.consumer.tracing.span.DefaultSpanDuration;
 import org.mule.runtime.core.internal.profiling.consumer.tracing.span.ExecutionSpan;
+import org.mule.runtime.core.internal.profiling.consumer.tracing.span.InternalSpan;
 import org.mule.runtime.core.internal.profiling.consumer.tracing.span.SpanManager;
 
 /**
@@ -25,6 +26,7 @@ public abstract class SpanBuilder {
   protected String correlationId;
   protected ComponentLocation location;
   protected SpanManager spanManager;
+  private long start;
 
   public SpanBuilder withSpanManager(SpanManager spanManager) {
     this.spanManager = spanManager;
@@ -46,21 +48,26 @@ public abstract class SpanBuilder {
     return this;
   }
 
+  public SpanBuilder withStart(long start) {
+    this.start = start;
+    return this;
+  }
+
   /**
    * builds the {@link Span}
    *
    * @return the {@link} the span built
    */
-  public Span build() {
-    SpanIdentifier spanIdentifier = getSpanIdentifer();
+  public InternalSpan build() {
+    SpanIdentifier spanIdentifier = getSpanIdentifier();
     return spanManager.getSpan(spanIdentifier,
-                               id -> new ExecutionSpan(getSpanName(), getSpanIdentifer(), currentTimeMillis(), null,
+                               id -> new ExecutionSpan(getSpanName(), getSpanIdentifier(), new DefaultSpanDuration(start),
                                                        getParent()));
   }
 
   protected abstract Span getParent();
 
-  protected abstract SpanIdentifier getSpanIdentifer();
+  protected abstract SpanIdentifier getSpanIdentifier();
 
   protected abstract String getSpanName();
 

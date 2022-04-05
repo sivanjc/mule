@@ -6,14 +6,13 @@
  */
 package org.mule.runtime.core.internal.profiling.consumer.tracing.operations;
 
+import static org.mule.runtime.core.internal.profiling.consumer.tracing.operations.SpanUtils.getBuilder;
+
 import org.mule.runtime.api.component.location.ComponentLocation;
-import org.mule.runtime.api.profiling.tracing.Span;
 import org.mule.runtime.api.profiling.type.context.ComponentProcessingStrategyProfilingEventContext;
 import org.mule.runtime.api.profiling.type.context.SpanProfilingEventContext;
+import org.mule.runtime.core.internal.profiling.consumer.tracing.span.InternalSpan;
 import org.mule.runtime.core.internal.profiling.consumer.tracing.span.SpanManager;
-
-import static java.lang.System.currentTimeMillis;
-import static org.mule.runtime.core.internal.profiling.consumer.tracing.operations.SpanUtils.getBuilder;
 
 /**
  * A {@link SpanProfilingEventContext} that corresponds to a span profiling event.
@@ -29,7 +28,7 @@ public class DefaultSpanProfilingEventContext implements SpanProfilingEventConte
   public DefaultSpanProfilingEventContext(ComponentProcessingStrategyProfilingEventContext eventContext,
                                           SpanManager spanManager) {
     this.eventContext = eventContext;
-    triggerTimeStamp = currentTimeMillis();
+    triggerTimeStamp = eventContext.getTriggerTimestamp();
     this.spanManager = spanManager;
   }
 
@@ -39,13 +38,14 @@ public class DefaultSpanProfilingEventContext implements SpanProfilingEventConte
   }
 
   @Override
-  public Span getSpan() {
+  public InternalSpan getSpan() {
     ComponentLocation location = eventContext.getLocation().get();
     return getBuilder(location)
         .withSpanManager(spanManager)
         .withArtifactId(eventContext.getArtifactId())
         .withLocation(location)
         .withCorrelationId(eventContext.getCorrelationId())
+        .withStart(triggerTimeStamp)
         .build();
   }
 }

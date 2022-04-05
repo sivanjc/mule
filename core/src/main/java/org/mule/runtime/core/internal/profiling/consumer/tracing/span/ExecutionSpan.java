@@ -6,35 +6,38 @@
  */
 package org.mule.runtime.core.internal.profiling.consumer.tracing.span;
 
+import static java.util.Optional.ofNullable;
+
 import org.mule.runtime.api.profiling.tracing.Span;
-import org.mule.runtime.api.profiling.tracing.SpanDuration;
 import org.mule.runtime.api.profiling.tracing.SpanIdentifier;
+
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A {@link Span} that represents the trace corresponding to the execution of mule flow or component.
  *
  * @since 4.5.0
  */
-public class ExecutionSpan implements Span {
+public class ExecutionSpan implements InternalSpan {
 
   private final String name;
   private final SpanIdentifier identifier;
   private final Span parent;
-  private final Long startTime;
-  private final Long endTime;
+  private final AtomicBoolean isActive = new AtomicBoolean(true);
+  private final SpanDuration spanDuration;
 
-  public ExecutionSpan(String name, SpanIdentifier identifier, Long startTime, Long endTime,
+  public ExecutionSpan(String name, SpanIdentifier identifier, SpanDuration spanDuration,
                        Span parent) {
     this.name = name;
     this.identifier = identifier;
-    this.startTime = startTime;
-    this.endTime = endTime;
+    this.spanDuration = spanDuration;
     this.parent = parent;
   }
 
   @Override
-  public Span getParent() {
-    return parent;
+  public Optional<Span> getParent() {
+    return ofNullable(parent);
   }
 
   @Override
@@ -48,31 +51,21 @@ public class ExecutionSpan implements Span {
   }
 
   @Override
-  public SpanDuration getDuration() {
-    return new DefaultSpanDuration(startTime, endTime);
+  public boolean isActive() {
+    return !isActive.get();
   }
 
-  /**
-   * An default implementation for a {@link SpanDuration}
-   */
-  private class DefaultSpanDuration implements SpanDuration {
-
-    private final Long startTime;
-    private final Long endTime;
-
-    public DefaultSpanDuration(Long startTime, Long endTime) {
-      this.startTime = startTime;
-      this.endTime = endTime;
+  @Override
+  public void finish(long finishTimestamp) throws IllegalStateException {
+    if (isActive.getAndSet(false)) {
+      spanDuration.finish(finishTimestamp);
+    } else {
+      throw new IllegalStateException("Cannot end a Span twice");
     }
+  }
 
-    @Override
-    public Long getStart() {
-      return startTime;
-    }
-
-    @Override
-    public Long getEnd() {
-      return endTime;
-    }
+  @Override
+  public SpanDuration getDuration() {
+    return spanDuration;
   }
 }
