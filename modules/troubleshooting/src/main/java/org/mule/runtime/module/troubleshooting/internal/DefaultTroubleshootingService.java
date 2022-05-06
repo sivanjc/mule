@@ -7,6 +7,7 @@
 package org.mule.runtime.module.troubleshooting.internal;
 
 import static java.lang.String.format;
+import static org.mule.runtime.module.troubleshooting.api.TroubleshootingOperationUtils.createFrom;
 
 import org.mule.runtime.module.deployment.api.DeploymentService;
 import org.mule.runtime.module.troubleshooting.api.ArgumentDefinition;
@@ -16,6 +17,7 @@ import org.mule.runtime.module.troubleshooting.api.TroubleshootingOperationDefin
 import org.mule.runtime.module.troubleshooting.api.TroubleshootingOperationException;
 import org.mule.runtime.module.troubleshooting.api.TroubleshootingService;
 import org.mule.runtime.module.troubleshooting.internal.operations.EventDumpOperation;
+import org.mule.runtime.module.troubleshooting.internal.operations.SayOperation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,11 +30,12 @@ public class DefaultTroubleshootingService implements TroubleshootingService {
   private final Map<String, TroubleshootingOperationCallback> callbacksByName = new HashMap<>();
 
   public DefaultTroubleshootingService(DeploymentService deploymentService) {
-    registerOperation(new EventDumpOperation(deploymentService));
+    registerOperation(createFrom(EventDumpOperation.class, () -> new EventDumpOperation(deploymentService)));
+    registerOperation(createFrom(SayOperation.class));
   }
 
   @Override
-  public void registerOperation(TroubleshootingOperation operation) {
+  public final void registerOperation(TroubleshootingOperation operation) {
     TroubleshootingOperationDefinition definition = operation.getDefinition();
     String operationName = definition.getName();
     this.definitionsByName.put(operationName, definition);

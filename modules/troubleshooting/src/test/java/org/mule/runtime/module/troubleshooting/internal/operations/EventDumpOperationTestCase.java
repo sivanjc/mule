@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.mule.runtime.module.troubleshooting.api.TroubleshootingOperationUtils.createFrom;
 import static org.mule.runtime.module.troubleshooting.internal.TroubleshootingTestUtils.mockApplication;
 import static org.mule.runtime.module.troubleshooting.internal.TroubleshootingTestUtils.mockDeploymentService;
 import static org.mule.runtime.module.troubleshooting.internal.TroubleshootingTestUtils.mockFlowStackEntry;
@@ -29,6 +30,8 @@ import org.mule.runtime.core.api.event.EventContextService.FlowStackEntry;
 import org.mule.runtime.deployment.model.api.application.Application;
 import org.mule.runtime.module.deployment.api.DeploymentService;
 import org.mule.runtime.module.troubleshooting.api.ArgumentDefinition;
+import org.mule.runtime.module.troubleshooting.api.TroubleshootingOperation;
+import org.mule.runtime.module.troubleshooting.api.TroubleshootingOperationUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +39,7 @@ import java.util.Map;
 public class EventDumpOperationTestCase {
 
   private DeploymentService deploymentService;
-  private EventDumpOperation eventDumpOperation;
+  private TroubleshootingOperation eventDumpOperation;
 
   @Before
   public void setup() {
@@ -44,7 +47,7 @@ public class EventDumpOperationTestCase {
     Application app1 = mockApplication("app1", flowStackEntry);
     Application app2 = mockApplication("app2");
     deploymentService = mockDeploymentService(app1, app2);
-    eventDumpOperation = new EventDumpOperation(deploymentService);
+    eventDumpOperation = createFrom(EventDumpOperation.class, () -> new EventDumpOperation(deploymentService));
   }
 
   @Test
