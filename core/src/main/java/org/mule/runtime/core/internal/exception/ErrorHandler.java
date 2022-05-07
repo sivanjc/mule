@@ -280,10 +280,10 @@ public class ErrorHandler extends AbstractMuleObjectOwner<MessagingExceptionHand
     this.setExceptionListeners(listeners);
   }
 
-  public void setExceptionListenersLocationForGlobalErrorHandler(Location flowLocation, GlobalErrorHandler globalErrorHandler) {
+  public void setExceptionListenersLocationForGlobalErrorHandler(Location flowLocation) {
     List<MessagingExceptionHandlerAcceptor> listeners =
         this.getExceptionListeners().stream().map(exceptionListener -> (exceptionListener instanceof TemplateOnErrorHandler)
-            ? ((TemplateOnErrorHandler) exceptionListener).getGlobalErrorListener(flowLocation, globalErrorHandler)
+            ? ((TemplateOnErrorHandler) exceptionListener).getGlobalErrorListener(flowLocation)
             : exceptionListener).collect(toList());
     this.setExceptionListeners(listeners);
   }

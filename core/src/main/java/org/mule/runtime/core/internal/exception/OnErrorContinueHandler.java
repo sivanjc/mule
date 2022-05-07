@@ -106,8 +106,8 @@ public class OnErrorContinueHandler extends TemplateOnErrorHandler {
   }
 
   @Override
-  public TemplateOnErrorHandler getGlobalErrorListener(Location location, GlobalErrorHandler globalErrorHandler) {
-    GlobalOnErrorContinueHandler cpy = new GlobalOnErrorContinueHandler(globalErrorHandler);
+  public TemplateOnErrorHandler getGlobalErrorListener(Location location) {
+    NoOwnedObjectsOnErrorContinueHandler cpy = new NoOwnedObjectsOnErrorContinueHandler();
     cpy.setFlowLocation(location);
     when.ifPresent(expr -> cpy.setWhen(expr));
     cpy.setHandleException(this.handleException);
@@ -125,19 +125,7 @@ public class OnErrorContinueHandler extends TemplateOnErrorHandler {
     return error.isPresent() && sourceErrorMatcher.match(error.get().getErrorType());
   }
 
-  private class GlobalOnErrorContinueHandler extends OnErrorContinueHandler {
-
-    private final GlobalErrorHandler globalErrorHandler;
-
-    public GlobalOnErrorContinueHandler(GlobalErrorHandler globalErrorHandler) {
-      this.globalErrorHandler = globalErrorHandler;
-    }
-
-    @Override
-    protected void doInitialise() throws InitialisationException {
-      globalErrorHandler.initialiseErrorListenerProcessorIfNeeded();
-      super.doInitialise();
-    }
+  private class NoOwnedObjectsOnErrorContinueHandler extends OnErrorContinueHandler {
 
     @Override
     protected List<Processor> getOwnedObjects() {

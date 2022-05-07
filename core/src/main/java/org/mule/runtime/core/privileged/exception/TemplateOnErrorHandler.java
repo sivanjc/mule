@@ -504,7 +504,7 @@ public abstract class TemplateOnErrorHandler extends AbstractExceptionListener
   @Deprecated
   public abstract TemplateOnErrorHandler duplicateFor(Location location);
 
-  public TemplateOnErrorHandler getGlobalErrorListener(Location location, GlobalErrorHandler globalErrorHandler) {
+  public TemplateOnErrorHandler getGlobalErrorListener(Location location) {
     return this.duplicateFor(location);
   }
 

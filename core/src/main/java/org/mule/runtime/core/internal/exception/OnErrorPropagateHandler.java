@@ -7,7 +7,6 @@
 package org.mule.runtime.core.internal.exception;
 
 import org.mule.runtime.api.component.location.Location;
-import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.message.ErrorType;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -83,8 +82,8 @@ public class OnErrorPropagateHandler extends TemplateOnErrorHandler {
   }
 
   @Override
-  public TemplateOnErrorHandler getGlobalErrorListener(Location flowLocation, GlobalErrorHandler globalErrorHandler) {
-    GlobalOnErrorPropagateHandler cpy = new GlobalOnErrorPropagateHandler(globalErrorHandler);
+  public TemplateOnErrorHandler getGlobalErrorListener(Location flowLocation) {
+    NoOwnedObjectsOnErrorPropagateHandler cpy = new NoOwnedObjectsOnErrorPropagateHandler();
     cpy.setFlowLocation(flowLocation);
     when.ifPresent(expr -> cpy.setWhen(expr));
     cpy.setHandleException(this.handleException);
@@ -111,19 +110,7 @@ public class OnErrorPropagateHandler extends TemplateOnErrorHandler {
     return false;
   }
 
-  private class GlobalOnErrorPropagateHandler extends OnErrorPropagateHandler {
-
-    private final GlobalErrorHandler globalErrorHandler;
-
-    public GlobalOnErrorPropagateHandler(GlobalErrorHandler globalErrorHandler) {
-      this.globalErrorHandler = globalErrorHandler;
-    }
-
-    @Override
-    protected void doInitialise() throws InitialisationException {
-      globalErrorHandler.initialiseErrorListenerProcessorIfNeeded();
-      super.doInitialise();
-    }
+  private class NoOwnedObjectsOnErrorPropagateHandler extends OnErrorPropagateHandler {
 
     @Override
     protected List<Processor> getOwnedObjects() {

@@ -16,7 +16,6 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.util.StringUtils;
-import org.mule.runtime.core.internal.exception.GlobalErrorHandler;
 import org.mule.runtime.core.privileged.exception.MessagingExceptionHandlerAcceptor;
 import org.mule.runtime.core.privileged.exception.TemplateOnErrorHandler;
 import org.mule.tck.processor.FlowAssertion;
@@ -84,8 +83,8 @@ public class OnErrorCheckLogHandler extends TemplateOnErrorHandler
     return cpy;
   }
 
-  @Override public TemplateOnErrorHandler getGlobalErrorListener(Location location, GlobalErrorHandler globalErrorHandler) {
-    OnErrorCheckLogHandler cpy = new GlobalOnErrorCheckLogHandler(globalErrorHandler);
+  @Override public TemplateOnErrorHandler getGlobalErrorListener(Location location) {
+    OnErrorCheckLogHandler cpy = new NoOwnedObjectsOnErrorCheckLogHandler();
     cpy.setFlowLocation(location);
     cpy.propagate = this.propagate;
     cpy.succeedIfNoLog = this.succeedIfNoLog;
@@ -149,18 +148,7 @@ public class OnErrorCheckLogHandler extends TemplateOnErrorHandler
     this.succeedIfNoLog = succeedIfNoLog;
   }
 
-  private class GlobalOnErrorCheckLogHandler extends OnErrorCheckLogHandler {
-
-    private final GlobalErrorHandler globalErrorHandler;
-
-    public GlobalOnErrorCheckLogHandler(GlobalErrorHandler globalErrorHandler) {
-      this.globalErrorHandler = globalErrorHandler;
-    }
-
-    @Override protected void doInitialise() throws InitialisationException {
-      globalErrorHandler.initialiseErrorListenerProcessorIfNeeded();
-      super.doInitialise();
-    }
+  private class NoOwnedObjectsOnErrorCheckLogHandler extends OnErrorCheckLogHandler {
 
     @Override protected List<Processor> getOwnedObjects() {
       return new ArrayList<>();
