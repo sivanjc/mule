@@ -19,8 +19,11 @@ import org.mule.runtime.api.message.ErrorType;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.exception.ErrorTypeMatcher;
 import org.mule.runtime.core.api.exception.SingleErrorTypeMatcher;
+import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.privileged.exception.TemplateOnErrorHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -102,8 +105,43 @@ public class OnErrorContinueHandler extends TemplateOnErrorHandler {
     return cpy;
   }
 
+  @Override
+  public TemplateOnErrorHandler getGlobalErrorListener(Location location, GlobalErrorHandler globalErrorHandler) {
+    GlobalOnErrorContinueHandler cpy = new GlobalOnErrorContinueHandler(globalErrorHandler);
+    cpy.setFlowLocation(location);
+    when.ifPresent(expr -> cpy.setWhen(expr));
+    cpy.setHandleException(this.handleException);
+    cpy.setErrorType(this.errorType);
+    cpy.setMessageProcessors(this.getMessageProcessors());
+    cpy.setEnableNotifications(this.isEnableNotifications());
+    cpy.setLogException(this.logException);
+    cpy.setNotificationFirer(this.notificationFirer);
+    cpy.setAnnotations(this.getAnnotations());
+    return cpy;
+  }
+
   private boolean sourceError(CoreEvent event) {
     final Optional<Error> error = event.getError();
     return error.isPresent() && sourceErrorMatcher.match(error.get().getErrorType());
+  }
+
+  private class GlobalOnErrorContinueHandler extends OnErrorContinueHandler {
+
+    private final GlobalErrorHandler globalErrorHandler;
+
+    public GlobalOnErrorContinueHandler(GlobalErrorHandler globalErrorHandler) {
+      this.globalErrorHandler = globalErrorHandler;
+    }
+
+    @Override
+    protected void doInitialise() throws InitialisationException {
+      globalErrorHandler.initialiseErrorListenerProcessorIfNeeded();
+      super.doInitialise();
+    }
+
+    @Override
+    protected List<Processor> getOwnedObjects() {
+      return new ArrayList<>();
+    }
   }
 }

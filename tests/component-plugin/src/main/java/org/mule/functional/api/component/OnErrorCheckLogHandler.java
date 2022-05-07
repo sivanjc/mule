@@ -14,7 +14,9 @@ import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.event.CoreEvent;
+import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.core.internal.exception.GlobalErrorHandler;
 import org.mule.runtime.core.privileged.exception.MessagingExceptionHandlerAcceptor;
 import org.mule.runtime.core.privileged.exception.TemplateOnErrorHandler;
 import org.mule.tck.processor.FlowAssertion;
@@ -82,6 +84,24 @@ public class OnErrorCheckLogHandler extends TemplateOnErrorHandler
     return cpy;
   }
 
+  @Override public TemplateOnErrorHandler getGlobalErrorListener(Location location, GlobalErrorHandler globalErrorHandler) {
+    OnErrorCheckLogHandler cpy = new GlobalOnErrorCheckLogHandler(globalErrorHandler);
+    cpy.setFlowLocation(location);
+    cpy.propagate = this.propagate;
+    cpy.succeedIfNoLog = this.succeedIfNoLog;
+    cpy.exceptionLogged = this.exceptionLogged;
+    cpy.handledException = this.handledException;
+    when.ifPresent(expr -> cpy.setWhen(expr));
+    cpy.setHandleException(this.handleException);
+    cpy.setErrorType(this.errorType);
+    cpy.setMessageProcessors(this.getMessageProcessors());
+    cpy.setEnableNotifications(this.isEnableNotifications());
+    cpy.setLogException(this.logException);
+    cpy.setNotificationFirer(this.notificationFirer);
+    cpy.setAnnotations(this.getAnnotations());
+    return cpy;
+  }
+
   @Override
   protected void doLogException(String message, Throwable t) {
     exceptionLogged = true;
@@ -127,6 +147,24 @@ public class OnErrorCheckLogHandler extends TemplateOnErrorHandler
 
   public void setSucceedIfNoLog(boolean succeedIfNoLog) {
     this.succeedIfNoLog = succeedIfNoLog;
+  }
+
+  private class GlobalOnErrorCheckLogHandler extends OnErrorCheckLogHandler {
+
+    private final GlobalErrorHandler globalErrorHandler;
+
+    public GlobalOnErrorCheckLogHandler(GlobalErrorHandler globalErrorHandler) {
+      this.globalErrorHandler = globalErrorHandler;
+    }
+
+    @Override protected void doInitialise() throws InitialisationException {
+      globalErrorHandler.initialiseErrorListenerProcessorIfNeeded();
+      super.doInitialise();
+    }
+
+    @Override protected List<Processor> getOwnedObjects() {
+      return new ArrayList<>();
+    }
   }
 
 }
