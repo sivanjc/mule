@@ -24,6 +24,8 @@ import org.mule.runtime.core.api.processor.Sink;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategyFactory;
 
+import java.util.function.Consumer;
+
 /**
  * Processing strategy that processes the {@link Pipeline} in the caller thread and does not schedule the processing of any
  * {@link Processor} in a different thread pool regardless of their {@link ProcessingType}.
@@ -96,6 +98,11 @@ public class BlockingProcessingStrategyFactory implements ProcessingStrategyFact
       } else {
         return processor.getProcessingType() == CPU_LITE_ASYNC;
       }
+    }
+
+    @Override
+    public void drain(Consumer<InternalProcessingStrategy> whenDrained) {
+      throw new UnsupportedOperationException("Drain is not supported");
     }
   }
 }

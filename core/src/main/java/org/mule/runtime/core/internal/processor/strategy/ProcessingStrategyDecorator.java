@@ -36,7 +36,7 @@ import javax.inject.Inject;
  *
  * @since 4.3.0
  */
-public abstract class ProcessingStrategyDecorator implements ProcessingStrategy, Lifecycle {
+public abstract class ProcessingStrategyDecorator implements InternalProcessingStrategy, Lifecycle {
 
   protected final ProcessingStrategy delegate;
 

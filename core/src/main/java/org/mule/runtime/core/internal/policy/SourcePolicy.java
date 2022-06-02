@@ -10,6 +10,10 @@ import org.mule.runtime.api.component.execution.CompletableCallback;
 import org.mule.runtime.api.functional.Either;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
+import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
+import org.mule.runtime.core.internal.processor.strategy.InternalProcessingStrategy;
+
+import java.util.function.Consumer;
 
 /**
  * Interceptor of a {@link Processor} that executes logic before and after it. It allows to modify the content of the response (if
@@ -34,5 +38,7 @@ public interface SourcePolicy {
   void process(CoreEvent sourceEvent,
                MessageSourceResponseParametersProcessor messageSourceResponseParametersProcessor,
                CompletableCallback<Either<SourcePolicyFailureResult, SourcePolicySuccessResult>> callback);
+
+  void drain(Consumer<ProcessingStrategy> whenDrained);
 
 }

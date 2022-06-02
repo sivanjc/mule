@@ -25,7 +25,10 @@ import org.mule.runtime.core.api.policy.Policy;
 import org.mule.runtime.core.api.policy.SourcePolicyParametersTransformer;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.processor.ReactiveProcessor;
+import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
 import org.mule.runtime.core.internal.exception.MessagingException;
+import org.mule.runtime.core.internal.execution.FlowProcessor;
+import org.mule.runtime.core.internal.processor.strategy.InternalProcessingStrategy;
 import org.mule.runtime.core.internal.rx.FluxSinkRecorder;
 
 import java.lang.ref.Reference;
@@ -33,6 +36,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -55,7 +59,7 @@ public class CompositeSourcePolicy
 
   private final CommonSourcePolicy commonPolicy;
   private final SourcePolicyProcessorFactory sourcePolicyProcessorFactory;
-  private final ReactiveProcessor flowExecutionProcessor;
+  private final FlowProcessor flowExecutionProcessor;
   private final Optional<Function<MessagingException, MessagingException>> resolver;
   private final PolicyTraceLogger policyTraceLogger = new PolicyTraceLogger();
 
@@ -69,7 +73,7 @@ public class CompositeSourcePolicy
    * @param resolver                          a mapper to update the eventual errors in source policy
    */
   public CompositeSourcePolicy(List<Policy> parameterizedPolicies,
-                               ReactiveProcessor flowExecutionProcessor,
+                               FlowProcessor flowExecutionProcessor,
                                Optional<SourcePolicyParametersTransformer> sourcePolicyParametersTransformer,
                                SourcePolicyProcessorFactory sourcePolicyProcessorFactory,
                                Function<MessagingException, MessagingException> resolver) {
@@ -213,6 +217,11 @@ public class CompositeSourcePolicy
                       MessageSourceResponseParametersProcessor respParamProcessor,
                       CompletableCallback<Either<SourcePolicyFailureResult, SourcePolicySuccessResult>> callback) {
     commonPolicy.process(sourceEvent, respParamProcessor, callback);
+  }
+
+  @Override
+  public void drain(Consumer<ProcessingStrategy> whenDrained) {
+
   }
 
   private static Map<String, Object> concatMaps(Map<String, Object> originalResponseParameters,

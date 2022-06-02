@@ -18,7 +18,6 @@ import org.mule.runtime.core.internal.util.rx.RoundRobinFluxSinkSupplier;
 import org.mule.runtime.core.internal.util.rx.TransactionAwareFluxSinkSupplier;
 import org.mule.runtime.core.privileged.event.BaseEventContext;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import reactor.core.publisher.FluxSink;
@@ -29,8 +28,6 @@ import reactor.core.publisher.FluxSink;
 class CommonSourcePolicy {
 
   private final FluxSinkSupplier<CoreEvent> policySink;
-  private final AtomicInteger inflightEventsCounter = new AtomicInteger(0);
-  private boolean mustDispose = false;
 
   CommonSourcePolicy(Supplier<FluxSink<CoreEvent>> sinkFactory) {
     this.policySink =
@@ -47,7 +44,6 @@ class CommonSourcePolicy {
       ctx.configure(respParamProcessor, callback);
     }
 
-    inflightEventsCounter.incrementAndGet();
     policySink.get().next(sourceEvent);
   }
 
@@ -57,8 +53,6 @@ class CommonSourcePolicy {
     }
 
     from(event).getProcessCallback().complete(result);
-
-    decrementInflightEventsAndCheckForDispose();
   }
 
   public void finishFlowProcessing(CoreEvent event,
@@ -70,37 +64,14 @@ class CommonSourcePolicy {
     }
 
     ctx.getProcessCallback().complete(result);
-
-    decrementInflightEventsAndCheckForDispose();
   }
 
   public void dispose() {
-    disposeWhenNoInflightEvents(policySink);
+    policySink.dispose();
   }
 
   public Disposable deferredDispose() {
-    final FluxSinkSupplier<CoreEvent> sink = policySink;
-    return () -> disposeWhenNoInflightEvents(sink);
-  }
-
-  private void disposeWhenNoInflightEvents(FluxSinkSupplier<CoreEvent> policySink) {
-    if (!disposeIfNoInflightEvents(policySink)) {
-      mustDispose = true;
-      disposeIfNoInflightEvents(policySink);
-    }
-  }
-
-  private boolean disposeIfNoInflightEvents(FluxSinkSupplier<CoreEvent> policySink) {
-    if (mustDispose && inflightEventsCounter.get() == 0) {
-      policySink.dispose();
-      return true;
-    }
-    return false;
-  }
-
-  private void decrementInflightEventsAndCheckForDispose() {
-    inflightEventsCounter.decrementAndGet();
-    disposeIfNoInflightEvents(policySink);
+    return policySink;
   }
 
 }

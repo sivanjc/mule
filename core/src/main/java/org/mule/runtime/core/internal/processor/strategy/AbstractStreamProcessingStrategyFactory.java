@@ -122,7 +122,7 @@ public abstract class AbstractStreamProcessingStrategyFactory extends AbstractPr
   abstract static class AbstractStreamProcessingStrategy extends AbstractProcessingStrategy {
 
     final protected int subscribers;
-    final protected int maxConcurrency;
+    protected int maxConcurrency;
     final protected boolean maxConcurrencyEagerCheck;
     final protected ClassLoader executionClassloader;
 

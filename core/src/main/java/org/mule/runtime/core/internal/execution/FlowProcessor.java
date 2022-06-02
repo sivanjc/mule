@@ -17,6 +17,8 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
+import org.mule.runtime.core.api.processor.strategy.ProcessingStrategySupplier;
 import org.reactivestreams.Publisher;
 
 /**
@@ -24,7 +26,7 @@ import org.reactivestreams.Publisher;
  *
  * @since 4.4, extracted from {@link FlowProcessMediator}.
  */
-public class FlowProcessor implements ReactiveProcessor, Component {
+public class FlowProcessor implements ReactiveProcessor, Component, ProcessingStrategySupplier {
 
   private final ReactiveProcessor processor;
   private final FlowConstruct flowConstruct;
@@ -62,5 +64,11 @@ public class FlowProcessor implements ReactiveProcessor, Component {
   @Override
   public Location getRootContainerLocation() {
     return flowConstruct.getRootContainerLocation();
+  }
+
+  // TODO: Evaluate if we can call to drain directly here, instead of exposing the PS
+  @Override
+  public ProcessingStrategy getProcessingStrategy() {
+    return flowConstruct.getProcessingStrategy();
   }
 }

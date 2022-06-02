@@ -15,8 +15,8 @@ import org.mule.runtime.core.api.processor.ReactiveProcessor.ProcessingType;
 import org.mule.runtime.core.api.processor.Sink;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategyFactory;
-import org.mule.runtime.core.internal.processor.strategy.AbstractProcessingStrategy;
-import org.mule.runtime.core.internal.processor.strategy.StreamPerEventSink;
+
+import java.util.function.Consumer;
 
 /**
  * Processing strategy that processes the {@link Pipeline} in the caller thread and does not schedule the processing of any
@@ -28,6 +28,11 @@ public class DirectProcessingStrategyFactory implements ProcessingStrategyFactor
 
   public static final ProcessingStrategy DIRECT_PROCESSING_STRATEGY_INSTANCE =
       new AbstractProcessingStrategy() {
+
+        @Override
+        public void drain(Consumer<InternalProcessingStrategy> whenDrained) {
+          throw new UnsupportedOperationException("Drain is not supported");
+        }
 
         @Override
         public boolean isSynchronous() {

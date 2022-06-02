@@ -37,7 +37,7 @@ import reactor.core.publisher.FluxSink;
 /**
  * Abstract base {@link ProcessingStrategy} that creates a basic {@link Sink} that serializes events.
  */
-public abstract class AbstractProcessingStrategy implements ProcessingStrategyAdapter {
+public abstract class AbstractProcessingStrategy implements InternalProcessingStrategy {
 
   public static final String TRANSACTIONAL_ERROR_MESSAGE = "Unable to process a transactional flow asynchronously";
   public static final String PROCESSOR_SCHEDULER_CONTEXT_KEY = "mule.nb.processorScheduler";

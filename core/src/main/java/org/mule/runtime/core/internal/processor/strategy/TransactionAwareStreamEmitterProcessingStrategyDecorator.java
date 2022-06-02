@@ -67,8 +67,8 @@ public class TransactionAwareStreamEmitterProcessingStrategyDecorator extends Pr
 
   public TransactionAwareStreamEmitterProcessingStrategyDecorator(ProcessingStrategy delegate) {
     super(delegate);
-    if (delegate instanceof ProcessingStrategyAdapter) {
-      ProcessingStrategyAdapter adapter = (ProcessingStrategyAdapter) delegate;
+    if (delegate instanceof InternalProcessingStrategy) {
+      InternalProcessingStrategy adapter = (InternalProcessingStrategy) delegate;
 
       adapter.setOnEventConsumer(NULL_EVENT_CONSUMER);
       Function<ScheduledExecutorService, ScheduledExecutorService> delegateDecorator = adapter.getSchedulerDecorator();
@@ -171,5 +171,42 @@ public class TransactionAwareStreamEmitterProcessingStrategyDecorator extends Pr
             return from(pub).transform(delegate.onProcessor(processor));
           }
         });
+  }
+
+
+  @Override
+  public Function<ScheduledExecutorService, ScheduledExecutorService> getSchedulerDecorator() {
+    if (delegate instanceof InternalProcessingStrategy) {
+      return ((InternalProcessingStrategy) delegate).getSchedulerDecorator();
+    } else {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
+  public void setSchedulerDecorator(Function<ScheduledExecutorService, ScheduledExecutorService> schedulerDecorator) {
+    if (delegate instanceof InternalProcessingStrategy) {
+      ((InternalProcessingStrategy) delegate).setSchedulerDecorator(schedulerDecorator);
+    } else {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
+  public void setOnEventConsumer(Consumer<CoreEvent> eventConsumer) {
+    if (delegate instanceof InternalProcessingStrategy) {
+      ((InternalProcessingStrategy) delegate).setOnEventConsumer(eventConsumer);
+    } else {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
+  public void drain(Consumer<InternalProcessingStrategy> whenDrained) {
+    if (delegate instanceof InternalProcessingStrategy) {
+      ((InternalProcessingStrategy) delegate).drain(whenDrained);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 }

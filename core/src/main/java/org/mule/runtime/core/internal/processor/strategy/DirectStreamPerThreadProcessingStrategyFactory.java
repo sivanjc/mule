@@ -18,6 +18,8 @@ import org.mule.runtime.core.api.processor.Sink;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategyFactory;
 
+import java.util.function.Consumer;
+
 /**
  * Processing strategy that processes the {@link Pipeline} in the caller thread and does not schedule the processing of any
  * {@link Processor} in a different thread pool regardless of their {@link ProcessingType}. While processing of the flow is
@@ -33,6 +35,11 @@ public class DirectStreamPerThreadProcessingStrategyFactory implements Processin
 
   public static final ProcessingStrategy DIRECT_STREAM_PER_THREAD_PROCESSING_STRATEGY_INSTANCE =
       new AbstractProcessingStrategy() {
+
+        @Override
+        public void drain(Consumer<InternalProcessingStrategy> whenDrained) {
+          throw new UnsupportedOperationException("Drain is not supported");
+        }
 
         @Override
         public boolean isSynchronous() {

@@ -142,10 +142,10 @@ public class RxUtils {
    * @param errorCallback      how a cancellation event will be triggered on the downstream.
    * @return an enriched downstream where items and events will be triggered according to the rules defined for this method.
    */
-  public static <T, U> Publisher<T> propagateCompletion(Publisher<U> upstream, Publisher<T> downstream,
-                                                        Function<Publisher<U>, Publisher<T>> transformer,
-                                                        CheckedRunnable completionCallback,
-                                                        CheckedConsumer<Throwable> errorCallback) {
+  public static <S, T, U> Publisher<T> propagateCompletion(Publisher<U> upstream, Publisher<T> downstream,
+                                                           Function<Publisher<U>, Publisher<S>> transformer,
+                                                           CheckedRunnable completionCallback,
+                                                           CheckedConsumer<Throwable> errorCallback) {
     requireNonNull(upstream, "'upstream' must not be null");
     requireNonNull(downstream, "'downstream' must not be null");
     requireNonNull(transformer, "'transformer' must not be null");
@@ -228,12 +228,12 @@ public class RxUtils {
    *                                delayedExecutor
    * @return an enriched downstream where items and events will be triggered according to the rules defined for this method.
    */
-  public static <T, U> Publisher<T> propagateCompletion(Publisher<U> upstream, Publisher<T> downstream,
-                                                        Function<Publisher<U>, Publisher<T>> transformer,
-                                                        CheckedRunnable completionCallback,
-                                                        CheckedConsumer<Throwable> errorCallback,
-                                                        long completionTimeoutMillis, ScheduledExecutorService delayedExecutor,
-                                                        final String dslSource) {
+  public static <S, T, U> Publisher<T> propagateCompletion(Publisher<U> upstream, Publisher<T> downstream,
+                                                           Function<Publisher<U>, Publisher<S>> transformer,
+                                                           CheckedRunnable completionCallback,
+                                                           CheckedConsumer<Throwable> errorCallback,
+                                                           long completionTimeoutMillis, ScheduledExecutorService delayedExecutor,
+                                                           final String dslSource) {
     requireNonNull(upstream, "'upstream' must not be null");
     requireNonNull(downstream, "'downstream' must not be null");
     requireNonNull(transformer, "'transformer' must not be null");
@@ -253,8 +253,8 @@ public class RxUtils {
                                  }, completionTimeoutMillis, MILLISECONDS));
   }
 
-  private static <T, U> Publisher<T> doPropagateCompletion(Publisher<U> upstream, Publisher<T> downstream,
-                                                           Function<Publisher<U>, Publisher<T>> transformer,
+  private static <S, T, U> Publisher<T> doPropagateCompletion(Publisher<U> upstream, Publisher<T> downstream,
+                                                           Function<Publisher<U>, Publisher<S>> transformer,
                                                            AtomicInteger inflightCounter,
                                                            final RunOnce completer, final ConsumeOnce<Throwable> errorForwarder,
                                                            final Supplier<ScheduledFuture<?>> scheduleCompletion) {
@@ -263,7 +263,7 @@ public class RxUtils {
 
     AtomicReference<ScheduledFuture<?>> scheduledCompletion = new AtomicReference<>();
 
-    Flux<T> enrichedUpstream = Flux.from(upstream)
+    Flux<S> enrichedUpstream = Flux.from(upstream)
         .doOnNext(s -> inflightCounter.incrementAndGet())
         .transform(transformer);
 

@@ -9,6 +9,7 @@ package org.mule.runtime.core.internal.processor.strategy;
 import static org.mule.runtime.core.api.construct.BackPressureReason.MAX_CONCURRENCY_EXCEEDED;
 import static org.mule.runtime.core.api.processor.ReactiveProcessor.ProcessingType.CPU_LITE;
 import static org.mule.runtime.core.api.processor.ReactiveProcessor.ProcessingType.CPU_LITE_ASYNC;
+import static org.mule.runtime.core.api.util.func.Once.of;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.mule.runtime.core.internal.processor.strategy.AbstractStreamProcessingStrategyFactory.DEFAULT_BUFFER_SIZE;
 import static org.mule.runtime.core.internal.processor.strategy.util.ProfilingUtils.getArtifactId;
@@ -22,6 +23,8 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.BackPressureReason;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.ReactiveProcessor;
+import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
+import org.mule.runtime.core.api.util.func.Once.ConsumeOnce;
 import org.mule.runtime.core.internal.construct.FromFlowRejectedExecutionException;
 import org.mule.runtime.core.internal.processor.strategy.AbstractStreamProcessingStrategyFactory.AbstractStreamProcessingStrategy;
 import org.mule.runtime.core.internal.processor.strategy.enricher.CpuLiteAsyncNonBlockingProcessingStrategyEnricher;
@@ -35,6 +38,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -49,8 +53,13 @@ public abstract class AbstractReactorStreamProcessingStrategy extends AbstractSt
   private final Supplier<Scheduler> cpuLightSchedulerSupplier;
   private final int parallelism;
   private final AtomicInteger inFlightEvents = new AtomicInteger();
+  private ConsumeOnce<ProcessingStrategy> onDrainConsumer = of(processingStrategy -> {
+  });
   private final BiConsumer<CoreEvent, Throwable> inFlightDecrementCallback = (e, t) -> {
     int decremented = inFlightEvents.decrementAndGet();
+    if (decremented == 0) {
+      onDrainConsumer.consumeOnce(this);
+    }
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("decremented inFlightEvents={}", decremented);
     }
@@ -109,8 +118,9 @@ public abstract class AbstractReactorStreamProcessingStrategy extends AbstractSt
    * @return true if the event can be accepted for processing
    */
   protected BackPressureReason checkCapacity(CoreEvent event) {
+    int incremented = inFlightEvents.incrementAndGet();
+
     if (maxConcurrencyEagerCheck) {
-      int incremented = inFlightEvents.incrementAndGet();
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("incremented inFlightEvents={}", incremented);
       }
@@ -121,11 +131,11 @@ public abstract class AbstractReactorStreamProcessingStrategy extends AbstractSt
         }
         return MAX_CONCURRENCY_EXCEEDED;
       }
-
-      // onResponse doesn't wait for child contexts to be terminated, which is handy when a child context is created (like in
-      // an async, for instance)
-      ((BaseEventContext) event.getContext()).onBeforeResponse(inFlightDecrementCallback);
     }
+
+    // onResponse doesn't wait for child contexts to be terminated, which is handy when a child context is created (like in
+    // an async, for instance)
+    ((BaseEventContext) event.getContext()).onBeforeResponse(inFlightDecrementCallback);
 
     return null;
   }
@@ -176,6 +186,20 @@ public abstract class AbstractReactorStreamProcessingStrategy extends AbstractSt
   @Override
   public void dispose() {
     stopSchedulersIfNeeded();
+  }
+
+  @Override
+  public void drain(Consumer<InternalProcessingStrategy> whenDrainedConsumer) {
+    this.onDrainConsumer = of(processingStrategy -> whenDrainedConsumer.accept(this));
+    // Since we are draining the processing, new events must not be allowed to enter it (backpressure will be applied to those)
+    maxConcurrency = 0;
+    // TODO: Rejected events could go to a wait in order to not missing them?
+    inFlightEvents.getAndUpdate(operand -> {
+      if (operand == 0) {
+        onDrainConsumer.consumeOnce(this);
+      }
+      return operand;
+    });
   }
 
   /**

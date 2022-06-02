@@ -18,7 +18,7 @@ import java.util.function.Function;
  *
  * @since 4.3.0
  */
-public interface ProcessingStrategyAdapter extends ProcessingStrategy {
+public interface InternalProcessingStrategy extends ProcessingStrategy {
 
   /**
    * Returns a {@link Function} that implementations will use to decorate {@link ScheduledExecutorService} instances.
@@ -47,5 +47,7 @@ public interface ProcessingStrategyAdapter extends ProcessingStrategy {
    * @param eventConsumer a {@link CoreEvent} {@link Consumer}
    */
   void setOnEventConsumer(Consumer<CoreEvent> eventConsumer);
+
+  void drain(Consumer<InternalProcessingStrategy> whenDrained);
 
 }

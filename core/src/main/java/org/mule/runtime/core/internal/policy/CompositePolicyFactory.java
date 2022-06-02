@@ -11,8 +11,8 @@ import org.mule.runtime.api.scheduler.Scheduler;
 import org.mule.runtime.core.api.policy.OperationPolicyParametersTransformer;
 import org.mule.runtime.core.api.policy.Policy;
 import org.mule.runtime.core.api.policy.SourcePolicyParametersTransformer;
-import org.mule.runtime.core.api.processor.ReactiveProcessor;
 import org.mule.runtime.core.internal.exception.MessagingException;
+import org.mule.runtime.core.internal.execution.FlowProcessor;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 class CompositePolicyFactory {
 
-  public SourcePolicy createSourcePolicy(List<Policy> innerKey, ReactiveProcessor flowExecutionProcessor,
+  public SourcePolicy createSourcePolicy(List<Policy> innerKey, FlowProcessor flowExecutionProcessor,
                                          Optional<SourcePolicyParametersTransformer> lookupSourceParametersTransformer,
                                          SourcePolicyProcessorFactory sourcePolicyProcessorFactory,
                                          Function<MessagingException, MessagingException> resolver) {
