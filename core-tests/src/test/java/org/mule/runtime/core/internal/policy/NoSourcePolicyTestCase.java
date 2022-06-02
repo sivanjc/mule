@@ -57,7 +57,7 @@ public class NoSourcePolicyTestCase extends AbstractMuleTestCase {
       return updatedEvent;
     });
 
-    noSourcePolicy = new NoSourcePolicy(flowProcessor);
+    // noSourcePolicy = new NoSourcePolicy(flowProcessor);
 
     when(initialEvent.getVariables()).thenReturn(new CaseInsensitiveHashMap<>());
     when(initialEvent.getSourcePolicyContext()).thenReturn((EventInternalContext) sourcePolicyContext);
@@ -87,7 +87,7 @@ public class NoSourcePolicyTestCase extends AbstractMuleTestCase {
           return error(new MessagingException(createStaticMessage("message"), event));
         });
 
-    noSourcePolicy = new NoSourcePolicy(flowProcessor);
+    // noSourcePolicy = new NoSourcePolicy(flowProcessor);
 
     Map<String, Object> errorParameters = responseParameters();
 

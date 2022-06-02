@@ -45,8 +45,8 @@ public class NoSourcePolicyBenchmark extends AbstractBenchmark {
 
   @Setup(Level.Trial)
   public void setUp() {
-    handler = new NoSourcePolicy(eventPub -> Flux.from(eventPub)
-        .flatMap(e -> Mono.just(e)));
+//    handler = new NoSourcePolicy(eventPub -> Flux.from(eventPub)
+//        .flatMap(e -> Mono.just(e)));
 
     sourceRpp = new MessageSourceResponseParametersProcessor() {
 

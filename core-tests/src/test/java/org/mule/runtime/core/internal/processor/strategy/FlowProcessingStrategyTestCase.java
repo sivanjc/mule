@@ -42,6 +42,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.function.Consumer;
+
 @SmallTest
 public class FlowProcessingStrategyTestCase extends AbstractMuleTestCase {
 
@@ -126,6 +128,11 @@ public class FlowProcessingStrategyTestCase extends AbstractMuleTestCase {
   }
 
   private static class TestProcessingStrategy extends AbstractProcessingStrategy {
+
+    @Override
+    public void drain(Consumer<InternalProcessingStrategy> whenDrained) {
+      throw new UnsupportedOperationException("Drain is not supported");
+    }
   }
 
   private void createFlow(ProcessingStrategyFactory configProcessingStrategyFactory) {

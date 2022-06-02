@@ -420,7 +420,7 @@ public class FlowProcessMediatorTestCase extends AbstractMuleContextTestCase {
   @Test
   public void failurePolicyManager() throws Exception {
     final ArgumentCaptor<CoreEvent> eventCaptor = ArgumentCaptor.forClass(CoreEvent.class);
-    when(policyManager.createSourcePolicyInstance(any(Component.class), eventCaptor.capture(), any(ReactiveProcessor.class),
+    when(policyManager.createSourcePolicyInstance(any(Component.class), eventCaptor.capture(), any(FlowProcessor.class),
                                                   any(MessageSourceResponseParametersProcessor.class))).thenThrow(mockException);
     when(template.getFailedExecutionResponseParametersFunction()).thenReturn(coreEvent -> emptyMap());
 
