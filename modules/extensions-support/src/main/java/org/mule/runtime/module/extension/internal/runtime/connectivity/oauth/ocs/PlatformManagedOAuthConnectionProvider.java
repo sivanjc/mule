@@ -117,7 +117,6 @@ public class PlatformManagedOAuthConnectionProvider<C>
   private FieldSetter<Object, OAuthState> oauthStateFieldSetter;
   private PlatformManagedConnectionDescriptor descriptor;
   private PoolingListener<C> delegatePoolingListener;
-  private DslSyntaxResolver dslSyntaxResolver;
 
   public PlatformManagedOAuthConnectionProvider(PlatformManagedOAuthConfig oauthConfig,
                                                 PlatformManagedOAuthHandler oauthHandler,
@@ -156,7 +155,6 @@ public class PlatformManagedOAuthConnectionProvider<C>
     dancer = oauthHandler.register(oauthConfig);
 
     try {
-      dslSyntaxResolver = createDslSyntaxResolver();
       descriptor = fetchConnectionDescriptor();
       delegate = createDelegate(descriptor);
       unwrappedDelegate = unwrap(delegate);
@@ -249,14 +247,7 @@ public class PlatformManagedOAuthConnectionProvider<C>
                                           false,
                                           new ReflectionCache(),
                                           expressionManager,
-                                          this.toString(),
-                                          dslSyntaxResolver);
-  }
-
-  private DslSyntaxResolver createDslSyntaxResolver() {
-    return DslSyntaxResolver
-        .getDefault(oauthConfig.getExtensionModel(),
-                    DslResolvingContext.getDefault(extensionManager.getExtensions()));
+                                          this.toString());
   }
 
   private PlatformManagedConnectionDescriptor fetchConnectionDescriptor() throws MuleException {
