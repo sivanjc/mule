@@ -15,6 +15,7 @@ import static org.mule.runtime.core.internal.profiling.tracing.event.span.CoreEv
 import static java.lang.System.currentTimeMillis;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.event.EventContext;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
@@ -39,6 +40,10 @@ import java.util.Optional;
  */
 public class ExportOnEndCoreEventSpanFactory implements CoreEventSpanFactory {
 
+  public static CoreEventSpanCustomizer getDefaultCoreEventSpanCustomizer() {
+    return defaultCoreEventSpanCustomizer;
+  }
+
   private static final CoreEventSpanCustomizer defaultCoreEventSpanCustomizer = new DefaultEventSpanCustomizer();
   private final InternalSpanExportManager<EventContext> internalSpanExportManager;
 
@@ -47,7 +52,7 @@ public class ExportOnEndCoreEventSpanFactory implements CoreEventSpanFactory {
   }
 
   @Override
-  public InternalSpan getSpan(CoreEvent event, Component component, MuleConfiguration muleConfiguration,
+  public InternalSpan getSpan(CoreEvent event, ComponentLocation component, MuleConfiguration muleConfiguration,
                               ArtifactType artifactType) {
     return getExportOnEndSpan(component,
                               muleConfiguration,
@@ -57,7 +62,7 @@ public class ExportOnEndCoreEventSpanFactory implements CoreEventSpanFactory {
   }
 
   @Override
-  public InternalSpan getSpan(CoreEvent coreEvent, Component component, MuleConfiguration muleConfiguration,
+  public InternalSpan getSpan(CoreEvent coreEvent, ComponentLocation component, MuleConfiguration muleConfiguration,
                               ArtifactType artifactType,
                               CoreEventSpanCustomizer coreEventSpanCustomizer) {
     return getExportOnEndSpan(component, muleConfiguration,
@@ -66,7 +71,7 @@ public class ExportOnEndCoreEventSpanFactory implements CoreEventSpanFactory {
                               coreEventSpanCustomizer.getName(coreEvent, component));
   }
 
-  private ExportOnEndSpan getExportOnEndSpan(Component component, MuleConfiguration muleConfiguration,
+  private ExportOnEndSpan getExportOnEndSpan(ComponentLocation component, MuleConfiguration muleConfiguration,
                                              ArtifactType artifactType,
                                              CoreEvent coreEvent, String name) {
 
@@ -74,7 +79,7 @@ public class ExportOnEndCoreEventSpanFactory implements CoreEventSpanFactory {
 
     ExportOnEndSpan exportOnEndSpan = new ExportOnEndSpan(new ExecutionSpan(name,
                                                                             componentSpanIdentifierFrom(muleConfiguration.getId(),
-                                                                                                        component.getLocation(),
+                                                                                                        component,
                                                                                                         eventContext
                                                                                                             .getCorrelationId()),
                                                                             currentTimeMillis(),
@@ -104,15 +109,15 @@ public class ExportOnEndCoreEventSpanFactory implements CoreEventSpanFactory {
     public static final String THREAD_START_NAME_KEY = "threadStartName";
 
     @Override
-    public String getName(CoreEvent coreEvent, Component component) {
-      return getSpanName(component.getIdentifier());
+    public String getName(CoreEvent coreEvent, ComponentLocation component) {
+      return getSpanName(component.getComponentIdentifier().getIdentifier());
     }
 
     @Override
-    public Map<String, String> getAttributes(CoreEvent coreEvent, Component component,
+    public Map<String, String> getAttributes(CoreEvent coreEvent, ComponentLocation component,
                                              MuleConfiguration muleConfiguration, ArtifactType artifactType) {
       Map<String, String> attributes = new HashMap<>();
-      attributes.put(LOCATION_KEY, getLocationAsString(component.getLocation()));
+      attributes.put(LOCATION_KEY, getLocationAsString(component));
       attributes.put(CORRELATION_ID_KEY, coreEvent.getCorrelationId());
       attributes.put(ARTIFACT_ID_KEY, muleConfiguration.getId());
       attributes.put(ARTIFACT_TYPE_ID, artifactType.getAsString());

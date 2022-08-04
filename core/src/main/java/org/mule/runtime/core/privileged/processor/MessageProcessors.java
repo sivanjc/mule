@@ -107,10 +107,31 @@ public class MessageProcessors {
 
   public static MessageProcessorChain buildNewChainWithListOfProcessors(Optional<ProcessingStrategy> processingStrategy,
                                                                         List<Processor> processors,
+                                                                        ComponentLocation componentLocation) {
+    DefaultMessageProcessorChainBuilder defaultMessageProcessorChainBuilder = new DefaultMessageProcessorChainBuilder();
+    processingStrategy.ifPresent(defaultMessageProcessorChainBuilder::setProcessingStrategy);
+    DefaultMessageProcessorChainBuilder builder = defaultMessageProcessorChainBuilder.chain(processors);
+    builder.setPipelineLocation(componentLocation);
+    return builder.build();
+  }
+
+  public static MessageProcessorChain buildNewChainWithListOfProcessors(Optional<ProcessingStrategy> processingStrategy,
+                                                                        List<Processor> processors,
                                                                         FlowExceptionHandler messagingExceptionHandler) {
     DefaultMessageProcessorChainBuilder defaultMessageProcessorChainBuilder = new DefaultMessageProcessorChainBuilder();
     processingStrategy.ifPresent(defaultMessageProcessorChainBuilder::setProcessingStrategy);
     defaultMessageProcessorChainBuilder.setMessagingExceptionHandler(messagingExceptionHandler);
+    return defaultMessageProcessorChainBuilder.chain(processors).build();
+  }
+
+  public static MessageProcessorChain buildNewChainWithListOfProcessors(Optional<ProcessingStrategy> processingStrategy,
+                                                                        List<Processor> processors,
+                                                                        FlowExceptionHandler messagingExceptionHandler,
+                                                                        ComponentLocation componentLocation) {
+    DefaultMessageProcessorChainBuilder defaultMessageProcessorChainBuilder = new DefaultMessageProcessorChainBuilder();
+    processingStrategy.ifPresent(defaultMessageProcessorChainBuilder::setProcessingStrategy);
+    defaultMessageProcessorChainBuilder.setMessagingExceptionHandler(messagingExceptionHandler);
+    defaultMessageProcessorChainBuilder.setPipelineLocation(componentLocation);
     return defaultMessageProcessorChainBuilder.chain(processors).build();
   }
 

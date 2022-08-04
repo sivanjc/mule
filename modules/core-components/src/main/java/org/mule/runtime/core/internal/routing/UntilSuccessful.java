@@ -73,7 +73,7 @@ public class UntilSuccessful extends AbstractMuleObjectOwner implements Scope {
                                         this);
     }
 
-    this.nestedChain = buildNewChainWithListOfProcessors(getProcessingStrategy(locator, this), processors);
+    this.nestedChain = buildNewChainWithListOfProcessors(getProcessingStrategy(locator, this), processors, this.getLocation());
 
     super.initialise();
 

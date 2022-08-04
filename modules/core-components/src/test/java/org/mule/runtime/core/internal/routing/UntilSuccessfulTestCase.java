@@ -36,6 +36,7 @@ import static org.mule.test.allure.AllureConstants.ScopeFeature.SCOPE;
 import static org.mule.test.allure.AllureConstants.ScopeFeature.UntilSuccessfulStory.UNTIL_SUCCESSFUL;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.construct.Flow;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -401,13 +402,13 @@ public class UntilSuccessfulTestCase extends AbstractMuleContextTestCase {
 
                                                                      @Override
                                                                      public InternalSpan startComponentSpan(CoreEvent coreEvent,
-                                                                                                            Component component) {
+                                                                                                            ComponentLocation component) {
                                                                        return null;
                                                                      }
 
                                                                      @Override
                                                                      public InternalSpan startComponentSpan(CoreEvent coreEvent,
-                                                                                                            Component component,
+                                                                                                            ComponentLocation component,
                                                                                                             CoreEventSpanCustomizer coreEventSpanCustomizer) {
                                                                        return null;
                                                                      }

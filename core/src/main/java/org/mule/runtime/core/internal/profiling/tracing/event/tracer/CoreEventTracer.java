@@ -7,6 +7,7 @@
 package org.mule.runtime.core.internal.profiling.tracing.event.tracer;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.profiling.tracing.Span;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.internal.profiling.tracing.event.span.InternalSpan;
@@ -41,7 +42,7 @@ public interface CoreEventTracer {
    *
    * @return the span generated for the context of the {@link CoreEvent} when it hits the {@param component}
    */
-  InternalSpan startComponentSpan(CoreEvent coreEvent, Component component);
+  InternalSpan startComponentSpan(CoreEvent coreEvent, ComponentLocation component);
 
   /**
    * Starts a span associated to the {@param component} as the current context span for the {@link CoreEvent}.
@@ -52,7 +53,7 @@ public interface CoreEventTracer {
    *
    * @return the span generated for the context of the {@link CoreEvent} when it hits the {@param component}
    */
-  InternalSpan startComponentSpan(CoreEvent coreEvent, Component component,
+  InternalSpan startComponentSpan(CoreEvent coreEvent, ComponentLocation component,
                                   CoreEventSpanCustomizer coreEventSpanCustomizer);
 
   /**

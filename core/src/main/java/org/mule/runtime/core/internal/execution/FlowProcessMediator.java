@@ -256,7 +256,7 @@ public class FlowProcessMediator implements Initialisable {
     try {
       onMessageReceived(event, flowConstruct, ctx);
       flowConstruct.checkBackpressure(event);
-      eventTracer.startComponentSpan(event, flowConstruct);
+      flowConstruct.checkBackpressure(event);
       ctx.template.getNotificationFunctions().forEach(notificationFunction -> notificationManager
           .fireNotification(notificationFunction.apply(event, flowConstruct.getSource())));
       sourcePolicy.process(event, ctx.template,
@@ -264,13 +264,11 @@ public class FlowProcessMediator implements Initialisable {
 
                              @Override
                              public void complete(Either<SourcePolicyFailureResult, SourcePolicySuccessResult> value) {
-                               eventTracer.endCurrentSpan(event);
                                dispatchResponse(flowConstruct, ctx, value);
                              }
 
                              @Override
                              public void error(Throwable e) {
-                               eventTracer.endCurrentSpan(event);
                                dispatchResponse(flowConstruct, ctx,
                                                 left(new SourcePolicyFailureResult(new MessagingException(event, e),
                                                                                    Collections::emptyMap)));

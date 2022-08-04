@@ -24,6 +24,7 @@ import static reactor.core.publisher.Mono.subscriberContext;
 import static reactor.util.context.Context.empty;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.functional.Either;
 import org.mule.runtime.api.scheduler.Scheduler;
@@ -116,7 +117,6 @@ class UntilSuccessfulRouter {
           // Inject event into retrial execution chain
           RetryContext ctx = new RetryContext(event, sessionSupplier, maxRetriesSupplier, delaySupplier);
           inflightEvents.getAndIncrement();
-          coreEventTracer.startComponentSpan(ctx.event, owner, new RouteSpanCustomizer());
           innerRecorder.next(eventWithCurrentContext(event, ctx));
 
         })
@@ -189,13 +189,10 @@ class UntilSuccessfulRouter {
       int retriesLeft =
           ctx.retryCount.getAndDecrement();
 
-      coreEventTracer.endCurrentSpan(ctx.event);
-
       if (retriesLeft > 0) {
         LOGGER.error("Retrying execution of event, attempt {} of {}.", ctx.getAttemptNumber(),
                      ctx.maxRetries != RETRY_COUNT_FOREVER ? ctx.maxRetries : "unlimited");
 
-        coreEventTracer.startComponentSpan(ctx.event, owner, new RouteSpanCustomizer());
         // Schedule retry with delay
         UntilSuccessfulRouter.this.delayScheduler.schedule(() -> innerRecorder.next(eventWithCurrentContext(ctx.event, ctx)),
                                                            ctx.delayInMillis, MILLISECONDS);
@@ -361,8 +358,8 @@ class UntilSuccessfulRouter {
     public static final String ROUTE = ":route";
 
     @Override
-    public String getName(CoreEvent coreEvent, Component component) {
-      return getSpanName(component.getIdentifier()) + ROUTE;
+    public String getName(CoreEvent coreEvent, ComponentLocation component) {
+      return getSpanName(component.getComponentIdentifier().getIdentifier()) + ROUTE;
     }
   }
 

@@ -9,6 +9,7 @@ package org.mule.runtime.core.internal.profiling;
 import static org.mule.runtime.api.config.MuleRuntimeFeature.ENABLE_PROFILING_SERVICE;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.config.FeatureFlaggingService;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.exception.MuleRuntimeException;
@@ -177,7 +178,7 @@ public class ProfilingServiceWrapper implements InternalProfilingService, Privil
   }
 
   @Override
-  public void startComponentSpan(CoreEvent event, Component component) {
+  public void startComponentSpan(CoreEvent event, ComponentLocation component) {
     if (profilingService instanceof PrivilegedProfilingService) {
       ((PrivilegedProfilingService) getProfilingService()).startComponentSpan(event, component);
     }

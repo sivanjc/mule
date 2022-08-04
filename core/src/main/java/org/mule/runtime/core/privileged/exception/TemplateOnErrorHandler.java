@@ -302,7 +302,8 @@ public abstract class TemplateOnErrorHandler extends AbstractDeclaredExceptionLi
       processingStrategy = getProcessingStrategy(locator, this);
     }
     configuredMessageProcessors =
-        buildNewChainWithListOfProcessors(processingStrategy, getMessageProcessors(), NullExceptionHandler.getInstance());
+        buildNewChainWithListOfProcessors(processingStrategy, getMessageProcessors(), NullExceptionHandler.getInstance(),
+                                          getLocation());
 
     fluxFactory = new OnErrorHandlerFluxObjectFactory(processingStrategy);
 

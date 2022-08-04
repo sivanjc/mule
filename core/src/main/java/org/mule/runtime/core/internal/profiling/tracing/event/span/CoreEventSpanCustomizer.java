@@ -8,6 +8,7 @@
 package org.mule.runtime.core.internal.profiling.tracing.event.span;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -30,7 +31,7 @@ public interface CoreEventSpanCustomizer {
    * @param component the {@link Component} to resolve the span name from.
    * @return the name of the span.
    */
-  String getName(CoreEvent coreEvent, Component component);
+  String getName(CoreEvent coreEvent, ComponentLocation component);
 
   /**
    * @param coreEvent         the {@link CoreEvent} corresponding to span being created.
@@ -40,7 +41,7 @@ public interface CoreEventSpanCustomizer {
    *
    * @return the attributes of the span being created.
    */
-  default Map<String, String> getAttributes(CoreEvent coreEvent, Component component, MuleConfiguration muleConfiguration,
+  default Map<String, String> getAttributes(CoreEvent coreEvent, ComponentLocation component, MuleConfiguration muleConfiguration,
                                             ArtifactType artifactType) {
     return emptyMap();
   }

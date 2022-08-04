@@ -8,6 +8,7 @@
 package org.mule.runtime.core.internal.profiling.tracing.event.span;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -35,7 +36,7 @@ public interface CoreEventSpanFactory {
    *
    * @return the {@link InternalSpan} for that coreEvent and component.
    */
-  InternalSpan getSpan(CoreEvent coreEvent, Component component, MuleConfiguration muleConfiguration,
+  InternalSpan getSpan(CoreEvent coreEvent, ComponentLocation component, MuleConfiguration muleConfiguration,
                        ArtifactType artifactType);
 
   /**
@@ -48,7 +49,7 @@ public interface CoreEventSpanFactory {
    * @param coreEventSpanCustomizer the {@link CoreEventSpanCustomizer} customizer for the span.
    * @return the {@link InternalSpan} for that coreEvent and component.
    */
-  InternalSpan getSpan(CoreEvent coreEvent, Component component, MuleConfiguration muleConfiguration,
+  InternalSpan getSpan(CoreEvent coreEvent, ComponentLocation component, MuleConfiguration muleConfiguration,
                        ArtifactType artifactType,
                        CoreEventSpanCustomizer coreEventSpanCustomizer);
 

@@ -7,6 +7,7 @@
 package org.mule.runtime.core.internal.profiling;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.profiling.ProfilingDataConsumer;
 import org.mule.runtime.api.profiling.ProfilingDataProducer;
 import org.mule.runtime.api.profiling.ProfilingEventContext;
@@ -142,12 +143,12 @@ public class NoOpProfilingService implements InternalProfilingService, Privilege
   private static class NoOpCoreEventTracer implements CoreEventTracer {
 
     @Override
-    public InternalSpan startComponentSpan(CoreEvent coreEvent, Component component) {
+    public InternalSpan startComponentSpan(CoreEvent coreEvent, ComponentLocation component) {
       return NoOpInternalSpan.INSTANCE;
     }
 
     @Override
-    public InternalSpan startComponentSpan(CoreEvent coreEvent, Component component,
+    public InternalSpan startComponentSpan(CoreEvent coreEvent, ComponentLocation component,
                                            CoreEventSpanCustomizer coreEventSpanCustomizer) {
       return NoOpInternalSpan.INSTANCE;
     }

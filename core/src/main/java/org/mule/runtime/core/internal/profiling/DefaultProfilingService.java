@@ -14,6 +14,7 @@ import static org.mule.runtime.core.internal.profiling.tracing.event.tracer.impl
 import static java.util.Optional.empty;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.event.EventContext;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.profiling.ProfilingDataConsumerDiscoveryStrategy;
@@ -210,7 +211,7 @@ public class DefaultProfilingService extends AbstractProfilingService {
   }
 
   @Override
-  public void startComponentSpan(CoreEvent event, Component component) {
+  public void startComponentSpan(CoreEvent event, ComponentLocation component) {
     eventTracer.startComponentSpan(event, component);
   }
 

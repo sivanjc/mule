@@ -47,6 +47,7 @@ import static reactor.core.publisher.Operators.lift;
 
 import org.mule.runtime.api.artifact.Registry;
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.TypedComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.functional.Either;
@@ -62,6 +63,7 @@ import org.mule.runtime.core.api.context.notification.ServerNotificationHandler;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.exception.FlowExceptionHandler;
 import org.mule.runtime.core.api.execution.ExceptionContextProvider;
+import org.mule.runtime.core.api.processor.HasLocation;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.core.api.processor.ReactiveProcessor;
 import org.mule.runtime.core.api.processor.strategy.ProcessingStrategy;
@@ -74,8 +76,11 @@ import org.mule.runtime.core.internal.processor.chain.InterceptedReactiveProcess
 import org.mule.runtime.core.internal.processor.interceptor.ProcessorInterceptorFactoryAdapter;
 import org.mule.runtime.core.internal.processor.interceptor.ReactiveInterceptorAdapter;
 import org.mule.runtime.core.internal.profiling.InternalProfilingService;
+import org.mule.runtime.core.internal.profiling.tracing.event.span.CoreEventSpanCustomizer;
+import org.mule.runtime.core.internal.profiling.tracing.event.span.export.optel.ExportOnEndCoreEventSpanFactory;
 import org.mule.runtime.core.internal.profiling.tracing.event.tracer.CoreEventTracer;
 import org.mule.runtime.core.internal.profiling.context.DefaultComponentThreadingProfilingEventContext;
+import org.mule.runtime.core.internal.profiling.tracing.event.tracer.impl.DefaultCoreEventTracer;
 import org.mule.runtime.core.internal.rx.FluxSinkRecorder;
 import org.mule.runtime.core.internal.util.MessagingExceptionResolver;
 import org.mule.runtime.core.internal.util.rx.RxUtils;
@@ -209,6 +214,7 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
             final Flux<CoreEvent> upstream =
                 from(doApply(publisher, interceptors, (context, throwable) -> {
                   inflightEvents.incrementAndGet();
+                  muleEventTracer.endCurrentSpan(((MessagingException) throwable).getEvent());
                   routeError(errorRouter, throwable);
                 }));
 
@@ -233,7 +239,10 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
           });
 
     } else {
-      return doApply(publisher, interceptors, (context, throwable) -> context.error(throwable));
+      return doApply(publisher, interceptors, (context, throwable) -> {
+        muleEventTracer.endCurrentSpan(((MessagingException) throwable).getEvent());
+        context.error(throwable);
+      });
     }
   }
 
@@ -258,6 +267,8 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
                                        List<ReactiveInterceptor> interceptors,
                                        BiConsumer<BaseEventContext, ? super Exception> errorBubbler) {
     Flux<CoreEvent> stream = from(publisher);
+    ComponentLocation location = ((HasLocation) this).resolveLocation();
+    stream = stream.doOnNext(event -> muleEventTracer.startComponentSpan(event, location, resolveCustomizer(location)));
     for (Processor processor : getProcessorsToExecute()) {
       // Perform assembly for processor chain by transforming the existing publisher with a publisher function for each processor
       // along with the interceptors that decorate it.
@@ -270,6 +281,7 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
           .onErrorContinue(exception -> !(exception instanceof LifecycleException),
                            getContinueStrategyErrorHandler(processor, errorBubbler));
     }
+    stream = stream.doOnNext(event -> muleEventTracer.endCurrentSpan(event));
 
     stream = stream.subscriberContext(ctx -> {
       ClassLoader tccl = currentThread().getContextClassLoader();
@@ -285,6 +297,21 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
 
     return stream;
   }
+
+  private CoreEventSpanCustomizer resolveCustomizer(ComponentLocation location) {
+    if (location.getComponentIdentifier().getIdentifier().getName().equals("until-successful")) {
+      return new CoreEventSpanCustomizer() {
+
+        @Override
+        public String getName(CoreEvent coreEvent, ComponentLocation component) {
+          return component.getComponentIdentifier().getIdentifier().getName() + ":try";
+        }
+      };
+    } else {
+      return ExportOnEndCoreEventSpanFactory.getDefaultCoreEventSpanCustomizer();
+    }
+  }
+
 
   /*
    * Used to process failed events which are dropped from the reactor stream due to error. Errors are processed by invoking the
@@ -421,7 +448,7 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
     }
     ComponentLocation componentLocation = getLocationIfComponent(processor);
     if (processor instanceof Component) {
-      muleEventTracer.startComponentSpan(event, (Component) processor);
+      muleEventTracer.startComponentSpan(event, ((Component) processor).getLocation());
     }
     triggerStartingOperation(event, componentLocation);
     preNotification(event, processor);

@@ -71,7 +71,7 @@ public class ExportOnEndCoreEventSpanFactoryTestCase {
     when(coreEvent.getCorrelationId()).thenReturn(CORRELATION_ID);
     when(component.getLocation()).thenReturn(componentLocation);
 
-    InternalSpan span = coreEventSpanFactory.getSpan(coreEvent, component, muleConfiguration, APP);
+    InternalSpan span = coreEventSpanFactory.getSpan(coreEvent, null, muleConfiguration, APP);
     assertThat(span, instanceOf(ExportOnEndSpan.class));
 
     ExportOnEndSpan ExportOnEndSpan = (ExportOnEndSpan) span;

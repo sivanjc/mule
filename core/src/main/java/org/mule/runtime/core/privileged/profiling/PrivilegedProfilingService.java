@@ -9,6 +9,7 @@ package org.mule.runtime.core.privileged.profiling;
 import static java.util.Collections.emptySet;
 
 import org.mule.runtime.api.component.Component;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.profiling.ProfilingDataConsumer;
 import org.mule.runtime.api.profiling.ProfilingEventContext;
 import org.mule.runtime.api.profiling.ProfilingService;
@@ -67,7 +68,7 @@ public interface PrivilegedProfilingService extends ProfilingService {
    * @since 4.5.0
    */
      // TODO: W-11486418 - Improve FlowRunner Creation of Spans
-  default void startComponentSpan(CoreEvent coreEvent, Component component) {}
+  default void startComponentSpan(CoreEvent coreEvent, ComponentLocation component) {}
 
   /**
    * End a component span. This is used as a privileged api only for testing.
