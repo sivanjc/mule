@@ -5,13 +5,13 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing.extractor.w3c;
+package org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c;
 
-import static org.mule.runtime.core.internal.execution.tracing.extractor.w3c.TraceParentContextFieldExtractor.TRACEPARENT;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c.TraceParentContextFieldExtractor.TRACEPARENT;
 import static org.mule.test.allure.AllureConstants.EventContextFeature.EVENT_CONTEXT;
 import static org.mule.test.allure.AllureConstants.EventContextFeature.EventContextStory.DISTRIBUTED_TRACE_CONTEXT;
 
-import org.mule.runtime.core.internal.execution.tracing.extractor.TraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.TraceContextFieldExtractor;
 
 import io.qameta.allure.Feature;
 import io.qameta.allure.Story;

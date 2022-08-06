@@ -40,7 +40,7 @@ import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.context.notification.FlowCallStack;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.message.GroupCorrelation;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
 import org.mule.runtime.core.internal.profiling.tracing.export.InternalSpanExportManager;
 import org.mule.runtime.core.internal.profiling.tracing.event.tracer.CoreEventTracer;

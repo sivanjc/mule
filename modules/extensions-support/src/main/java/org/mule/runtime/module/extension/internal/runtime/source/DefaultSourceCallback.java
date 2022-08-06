@@ -33,7 +33,7 @@ import org.mule.runtime.core.api.streaming.CursorProviderFactory;
 import org.mule.runtime.core.api.transaction.TransactionConfig;
 import org.mule.runtime.core.api.util.func.Once;
 import org.mule.runtime.core.api.util.func.Once.RunOnce;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter;
 import org.mule.runtime.core.internal.execution.ExceptionCallback;
 import org.mule.runtime.core.internal.execution.MessageProcessContext;
 import org.mule.runtime.core.internal.execution.MessageProcessingManager;

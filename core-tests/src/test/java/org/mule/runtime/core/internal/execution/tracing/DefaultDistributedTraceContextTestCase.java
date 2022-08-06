@@ -8,8 +8,8 @@
 package org.mule.runtime.core.internal.execution.tracing;
 
 import static org.junit.Assert.fail;
-import static org.mule.runtime.core.internal.execution.tracing.extractor.w3c.TraceParentContextFieldExtractor.TRACEPARENT;
-import static org.mule.runtime.core.internal.execution.tracing.extractor.w3c.TraceStateContextFieldExtractor.TRACESTATE;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c.TraceParentContextFieldExtractor.TRACEPARENT;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c.TraceStateContextFieldExtractor.TRACESTATE;
 import static org.mule.test.allure.AllureConstants.EventContextFeature.EVENT_CONTEXT;
 import static org.mule.test.allure.AllureConstants.EventContextFeature.EventContextStory.DISTRIBUTED_TRACE_CONTEXT;
 
@@ -23,12 +23,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DefaultDistributedTraceContext;
 import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 
 import io.qameta.allure.Feature;
 import io.qameta.allure.Story;
 
 import org.junit.Test;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter;
 
 @Feature(EVENT_CONTEXT)
 @Story(DISTRIBUTED_TRACE_CONTEXT)

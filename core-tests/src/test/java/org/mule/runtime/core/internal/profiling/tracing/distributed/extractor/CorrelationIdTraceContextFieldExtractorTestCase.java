@@ -5,10 +5,10 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing.extractor;
+package org.mule.runtime.core.internal.profiling.tracing.distributed.extractor;
 
-import static org.mule.runtime.core.internal.execution.tracing.extractor.CorrelationIdTraceContextFieldExtractor.MULE_CORRELATION_ID;
-import static org.mule.runtime.core.internal.execution.tracing.extractor.CorrelationIdTraceContextFieldExtractor.X_CORRELATION_ID;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.mule.CorrelationIdTraceContextFieldExtractor.MULE_CORRELATION_ID;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.mule.CorrelationIdTraceContextFieldExtractor.X_CORRELATION_ID;
 import static org.mule.test.allure.AllureConstants.EventContextFeature.EVENT_CONTEXT;
 import static org.mule.test.allure.AllureConstants.EventContextFeature.EventContextStory.DISTRIBUTED_TRACE_CONTEXT;
 
@@ -23,7 +23,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.mule.CorrelationIdTraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter;
 
 import io.qameta.allure.Feature;
 import io.qameta.allure.Story;

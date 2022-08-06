@@ -5,7 +5,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing.extractor.w3c;
+package org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -18,8 +18,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.mule.runtime.core.internal.execution.tracing.extractor.TraceContextFieldExtractor;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.TraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter;
 
 import java.util.Map;
 

@@ -12,7 +12,7 @@ import static org.mule.runtime.core.internal.profiling.tracing.distributed.Distr
 import static java.util.Optional.empty;
 
 import org.mule.runtime.core.api.event.CoreEvent;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
 import org.mule.runtime.core.internal.profiling.tracing.export.ExportOnEndSpan;
 import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
