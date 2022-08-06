@@ -6,16 +6,16 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.resolver;
 
-import static org.mule.runtime.core.internal.profiling.tracing.export.OpentelemetrySpanExporter.OPENTELEMETRY_SPAN_VISITOR;
-import static org.mule.runtime.core.internal.trace.DistributedTraceContext.emptyDistributedEventContext;
+import static org.mule.runtime.core.internal.profiling.tracing.export.optel.OpentelemetrySpanExporter.OPENTELEMETRY_SPAN_VISITOR;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext.emptyDistributedEventContext;
 
 import static java.util.Optional.empty;
 
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.InternalSpan;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.ExportOnEndSpan;
-import org.mule.runtime.core.internal.trace.DistributedTraceContext;
+import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
+import org.mule.runtime.core.internal.profiling.tracing.export.ExportOnEndSpan;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 import org.mule.runtime.extension.api.runtime.operation.ExecutionContext;
 import org.mule.runtime.module.extension.api.runtime.privileged.ExecutionContextAdapter;
 import org.mule.runtime.module.extension.internal.runtime.parameter.PropagateAllDistributedTraceContextManager;

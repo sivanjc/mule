@@ -7,7 +7,7 @@
 
 package org.mule.runtime.core.internal.execution.tracing;
 
-import org.mule.runtime.core.internal.trace.DistributedTraceContext;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 
 /**
  * A component that carries information about the distributed trace context

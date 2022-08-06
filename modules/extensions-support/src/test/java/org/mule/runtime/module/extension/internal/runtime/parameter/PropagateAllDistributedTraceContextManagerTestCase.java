@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.mule.runtime.core.internal.trace.DistributedTraceContext;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 
 import java.util.Map;
 

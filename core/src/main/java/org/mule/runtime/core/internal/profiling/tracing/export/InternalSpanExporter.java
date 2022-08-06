@@ -7,7 +7,7 @@
 
 package org.mule.runtime.core.internal.profiling.tracing.export;
 
-import org.mule.runtime.core.internal.profiling.tracing.event.span.InternalSpan;
+import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
 
 /**
  * An exporter for {@link InternalSpanExporter}

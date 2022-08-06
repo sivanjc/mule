@@ -12,11 +12,11 @@ import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.CoreEventSpanFactory;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.InternalSpan;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.CoreEventSpanCustomizer;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.export.InternalSpanExportManager;
-import org.mule.runtime.core.internal.profiling.tracing.event.span.export.optel.ExportOnEndCoreEventSpanFactory;
+import org.mule.runtime.core.internal.profiling.tracing.span.event.CoreEventSpanFactory;
+import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
+import org.mule.runtime.core.internal.profiling.tracing.span.event.CoreEventSpanCustomizer;
+import org.mule.runtime.core.internal.profiling.tracing.export.InternalSpanExportManager;
+import org.mule.runtime.core.internal.profiling.tracing.export.optel.ExportOnEndCoreEventSpanFactory;
 import org.mule.runtime.core.internal.profiling.tracing.event.tracer.CoreEventTracer;
 
 /**

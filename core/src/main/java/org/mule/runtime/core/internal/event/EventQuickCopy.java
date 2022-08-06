@@ -7,7 +7,7 @@
 package org.mule.runtime.core.internal.event;
 
 import static org.mule.runtime.api.util.collection.SmallMap.copy;
-import static org.mule.runtime.core.internal.trace.DistributedTraceContext.emptyDistributedEventContext;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext.emptyDistributedEventContext;
 
 import org.mule.runtime.api.event.EventContext;
 import org.mule.runtime.api.message.Error;
@@ -15,7 +15,7 @@ import org.mule.runtime.core.api.context.notification.FlowCallStack;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.message.InternalEvent;
-import org.mule.runtime.core.internal.trace.DistributedTraceContext;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 import org.mule.runtime.core.privileged.event.BaseEventContext;
 import org.mule.runtime.core.privileged.event.PrivilegedEvent;
 

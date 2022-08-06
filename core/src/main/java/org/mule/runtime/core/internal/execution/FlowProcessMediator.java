@@ -66,8 +66,8 @@ import org.mule.runtime.core.api.rx.Exceptions;
 import org.mule.runtime.core.api.source.MessageSource;
 import org.mule.runtime.core.internal.construct.AbstractPipeline;
 import org.mule.runtime.core.internal.construct.FlowBackPressureException;
-import org.mule.runtime.core.internal.event.trace.DistributedTraceContextGetter;
-import org.mule.runtime.core.internal.event.trace.EventDistributedTraceContext;
+import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.execution.tracing.DefaultDistributedTraceContext;
 import org.mule.runtime.core.internal.exception.MessagingException;
 import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.interception.InterceptorManager;
@@ -589,7 +589,7 @@ public class FlowProcessMediator implements Initialisable {
 
     if (eventContext instanceof DistributedTraceContextAware) {
       ((DistributedTraceContextAware) eventContext).setDistributedTraceContext(
-                                                                               EventDistributedTraceContext.builder()
+                                                                               DefaultDistributedTraceContext.builder()
                                                                                    .withGetter(distributedTraceContextGetter)
                                                                                    .build());
     }

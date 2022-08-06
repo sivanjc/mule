@@ -61,7 +61,7 @@ import org.mule.runtime.core.api.processor.ReactiveProcessor;
 import org.mule.runtime.core.api.source.MessageSource;
 import org.mule.runtime.core.internal.construct.AbstractPipeline;
 import org.mule.runtime.core.internal.construct.FlowBackPressureMaxConcurrencyExceededException;
-import org.mule.runtime.core.internal.event.trace.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
 import org.mule.runtime.core.internal.exception.ExceptionRouter;
 import org.mule.runtime.core.internal.exception.MessagingException;
 import org.mule.runtime.core.internal.message.ErrorBuilder;

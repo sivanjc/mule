@@ -6,8 +6,8 @@
  */
 package org.mule.runtime.core.internal.event;
 
-import static org.mule.runtime.core.internal.event.trace.EventDistributedTraceContext.emptyDistributedTraceContext;
-import static org.mule.runtime.core.internal.trace.DistributedTraceContext.emptyDistributedEventContext;
+import static org.mule.runtime.core.internal.execution.tracing.DefaultDistributedTraceContext.emptyDistributedTraceContext;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext.emptyDistributedEventContext;
 import static org.mule.runtime.core.api.util.StringUtils.EMPTY;
 
 import static java.lang.System.identityHashCode;
@@ -21,7 +21,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
-import org.mule.runtime.core.internal.trace.DistributedTraceContext;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 import org.mule.runtime.api.streaming.CursorProvider;
 import org.mule.runtime.api.streaming.bytes.CursorStreamProvider;
 import org.mule.runtime.core.api.construct.FlowConstruct;

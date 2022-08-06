@@ -9,7 +9,7 @@ package org.mule.runtime.module.extension.internal.runtime.parameter;
 
 import static java.util.Collections.unmodifiableMap;
 
-import org.mule.runtime.core.internal.trace.DistributedTraceContext;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 import org.mule.sdk.api.runtime.source.DistributedTraceContextManager;
 
 import java.util.HashMap;

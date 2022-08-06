@@ -7,6 +7,8 @@
 
 package org.mule.runtime.core.internal.profiling.tracing.export;
 
+import org.mule.runtime.core.internal.profiling.tracing.export.optel.OpentelemetrySpanExporter;
+
 /**
  * A visitor for {@link InternalSpanExporter}.
  *
