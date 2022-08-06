@@ -5,11 +5,12 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing.extractor;
+package org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.mule;
 
 import static org.mule.runtime.core.api.config.MuleProperties.MULE_CORRELATION_ID_PROPERTY;
 
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.TraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter;
 
 import java.util.HashMap;
 import java.util.Map;

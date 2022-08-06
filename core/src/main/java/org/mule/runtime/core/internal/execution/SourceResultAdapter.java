@@ -6,13 +6,13 @@
  */
 package org.mule.runtime.core.internal.execution;
 
-import static org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter.emptyTraceContextMapGetter;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter.emptyTraceContextMapGetter;
 
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.core.api.streaming.CursorProviderFactory;
 import org.mule.runtime.core.api.streaming.bytes.CursorStreamProviderFactory;
 import org.mule.runtime.core.internal.util.mediatype.PayloadMediaTypeResolver;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextGetter;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextGetter;
 import org.mule.sdk.api.runtime.operation.Result;
 
 import java.util.List;

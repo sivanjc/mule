@@ -5,12 +5,12 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing.extractor.w3c;
+package org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c;
 
-import org.mule.runtime.core.internal.execution.tracing.extractor.AbstractSingleTraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.AbstractSingleTraceContextFieldExtractor;
 
 /**
- * A {@link org.mule.runtime.core.internal.execution.tracing.extractor.TraceContextFieldExtractor} that extracts the
+ * A {@link org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.TraceContextFieldExtractor} that extracts the
  * <a href="https://www.w3.org/TR/trace-context">tracestate header</a>.
  *
  * @since 4.5.0

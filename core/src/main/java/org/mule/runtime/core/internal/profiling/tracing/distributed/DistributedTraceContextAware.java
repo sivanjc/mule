@@ -5,7 +5,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing;
+package org.mule.runtime.core.internal.profiling.tracing.distributed;
 
 import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
 

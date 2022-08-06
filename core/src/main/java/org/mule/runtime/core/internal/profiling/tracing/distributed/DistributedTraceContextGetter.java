@@ -5,7 +5,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing;
+package org.mule.runtime.core.internal.profiling.tracing.distributed;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;

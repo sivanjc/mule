@@ -5,17 +5,16 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing;
+package org.mule.runtime.core.internal.profiling.tracing.distributed;
 
-import static org.mule.runtime.core.internal.execution.tracing.extractor.RuntimeEventTraceExtractors.getDefaultBaggageExtractor;
-import static org.mule.runtime.core.internal.execution.tracing.extractor.RuntimeEventTraceExtractors.getDefaultTraceContextFieldsExtractor;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.DefaultEventTraceExtractors.getDefaultBaggageExtractor;
+import static org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.DefaultEventTraceExtractors.getDefaultTraceContextFieldsExtractor;
 import static org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan.getAsInternalSpan;
 
 import static java.util.Optional.ofNullable;
 
 import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
-import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext;
-import org.mule.runtime.core.internal.execution.tracing.extractor.TraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.TraceContextFieldExtractor;
 
 import java.util.HashMap;
 import java.util.Map;

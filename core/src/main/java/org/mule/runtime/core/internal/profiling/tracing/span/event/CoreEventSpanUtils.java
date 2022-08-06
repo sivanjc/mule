@@ -12,7 +12,7 @@ import static java.util.Optional.empty;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.event.EventContext;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
 import org.mule.runtime.core.internal.profiling.tracing.export.InternalSpanExportManager;
 import org.mule.runtime.core.internal.profiling.tracing.export.optel.OpentelemetrySpanExporterManager;

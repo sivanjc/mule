@@ -11,7 +11,7 @@ import org.mule.runtime.api.event.EventContext;
 import org.mule.runtime.core.api.config.MuleConfiguration;
 import org.mule.runtime.core.api.config.bootstrap.ArtifactType;
 import org.mule.runtime.core.api.event.CoreEvent;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.profiling.tracing.span.event.CoreEventSpanFactory;
 import org.mule.runtime.core.internal.profiling.tracing.span.InternalSpan;
 import org.mule.runtime.core.internal.profiling.tracing.span.event.CoreEventSpanCustomizer;

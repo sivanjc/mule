@@ -24,7 +24,7 @@ import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.exception.FlowExceptionHandler;
 import org.mule.runtime.core.api.exception.NullExceptionHandler;
 import org.mule.runtime.core.internal.exception.MessagingException;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextAware;
 import org.mule.runtime.core.privileged.event.BaseEventContext;
 
 import java.util.ArrayList;

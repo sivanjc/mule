@@ -14,7 +14,7 @@ import static java.time.Instant.ofEpochMilli;
 import static org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContext.emptyDistributedEventContext;
 
 import org.mule.runtime.api.event.EventContext;
-import org.mule.runtime.core.internal.execution.tracing.DistributedTraceContextAware;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.DistributedTraceContextAware;
 import org.mule.runtime.core.internal.profiling.tracing.export.InternalSpanExporter;
 import org.mule.runtime.core.internal.profiling.tracing.export.InternalSpanExporterVisitor;
 import org.mule.runtime.core.internal.profiling.tracing.export.ExportOnEndSpan;

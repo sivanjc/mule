@@ -5,23 +5,26 @@
  * LICENSE.txt file.
  */
 
-package org.mule.runtime.core.internal.execution.tracing.extractor;
+package org.mule.runtime.core.internal.profiling.tracing.distributed.extractor;
 
-import org.mule.runtime.core.internal.execution.tracing.extractor.w3c.TraceParentContextFieldExtractor;
-import org.mule.runtime.core.internal.execution.tracing.extractor.w3c.TraceStateContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.mule.CorrelationIdTraceContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c.TraceParentContextFieldExtractor;
+import org.mule.runtime.core.internal.profiling.tracing.distributed.extractor.w3c.TraceStateContextFieldExtractor;
 
 /**
- * Default {@link TraceContextFieldExtractor} used by the runtime to propagate a trace context.
+ * Provides the default {@link TraceContextFieldExtractor}s used by the runtime to propagate a trace context.
  *
  * @since 4.5.0
  */
-public class RuntimeEventTraceExtractors {
+public class DefaultEventTraceExtractors {
 
-  private static TraceContextFieldExtractor DEFAULT_TRACE_CONTEXT_FIELDS_EXTRACTOR =
+  private DefaultEventTraceExtractors() {}
+
+  private static final TraceContextFieldExtractor DEFAULT_TRACE_CONTEXT_FIELDS_EXTRACTOR =
       new ComposedTraceContextFieldExtractor(new CorrelationIdTraceContextFieldExtractor(),
                                              new TraceParentContextFieldExtractor());
 
-  private static TraceContextFieldExtractor DEFAULT_BAGGAGE_FIELDS_EXTRACTOR = new TraceStateContextFieldExtractor();
+  private static final TraceContextFieldExtractor DEFAULT_BAGGAGE_FIELDS_EXTRACTOR = new TraceStateContextFieldExtractor();
 
   /**
    * @return the default trace context field extractor.
