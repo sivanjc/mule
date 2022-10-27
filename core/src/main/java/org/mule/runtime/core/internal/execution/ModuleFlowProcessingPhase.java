@@ -30,7 +30,6 @@ import static org.mule.runtime.core.privileged.processor.MessageProcessors.proce
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
 import static reactor.core.publisher.Mono.from;
-import static reactor.core.publisher.Mono.fromCallable;
 import static reactor.core.publisher.Mono.just;
 import static reactor.core.publisher.Mono.when;
 
@@ -102,7 +101,7 @@ public class ModuleFlowProcessingPhase
 
   private final PolicyManager policyManager;
 
-  private List<ReactiveInterceptorSourceCallbackAdapter> additionalInterceptors = new LinkedList<>();
+  private final List<ReactiveInterceptorSourceCallbackAdapter> additionalInterceptors = new LinkedList<>();
 
   @Inject
   private InterceptorManager processorInterceptorManager;
@@ -152,7 +151,7 @@ public class ModuleFlowProcessingPhase
       final CoreEvent templateEvent = createEvent(template, sourceLocation, responseCompletion, flowConstruct);
 
       try {
-        FlowProcessor flowExecutionProcessor = new FlowProcessor(template, flowConstruct.getExceptionListener(), templateEvent);
+        FlowProcessor flowExecutionProcessor = new FlowProcessor(template, flowConstruct.getExceptionListener());
         flowExecutionProcessor.setAnnotations(flowConstruct.getAnnotations());
         final SourcePolicy policy =
             policyManager.createSourcePolicyInstance(messageSource, templateEvent, flowExecutionProcessor, template);
@@ -165,11 +164,11 @@ public class ModuleFlowProcessingPhase
             .doOnNext(onMessageReceived(template, messageProcessContext, flowConstruct))
             // Process policy and in turn flow emitting Either<SourcePolicyFailureResult,SourcePolicySuccessResult>> when
             // complete.
-            .flatMap(request -> from(policy.process(request)))
-            // Perform processing of result by sending success or error response and handle errors that occur.
-            // Returns Publisher<Void> to signal when this is complete or if it failed.
-            .flatMap(policyResult -> policyResult.reduce(policyFailure(phaseContext, flowConstruct, messageSource),
-                                                         policySuccess(phaseContext, flowConstruct, messageSource)))
+            .flatMap(request -> from(policy.process(request, template))
+                // Perform processing of result by sending success or error response and handle errors that occur.
+                // Returns Publisher<Void> to signal when this is complete or if it failed.
+                .flatMap(policyResult -> policyResult.reduce(policyFailure(phaseContext, flowConstruct, messageSource),
+                                                             policySuccess(phaseContext, flowConstruct, messageSource))))
             .doOnSuccess(aVoid -> phaseResultNotifier.phaseSuccessfully())
             .doOnError(onFailure(flowConstruct, messageSource, phaseResultNotifier, terminateConsumer))
             // Complete EventContext via responseCompletion Mono once everything is done.
@@ -385,13 +384,10 @@ public class ModuleFlowProcessingPhase
   private class FlowProcessor extends AbstractComponent implements Processor {
 
     private final ModuleFlowProcessingPhaseTemplate template;
-    private final CoreEvent templateEvent;
     private final FlowExceptionHandler messagingExceptionHandler;
 
-    public FlowProcessor(ModuleFlowProcessingPhaseTemplate template, FlowExceptionHandler messagingExceptionHandler,
-                         CoreEvent templateEvent) {
+    public FlowProcessor(ModuleFlowProcessingPhaseTemplate template, FlowExceptionHandler messagingExceptionHandler) {
       this.template = template;
-      this.templateEvent = templateEvent;
       this.messagingExceptionHandler = messagingExceptionHandler;
     }
 
@@ -403,10 +399,9 @@ public class ModuleFlowProcessingPhase
     @Override
     public Publisher<CoreEvent> apply(Publisher<CoreEvent> publisher) {
       return from(publisher)
-          .flatMapMany(event -> processWithChildContext(event,
-                                                        p -> from(p).flatMapMany(e -> template.routeEventAsync(e))
-                                                            .switchIfEmpty(fromCallable(() -> emptyEvent(templateEvent))),
-                                                        Optional.empty(), messagingExceptionHandler));
+          .flatMap(event -> from(processWithChildContext(event,
+                                                         p -> template.routeEventAsync(p),
+                                                         Optional.empty(), flowConstruct.getExceptionListener())));
     }
   }
 
