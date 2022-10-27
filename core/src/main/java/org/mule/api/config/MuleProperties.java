@@ -211,4 +211,12 @@ public class MuleProperties
     public static final String MULE_EXPRESSION_FILTER_DEFAULT_BOOLEAN_VALUE = SYSTEM_PROPERTY_PREFIX + "expressionFilter.nonBooleanReturnsTrue";
     public static final String MULE_MAX_ATTRIBUTE_SIZE = SYSTEM_PROPERTY_PREFIX + "xml.maxAttributeSize";
     public static final String MULE_ENABLE_BYTE_ARRAY_TO_INPUT_STREAM = SYSTEM_PROPERTY_PREFIX + "transformer.byteArrayToInputStream.enable";
+
+    /**
+     * When enabled this System Property, the statistics are enabled even if the monitoring service is not activated. This
+     * property is only read on deploying an app.
+     *
+     * @since 4.4, 4.3.1
+     */
+    public static final String MULE_ENABLE_STATISTICS = SYSTEM_PROPERTY_PREFIX + "enable.statistics";
 }
