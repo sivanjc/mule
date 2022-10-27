@@ -25,8 +25,10 @@ public abstract class AbstractFlowConstructStatistics implements Statistics
     private long samplePeriod = 0;
     protected final AtomicLong receivedEventSync = new AtomicLong(0);
     protected final AtomicLong receivedEventASync = new AtomicLong(0);
+    protected final AtomicLong dispatchedMessages = new AtomicLong(0);
 
     private transient final List<DefaultResetOnQueryCounter> eventsReceivedCounters = new CopyOnWriteArrayList<>();
+    private transient final List<DefaultResetOnQueryCounter> messagesDispatchedCounters = new CopyOnWriteArrayList<>();
 
     public AbstractFlowConstructStatistics(String flowConstructType, String name)
     {
@@ -65,9 +67,21 @@ public abstract class AbstractFlowConstructStatistics implements Statistics
     {
         receivedEventSync.set(0);
         receivedEventASync.set(0);
+        dispatchedMessages.set(0);
         samplePeriod = System.currentTimeMillis();
     }
 
+    /**
+     * Indicates that a new message was dispatched from a message source
+     */
+    public void incMessagesDispatched()
+    {
+        dispatchedMessages.addAndGet(1);
+        for (DefaultResetOnQueryCounter messagesDispatchedCounter : messagesDispatchedCounters)
+        {
+            messagesDispatchedCounter.increment();
+        }
+    }
 
     public void incReceivedEventSync()
     {
@@ -102,6 +116,11 @@ public abstract class AbstractFlowConstructStatistics implements Statistics
         return getSyncEventsReceived() + getAsyncEventsReceived();
     }
 
+    public long getTotalDispatchedMessages()
+    {
+        return dispatchedMessages.get();
+    }
+
     public String getFlowConstructType()
     {
         return flowConstructType;
@@ -112,6 +131,13 @@ public abstract class AbstractFlowConstructStatistics implements Statistics
         return System.currentTimeMillis() - samplePeriod;
     }
 
+    public ResetOnQueryCounter getDispatchedMessagesCounter()
+    {
+        DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter();
+        messagesDispatchedCounters.add(counter);
+        counter.add(getTotalDispatchedMessages());
+        return counter;
+    }
 
     /**
      * Provides a counter for {@link #getTotalEventsReceived() total events received} that is not affected by calls to

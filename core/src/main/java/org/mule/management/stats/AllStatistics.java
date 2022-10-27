@@ -6,6 +6,10 @@
  */
 package org.mule.management.stats;
 
+import static org.mule.api.config.MuleProperties.SYSTEM_PROPERTY_PREFIX;
+
+import static java.lang.Boolean.getBoolean;
+
 import org.mule.management.stats.printers.AbstractTablePrinter;
 import org.mule.management.stats.printers.SimplePrinter;
 
@@ -19,7 +23,8 @@ import java.util.Map;
  */
 public class AllStatistics
 {
-    private boolean isStatisticsEnabled;
+
+    private boolean isStatisticsEnabled = getBoolean(SYSTEM_PROPERTY_PREFIX + "enable.statistics");
     private long startTime;
     private final ApplicationStatistics appStats;
     private final FlowsSummaryStatistics flowSummaryStatistics;
