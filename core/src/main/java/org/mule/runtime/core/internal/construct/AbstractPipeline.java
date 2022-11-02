@@ -6,16 +6,12 @@
  */
 package org.mule.runtime.core.internal.construct;
 
-import static com.google.common.base.Functions.identity;
-import static java.lang.System.currentTimeMillis;
-import static java.util.Collections.unmodifiableList;
 import static org.mule.runtime.api.notification.EnrichedNotificationInfo.createInfo;
 import static org.mule.runtime.api.notification.PipelineMessageNotification.PROCESS_COMPLETE;
 import static org.mule.runtime.api.notification.PipelineMessageNotification.PROCESS_END;
 import static org.mule.runtime.api.notification.PipelineMessageNotification.PROCESS_START;
 import static org.mule.runtime.core.api.exception.Errors.ComponentIdentifiers.Unhandleable.OVERLOAD;
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
-import static org.mule.runtime.core.api.processor.strategy.AsyncProcessingStrategyFactory.DEFAULT_MAX_CONCURRENCY;
 import static org.mule.runtime.core.api.source.MessageSource.BackPressureStrategy.WAIT;
 import static org.mule.runtime.core.internal.management.stats.DefaultFlowsSummaryStatistics.isApiKitFlow;
 import static org.mule.runtime.core.privileged.processor.MessageProcessors.processToApply;
@@ -60,14 +56,14 @@ import org.mule.runtime.core.privileged.processor.chain.MessageProcessorChain;
 import org.mule.runtime.core.privileged.processor.chain.MessageProcessorChainBuilder;
 import org.mule.runtime.core.privileged.registry.RegistrationException;
 
-import org.reactivestreams.Publisher;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Mono;
 
@@ -86,7 +82,6 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   private MessageProcessorChain pipeline;
   private final ErrorType overloadErrorType;
 
-  private final ProcessingStrategyFactory processingStrategyFactory;
   private final ProcessingStrategy processingStrategy;
 
   private volatile boolean canProcessMessage = false;
@@ -100,7 +95,7 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   public AbstractPipeline(String name, MuleContext muleContext, MessageSource source, List<Processor> processors,
                           Optional<FlowExceptionHandler> exceptionListener,
                           Optional<ProcessingStrategyFactory> processingStrategyFactory, String initialState,
-                          Integer maxConcurrency,
+                          int maxConcurrency,
                           DefaultFlowsSummaryStatistics flowsSummaryStatistics, FlowConstructStatistics flowConstructStatistics,
                           ComponentInitialStateManager componentInitialStateManager) {
     super(name, muleContext, exceptionListener, initialState, flowConstructStatistics);
@@ -114,20 +109,17 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
     this.source = source;
     this.componentInitialStateManager = componentInitialStateManager;
     this.processors = unmodifiableList(processors);
-    this.maxConcurrency = maxConcurrency != null ? maxConcurrency : DEFAULT_MAX_CONCURRENCY;
+    this.maxConcurrency = maxConcurrency;
     this.flowsSummaryStatistics = flowsSummaryStatistics;
     this.triggerFlow = source != null;
     this.apikitFlow = isApiKitFlow(getName());
 
-    this.processingStrategyFactory = processingStrategyFactory.orElseGet(() -> defaultProcessingStrategy());
-    if (this.processingStrategyFactory instanceof AsyncProcessingStrategyFactory) {
-      ((AsyncProcessingStrategyFactory) this.processingStrategyFactory).setMaxConcurrency(this.maxConcurrency);
-    } else if (maxConcurrency != null) {
-      LOGGER.warn("{} does not support 'maxConcurrency'. Ignoring the value.",
-                  this.processingStrategyFactory.getClass().getSimpleName());
+    ProcessingStrategyFactory psFactory = processingStrategyFactory.orElseGet(() -> defaultProcessingStrategy());
+    if (psFactory instanceof AsyncProcessingStrategyFactory) {
+      ((AsyncProcessingStrategyFactory) psFactory).setMaxConcurrency(maxConcurrency);
     }
+    processingStrategy = psFactory.create(muleContext, getName());
 
-    processingStrategy = this.processingStrategyFactory.create(muleContext, getName());
     overloadErrorType = muleContext.getErrorTypeRepository().getErrorType(OVERLOAD).orElse(null);
   }
 
@@ -332,6 +324,7 @@ public abstract class AbstractPipeline extends AbstractFlowConstruct implements 
   @Override
   protected void doStart() throws MuleException {
     super.doStart();
+    startIfStartable(processingStrategy);
     sink = processingStrategy.createSink(this, processFlowFunction());
     // TODO MULE-13360: PhaseErrorLifecycleInterceptor is not being applied when AbstractPipeline doStart fails
     try {

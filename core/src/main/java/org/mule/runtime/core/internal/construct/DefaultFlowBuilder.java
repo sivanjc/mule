@@ -7,21 +7,18 @@
 
 package org.mule.runtime.core.internal.construct;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.mule.runtime.api.util.Preconditions.checkArgument;
 import static org.mule.runtime.core.api.config.MuleProperties.COMPATIBILITY_PLUGIN_INSTALLED;
 import static org.mule.runtime.core.api.construct.Flow.INITIAL_STATE_STARTED;
 import static org.mule.runtime.core.api.event.EventContextFactory.create;
+import static org.mule.runtime.core.api.processor.strategy.AsyncProcessingStrategyFactory.DEFAULT_MAX_CONCURRENCY;
 import static org.mule.runtime.core.internal.construct.AbstractFlowConstruct.createFlowStatistics;
 import static org.mule.runtime.core.internal.construct.FlowBackPressureException.BACK_PRESSURE_ERROR_MESSAGE;
 import static org.mule.runtime.core.internal.event.DefaultEventContext.child;
 import static org.mule.runtime.core.privileged.event.PrivilegedEvent.setCurrentEvent;
 import static org.mule.runtime.core.privileged.processor.MessageProcessors.processToApply;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -51,11 +48,12 @@ import org.mule.runtime.core.internal.message.ErrorBuilder;
 import org.mule.runtime.core.internal.message.InternalEvent;
 import org.mule.runtime.core.internal.processor.strategy.DirectProcessingStrategyFactory;
 import org.mule.runtime.core.internal.processor.strategy.TransactionAwareProactorStreamProcessingStrategyFactory;
+import org.mule.runtime.core.internal.routing.requestreply.SimpleAsyncRequestReplyRequester.AsyncReplyToPropertyRequestReplyReplier;
 import org.mule.runtime.core.internal.util.MessagingExceptionResolver;
+import org.mule.runtime.core.privileged.endpoint.LegacyImmutableEndpoint;
 import org.mule.runtime.core.privileged.event.BaseEventContext;
 import org.mule.runtime.core.privileged.event.PrivilegedEvent;
-
-import org.reactivestreams.Publisher;
+import org.mule.runtime.core.privileged.processor.chain.MessageProcessorChainBuilder;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +61,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Mono;
 
@@ -75,8 +75,6 @@ import reactor.core.publisher.Mono;
  */
 public class DefaultFlowBuilder implements Builder {
 
-  private static int EVENT_LOOP_SCHEDULER_BUSY_RETRY_INTERVAL_MS = 2;
-
   private final String name;
   private final MuleContext muleContext;
   private final ComponentInitialStateManager componentInitialStateManager;
@@ -85,7 +83,7 @@ public class DefaultFlowBuilder implements Builder {
   private FlowExceptionHandler exceptionListener;
   private ProcessingStrategyFactory processingStrategyFactory;
   private String initialState = INITIAL_STATE_STARTED;
-  private Integer maxConcurrency;
+  private int maxConcurrency = DEFAULT_MAX_CONCURRENCY;
 
   private DefaultFlow flow;
 
@@ -355,6 +353,15 @@ public class DefaultFlowBuilder implements Builder {
             me.setProcessedEvent(returnEventFromFlowMapper.apply(me.getEvent(), event));
             return me;
           });
+    }
+
+    @Override
+    protected void configureMessageProcessors(MessageProcessorChainBuilder builder) throws MuleException {
+      super.configureMessageProcessors(builder);
+      if (getSource() instanceof LegacyImmutableEndpoint
+          && !((LegacyImmutableEndpoint) getSource()).getExchangePattern().hasResponse()) {
+        builder.chain(new AsyncReplyToPropertyRequestReplyReplier(getSource()));
+      }
     }
 
     /**
