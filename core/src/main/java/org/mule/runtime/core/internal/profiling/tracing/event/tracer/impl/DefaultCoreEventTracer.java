@@ -16,6 +16,7 @@ import static java.util.Optional.of;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import org.mule.runtime.api.event.EventContext;
 import org.mule.runtime.api.message.Error;
 import org.mule.runtime.core.api.config.MuleConfiguration;
@@ -41,6 +42,7 @@ import org.mule.runtime.core.internal.profiling.tracing.event.tracer.CoreEventTr
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 
@@ -61,6 +63,7 @@ public class DefaultCoreEventTracer implements CoreEventTracer {
   private final ArtifactType artifactType;
   private final boolean propagateTracingExceptions;
   private final Logger customLogger;
+  private final TracingWorker tracingWorker;
 
   /**
    * @return a builder for a {@link DefaultCoreEventTracer}.
@@ -79,43 +82,62 @@ public class DefaultCoreEventTracer implements CoreEventTracer {
     this.coreEventSpanFactory = new ExportOnEndCoreEventSpanFactory(spanExportManager);
     this.propagateTracingExceptions = propagateTracingExceptions;
     this.customLogger = customLogger;
+    this.tracingWorker = new TracingWorker();
+    Thread workerThread = new DaemonThreadFactory("tracing-worker-thread").newThread(tracingWorker);
+    workerThread.start();
   }
 
   @Override
   public Optional<InternalSpan> startComponentSpan(CoreEvent coreEvent,
                                                    SpanCustomizationInfo spanCustomizationInfo) {
-    return startComponentSpan(coreEvent, spanCustomizationInfo, NO_CONDITION);
+    tracingWorker.addTracingCommand(new StartComponentCommand(this, coreEvent, spanCustomizationInfo, NO_CONDITION));
+    return Optional.empty();
   }
 
   @Override
   public Optional<InternalSpan> startComponentSpan(CoreEvent coreEvent, SpanCustomizationInfo spanCustomizationInfo,
                                                    TracingCondition tracingCondition) {
-    return safeExecuteWithDefaultOnThrowable(() -> of(startCurrentSpanIfPossible(coreEvent,
-                                                                                 coreEventSpanFactory.getSpan(coreEvent,
-                                                                                                              muleConfiguration,
-                                                                                                              artifactType,
-                                                                                                              spanCustomizationInfo),
-                                                                                 tracingCondition)),
-                                             empty(),
-                                             "Error when starting a component span",
-                                             propagateTracingExceptions,
-                                             customLogger);
+    tracingWorker.addTracingCommand(new StartComponentCommand(this, coreEvent, spanCustomizationInfo, tracingCondition));
+    return Optional.empty();
+  }
+
+  public void doStartComponentSpan(CoreEvent coreEvent, SpanCustomizationInfo spanCustomizationInfo,
+                                   TracingCondition tracingCondition) {
+    safeExecuteWithDefaultOnThrowable(() -> of(startCurrentSpanIfPossible(coreEvent,
+                                                                          coreEventSpanFactory.getSpan(coreEvent,
+                                                                                                       muleConfiguration,
+                                                                                                       artifactType,
+                                                                                                       spanCustomizationInfo),
+                                                                          tracingCondition)),
+                                      empty(),
+                                      "Error when starting a component span",
+                                      propagateTracingExceptions,
+                                      customLogger);
   }
 
   @Override
   public void endCurrentSpan(CoreEvent coreEvent) {
-    endCurrentSpan(coreEvent, NO_CONDITION);
+    tracingWorker.addTracingCommand(new EndComponentCommand(this, coreEvent, NO_CONDITION));
   }
 
   @Override
   public void endCurrentSpan(CoreEvent coreEvent, TracingCondition condition) {
-    safeExecute(() -> endCurrentSpanIfPossible(coreEvent, condition), "Error on ending current span",
+    tracingWorker.addTracingCommand(new EndComponentCommand(this, coreEvent, condition));
+
+  }
+
+  public void doEndCurrentSpan(CoreEvent coreEvent, TracingCondition tracingCondition) {
+    safeExecute(() -> endCurrentSpanIfPossible(coreEvent, tracingCondition), "Error on ending current span",
                 propagateTracingExceptions,
                 customLogger);
   }
 
   @Override
   public void recordErrorAtCurrentSpan(CoreEvent coreEvent, Supplier<Error> spanError, boolean isErrorEscapingCurrentSpan) {
+    tracingWorker.addTracingCommand(new RecorErrorAtCurrentSpanCommand(this, coreEvent, spanError, isErrorEscapingCurrentSpan));
+  }
+
+  public void doRecordErrorArCurrentSpan(CoreEvent coreEvent, Supplier<Error> spanError, boolean isErrorEscapingCurrentSpan) {
     safeExecute(() -> {
       EventContext eventContext = coreEvent.getContext();
       if (eventContext instanceof DistributedTraceContextAware) {
@@ -150,7 +172,11 @@ public class DefaultCoreEventTracer implements CoreEventTracer {
 
   @Override
   public void setCurrentSpanName(CoreEvent coreEvent, String name) {
-    safeExecute(() -> doSetCurrentSpanName(coreEvent, name),
+    tracingWorker.addTracingCommand(new SetCurrentSpanNameCommand(this, coreEvent, name));
+  }
+
+  public void executeSetCurrentSpanName(CoreEvent event, String newName) {
+    safeExecute(() -> doSetCurrentSpanName(event, newName),
                 "Error on setting the current span name",
                 propagateTracingExceptions,
                 customLogger);
@@ -158,6 +184,10 @@ public class DefaultCoreEventTracer implements CoreEventTracer {
 
   @Override
   public void addCurrentSpanAttribute(CoreEvent coreEvent, String key, String value) {
+    tracingWorker.addTracingCommand(new AddCurrentSpanAttributeCommand(this, coreEvent, key, value));
+  }
+
+  public void executeAddCurrentSpanAttribute(CoreEvent coreEvent, String key, String value) {
     safeExecute(() -> doAddCurrentSpanAttribute(coreEvent, key, value),
                 "Error on adding an attribute to a core event",
                 propagateTracingExceptions,
@@ -166,6 +196,10 @@ public class DefaultCoreEventTracer implements CoreEventTracer {
 
   @Override
   public void addCurrentSpanAttributes(CoreEvent coreEvent, Map<String, String> attributes) {
+    tracingWorker.addTracingCommand(new AddCurrentSpanAttributesCommand(this, coreEvent, attributes));
+  }
+
+  public void executeAddCurrentSpanAttributes(CoreEvent coreEvent, Map<String, String> attributes) {
     safeExecute(() -> doAddCurrentSpanAttributes(coreEvent, attributes),
                 "Error on adding attributes to a core event",
                 propagateTracingExceptions,
