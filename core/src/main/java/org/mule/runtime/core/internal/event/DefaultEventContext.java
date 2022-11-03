@@ -133,7 +133,7 @@ public final class DefaultEventContext extends AbstractEventContext implements S
 
   @Override
   public String getCorrelationId() {
-hi     return correlationId != null ? correlationId : id;
+    return correlationId != null ? correlationId : id;
   }
 
   @Override
