@@ -15,12 +15,7 @@ import java.lang.reflect.Field;
  *
  * @since 4.0
  */
-public abstract class InjectedFieldModelProperty implements ModelProperty {
-
-  /**
-   * The {@link Field} on which the default encoding should be injected
-   */
-  private final Field field;
+public abstract class InjectedFieldModelProperty extends FieldReferenceModelProperty {
 
   /**
    * Creates a new instance
@@ -28,14 +23,14 @@ public abstract class InjectedFieldModelProperty implements ModelProperty {
    * @param field on which the value should be injected
    */
   public InjectedFieldModelProperty(Field field) {
-    this.field = field;
+    super(field);
   }
 
   /**
    * @return on which the value should be injected
    */
   public Field getField() {
-    return field;
+    return super.getField();
   }
 
   /**

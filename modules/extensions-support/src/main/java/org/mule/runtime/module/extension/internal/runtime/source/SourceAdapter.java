@@ -70,7 +70,7 @@ import org.mule.runtime.extension.api.runtime.config.ConfigurationInstance;
 import org.mule.runtime.extension.api.runtime.source.BackPressureAction;
 import org.mule.runtime.extension.internal.property.TransactionalActionModelProperty;
 import org.mule.runtime.extension.internal.property.TransactionalTypeModelProperty;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.SourceCallbackModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.connectivity.ReactiveReconnectionCallback;
 import org.mule.runtime.module.extension.internal.runtime.connectivity.SdkReconnectableAdapter;
@@ -584,8 +584,8 @@ public class SourceAdapter implements Lifecycle, Restartable {
     return sourceModel.getAllParameterModels()
         .stream()
         .filter(param -> param.getModelProperty(type).isPresent())
-        .filter(param -> param.getModelProperty(DeclaringMemberModelProperty.class).isPresent())
-        .map(param -> param.getModelProperty(DeclaringMemberModelProperty.class).get())
+        .filter(param -> param.getModelProperty(DeclaringMemberReferenceModelProperty.class).isPresent())
+        .map(param -> param.getModelProperty(DeclaringMemberReferenceModelProperty.class).get())
         .findAny()
         .map(modelProperty -> modelProperty.getDeclaringField().getName()).orElse(defaultName);
   }

@@ -30,7 +30,7 @@ import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.extension.api.runtime.config.ConfigurationInstance;
 import org.mule.runtime.module.extension.internal.config.resolver.BasicTypeValueResolverFactoryTypeVisitor;
 import org.mule.runtime.module.extension.internal.loader.ParameterGroupDescriptor;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ParameterGroupModelProperty;
 import org.mule.runtime.module.extension.internal.util.ReflectionCache;
 
@@ -225,7 +225,7 @@ public final class ConfigOverrideValueResolverWrapper<T> implements ValueResolve
           Optional<String> fieldName = group.getParameterModels().stream()
               .filter(p -> p.getName().equals(parameterName))
               .findFirst()
-              .map(p -> p.getModelProperty(DeclaringMemberModelProperty.class).get().getDeclaringField().getName());
+              .map(p -> p.getModelProperty(DeclaringMemberReferenceModelProperty.class).get().getDeclaringField().getName());
 
           if (!fieldName.isPresent()) {
             continue;

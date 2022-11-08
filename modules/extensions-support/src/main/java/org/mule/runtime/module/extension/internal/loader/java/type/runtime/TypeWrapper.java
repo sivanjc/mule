@@ -20,6 +20,7 @@ import org.mule.metadata.api.ClassTypeLoader;
 import org.mule.metadata.api.model.MetadataType;
 import org.mule.metadata.java.api.annotation.ClassInformationAnnotation;
 import org.mule.runtime.api.util.LazyValue;
+import org.mule.runtime.extension.api.declaration.type.DefaultExtensionsTypeLoaderFactory;
 import org.mule.runtime.module.extension.api.loader.java.type.AnnotationValueFetcher;
 import org.mule.runtime.module.extension.api.loader.java.type.FieldElement;
 import org.mule.runtime.module.extension.api.loader.java.type.MethodElement;
@@ -57,6 +58,10 @@ public class TypeWrapper implements Type {
   private ResolvableType[] resolvableTypeGenerics = new ResolvableType[] {};
   ClassTypeLoader typeLoader;
   private LazyValue<Boolean> instantiable;
+
+  public TypeWrapper(Class<?> aClass) {
+    this(aClass, new DefaultExtensionsTypeLoaderFactory().createTypeLoader());
+  }
 
   public TypeWrapper(Class<?> aClass, ClassTypeLoader typeLoader) {
     this.aClass = aClass != null ? aClass : Object.class;

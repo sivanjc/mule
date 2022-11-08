@@ -28,7 +28,7 @@ import org.mule.runtime.api.meta.model.declaration.fluent.ParameterDeclaration;
 import org.mule.runtime.api.meta.model.parameter.ActingParameterModel;
 import org.mule.runtime.extension.internal.loader.DefaultExtensionLoadingContext;
 import org.mule.runtime.module.extension.internal.loader.java.enricher.SampleDataDeclarationEnricher;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.test.data.sample.extension.SampleDataExtension;
 
 import java.util.Optional;
@@ -167,8 +167,8 @@ public class SampleDataDeclarationEnricherTestCase {
 
   private void assertAliasedParameter(OperationDeclaration operationDeclaration, String alias, String name) {
     ParameterDeclaration aliasedParameterDeclaration = getNamedObject(operationDeclaration.getAllParameters(), alias);
-    Optional<DeclaringMemberModelProperty> modelProperty =
-        aliasedParameterDeclaration.getModelProperty(DeclaringMemberModelProperty.class);
+    Optional<DeclaringMemberReferenceModelProperty> modelProperty =
+        aliasedParameterDeclaration.getModelProperty(DeclaringMemberReferenceModelProperty.class);
     assertThat(modelProperty.isPresent(), is(true));
     assertThat(modelProperty.get().getDeclaringField(), notNullValue());
     assertThat(modelProperty.get().getDeclaringField().getName(), is(name));

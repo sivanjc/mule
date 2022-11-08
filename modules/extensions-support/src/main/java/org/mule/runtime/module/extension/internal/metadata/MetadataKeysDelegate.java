@@ -9,7 +9,6 @@ package org.mule.runtime.module.extension.internal.metadata;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 import static org.mule.runtime.api.metadata.resolving.FailureCode.CONNECTION_FAILURE;
 import static org.mule.runtime.api.metadata.resolving.MetadataFailure.Builder.newFailure;
 import static org.mule.runtime.api.metadata.resolving.MetadataResult.failure;
@@ -33,7 +32,7 @@ import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.metadata.NullMetadataKey;
 import org.mule.runtime.extension.api.property.MetadataKeyPartModelProperty;
 import org.mule.runtime.module.extension.api.metadata.MultilevelMetadataKeyBuilder;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.util.ReflectionCache;
 
 import com.google.common.collect.ImmutableSet;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -122,8 +120,8 @@ class MetadataKeysDelegate extends BaseMetadataDelegate {
       return false;
     }
 
-    Optional<DeclaringMemberModelProperty> member =
-        partsByOrder.get(INITIAL_PART_LEVEL).getModelProperty(DeclaringMemberModelProperty.class);
+    Optional<DeclaringMemberReferenceModelProperty> member =
+        partsByOrder.get(INITIAL_PART_LEVEL).getModelProperty(DeclaringMemberReferenceModelProperty.class);
 
     if (!member.isPresent()) {
       return false;

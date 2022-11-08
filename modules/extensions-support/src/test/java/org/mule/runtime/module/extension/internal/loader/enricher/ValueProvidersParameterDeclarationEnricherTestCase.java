@@ -31,7 +31,7 @@ import org.mule.runtime.api.meta.model.parameter.ValueProviderModel;
 import org.mule.runtime.extension.api.property.SinceMuleVersionModelProperty;
 import org.mule.runtime.extension.internal.loader.DefaultExtensionLoadingContext;
 import org.mule.runtime.module.extension.internal.loader.java.enricher.ValueProvidersParameterDeclarationEnricher;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.test.values.extension.ValuesExtension;
 
 import java.util.Optional;
@@ -73,8 +73,8 @@ public class ValueProvidersParameterDeclarationEnricherTestCase {
         getNamedObject(this.declaration.getOperations(), "singleValuesWithRequiredParameterWithAlias");
     ParameterDeclaration parameterDeclaration = getNamedObject(operationDeclaration.getAllParameters(), "channels");
     ParameterDeclaration aliasedParameterDeclaration = getNamedObject(operationDeclaration.getAllParameters(), "superString");
-    Optional<DeclaringMemberModelProperty> modelProperty =
-        aliasedParameterDeclaration.getModelProperty(DeclaringMemberModelProperty.class);
+    Optional<DeclaringMemberReferenceModelProperty> modelProperty =
+        aliasedParameterDeclaration.getModelProperty(DeclaringMemberReferenceModelProperty.class);
 
     assertThat(modelProperty.isPresent(), is(true));
     assertThat(modelProperty.get().getDeclaringField(), notNullValue());

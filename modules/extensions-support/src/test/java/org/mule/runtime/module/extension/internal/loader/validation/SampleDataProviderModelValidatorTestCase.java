@@ -41,7 +41,7 @@ import org.mule.runtime.api.meta.model.source.SourceModel;
 import org.mule.runtime.extension.api.declaration.type.ExtensionsTypeLoaderFactory;
 import org.mule.runtime.extension.api.loader.Problem;
 import org.mule.runtime.extension.api.loader.ProblemsReporter;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingMethodModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingParameterModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.SampleDataProviderFactoryModelProperty;
@@ -138,7 +138,7 @@ public class SampleDataProviderModelValidatorTestCase {
     when(sourceModel.getParameterGroupModels()).thenReturn(asList(parameterGroupModel));
 
     when(parameterModel.getModelProperty(ImplementingParameterModelProperty.class)).thenReturn(empty());
-    when(parameterModel.getModelProperty(DeclaringMemberModelProperty.class)).thenReturn(empty());
+    when(parameterModel.getModelProperty(DeclaringMemberReferenceModelProperty.class)).thenReturn(empty());
     when(parameterModel.getName()).thenReturn("someName");
     when(parameterModel.getType()).thenReturn(STRING_TYPE);
 
@@ -496,7 +496,7 @@ public class SampleDataProviderModelValidatorTestCase {
                              String providerId) {
     when(componentModel.getModelProperty(SampleDataProviderFactoryModelProperty.class)).thenReturn(of(builder.build()));
     when(componentModel.getModelProperty(ImplementingParameterModelProperty.class)).thenReturn(empty());
-    when(componentModel.getModelProperty(DeclaringMemberModelProperty.class)).thenReturn(empty());
+    when(componentModel.getModelProperty(DeclaringMemberReferenceModelProperty.class)).thenReturn(empty());
     when(componentModel.getSampleDataProviderModel())
         .thenReturn(of(new SampleDataProviderModel(emptyList(), providerId, true, true)));
   }

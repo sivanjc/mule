@@ -21,22 +21,17 @@ import org.mule.runtime.api.meta.model.connection.ConnectionProviderModel;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.api.meta.model.util.IdempotentExtensionWalker;
 import org.mule.runtime.extension.api.connectivity.oauth.AuthorizationCodeGrantType;
-import org.mule.runtime.extension.api.connectivity.oauth.AuthorizationCodeState;
 import org.mule.runtime.extension.api.connectivity.oauth.ClientCredentialsGrantType;
-import org.mule.runtime.extension.api.connectivity.oauth.ClientCredentialsState;
 import org.mule.runtime.extension.api.connectivity.oauth.OAuthModelProperty;
 import org.mule.runtime.extension.api.connectivity.oauth.OAuthParameterModelProperty;
 import org.mule.runtime.extension.api.exception.IllegalConnectionProviderModelDefinitionException;
 import org.mule.runtime.extension.api.loader.ExtensionModelValidator;
 import org.mule.runtime.extension.api.loader.Problem;
 import org.mule.runtime.extension.api.loader.ProblemsReporter;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Validates that OAuth enabled {@link ConnectionProvider}s are well formed
@@ -87,8 +82,8 @@ public class JavaOAuthConnectionProviderModelValidator implements ExtensionModel
                                                  parameterModel -> parameterModel
                                                      .getModelProperty(OAuthParameterModelProperty.class).isPresent())
         .forEach(
-                 parameterModel -> parameterModel.getModelProperty(DeclaringMemberModelProperty.class)
-                     .map(DeclaringMemberModelProperty::getDeclaringField)
+                 parameterModel -> parameterModel.getModelProperty(DeclaringMemberReferenceModelProperty.class)
+                     .map(DeclaringMemberReferenceModelProperty::getDeclaringField)
                      .ifPresent(field -> validateExpressionSupport(connectionProviderModel,
                                                                    parameterModel,
                                                                    field,

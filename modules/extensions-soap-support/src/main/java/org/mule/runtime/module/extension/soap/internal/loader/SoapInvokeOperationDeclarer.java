@@ -45,7 +45,7 @@ import org.mule.runtime.module.extension.api.loader.java.property.CompletableCom
 import org.mule.runtime.module.extension.internal.loader.ParameterGroupDescriptor;
 import org.mule.runtime.module.extension.internal.loader.delegate.StereotypeModelLoaderDelegate;
 import org.mule.runtime.module.extension.internal.loader.java.property.ConnectivityModelProperty;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.MetadataResolverFactoryModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ParameterGroupModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.type.runtime.TypeWrapper;
@@ -231,14 +231,14 @@ public class SoapInvokeOperationDeclarer {
 
     StringType stringType = TYPE_BUILDER.stringType().build();
     group.withRequiredParameter(SERVICE_PARAM)
-        .withModelProperty(new DeclaringMemberModelProperty(getField(WebServiceTypeKey.class, SERVICE_PARAM, reflectionCache)
+        .withModelProperty(new DeclaringMemberReferenceModelProperty(getField(WebServiceTypeKey.class, SERVICE_PARAM, reflectionCache)
             .get()))
         .ofType(stringType)
         .withModelProperty(new MetadataKeyPartModelProperty(1))
         .withLayout(getLayout(1));
     group.withRequiredParameter(OPERATION_PARAM)
         .ofType(stringType)
-        .withModelProperty(new DeclaringMemberModelProperty(getField(WebServiceTypeKey.class, OPERATION_PARAM, reflectionCache)
+        .withModelProperty(new DeclaringMemberReferenceModelProperty(getField(WebServiceTypeKey.class, OPERATION_PARAM, reflectionCache)
             .get()))
         .withModelProperty(new MetadataKeyPartModelProperty(2))
         .withLayout(getLayout(2));

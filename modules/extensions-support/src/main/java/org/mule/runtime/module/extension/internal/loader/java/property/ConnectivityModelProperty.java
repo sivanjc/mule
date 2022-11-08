@@ -8,7 +8,6 @@ package org.mule.runtime.module.extension.internal.loader.java.property;
 
 
 import org.mule.runtime.api.meta.model.EnrichableModel;
-import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.module.extension.api.loader.java.type.Type;
 
 /**
@@ -17,10 +16,7 @@ import org.mule.runtime.module.extension.api.loader.java.type.Type;
  *
  * @since 4.0
  */
-public class ConnectivityModelProperty implements ModelProperty {
-
-  private Class<?> connectionType;
-  private Type type;
+public class ConnectivityModelProperty extends ClassReferenceModelProperty {
 
   /**
    * Creates a new instance for the given {@code connectionType}
@@ -28,7 +24,7 @@ public class ConnectivityModelProperty implements ModelProperty {
    * @param connectionType
    */
   public ConnectivityModelProperty(Class<?> connectionType) {
-    this.connectionType = connectionType;
+    super(connectionType);
   }
 
   /**
@@ -37,14 +33,14 @@ public class ConnectivityModelProperty implements ModelProperty {
    * @param connectionType
    */
   public ConnectivityModelProperty(Type connectionType) {
-    this.type = connectionType;
+    super(connectionType);
   }
 
   /**
-   * @return the {@link {@link #connectionType}}
+   * @return the {@link Type} that represents the connection
    */
   public Type getConnectionType() {
-    return type;
+    return getType();
   }
 
   /**

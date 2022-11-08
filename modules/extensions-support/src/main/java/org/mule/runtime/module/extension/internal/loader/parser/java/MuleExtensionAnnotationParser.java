@@ -28,7 +28,7 @@ import org.mule.runtime.module.extension.api.loader.java.type.ExtensionElement;
 import org.mule.runtime.module.extension.api.loader.java.type.Type;
 import org.mule.runtime.module.extension.api.loader.java.type.WithAnnotations;
 import org.mule.runtime.module.extension.internal.loader.java.info.ExtensionInfo;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 public final class MuleExtensionAnnotationParser {
 
   public static String getMemberName(BaseDeclaration<?> declaration, String defaultName) {
-    return declaration.getModelProperty(DeclaringMemberModelProperty.class).map(p -> p.getDeclaringField().getName())
+    return declaration.getModelProperty(DeclaringMemberReferenceModelProperty.class).map(p -> p.getDeclaringField().getName())
         .orElse(defaultName);
   }
 

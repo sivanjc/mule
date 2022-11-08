@@ -18,7 +18,7 @@ import org.mule.runtime.extension.api.annotation.ConfigReferences;
 import org.mule.runtime.extension.api.declaration.fluent.util.IdempotentDeclarationWalker;
 import org.mule.runtime.extension.api.declaration.type.annotation.StereotypeTypeAnnotation;
 import org.mule.runtime.extension.api.loader.ExtensionLoadingContext;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingParameterModelProperty;
 
 import java.lang.reflect.AnnotatedElement;
@@ -66,7 +66,7 @@ public final class ParameterAllowedStereotypesDeclarionEnricher extends Abstract
           declaration.getModelProperty(ImplementingParameterModelProperty.class)
               .ifPresent(param -> declaration.getAllowedStereotypeModels()
                   .addAll(getStereotypes(param.getParameter(), typesByClassName)));
-          declaration.getModelProperty(DeclaringMemberModelProperty.class)
+          declaration.getModelProperty(DeclaringMemberReferenceModelProperty.class)
               .ifPresent(field -> declaration.getAllowedStereotypeModels()
                   .addAll(getStereotypes(field.getDeclaringField(), typesByClassName)));
         }

@@ -8,9 +8,7 @@ package org.mule.runtime.module.extension.internal.loader.java.property;
 
 import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.api.meta.model.connection.ConnectionProviderModel;
-import org.mule.runtime.extension.api.declaration.type.DefaultExtensionsTypeLoaderFactory;
 import org.mule.runtime.module.extension.api.loader.java.type.Type;
-import org.mule.runtime.module.extension.internal.loader.java.type.runtime.TypeWrapper;
 
 import java.lang.ref.WeakReference;
 
@@ -20,10 +18,9 @@ import java.lang.ref.WeakReference;
  *
  * @since 4.0
  */
-public final class ConnectionTypeModelProperty implements ModelProperty {
+public final class ConnectionTypeModelProperty extends ClassReferenceModelProperty {
 
   private WeakReference<Class<?>> connectionType;
-  private Type type;
 
   /**
    * Creates a new instance
@@ -31,12 +28,12 @@ public final class ConnectionTypeModelProperty implements ModelProperty {
    * @param connectionType a connection type
    */
   public ConnectionTypeModelProperty(Class<?> connectionType) {
+    super(connectionType);
     this.connectionType = new WeakReference<>(connectionType);
-    this.type = new TypeWrapper(connectionType, new DefaultExtensionsTypeLoaderFactory().createTypeLoader());
   }
 
   public ConnectionTypeModelProperty(Type type) {
-    this.type = type;
+    super(type);
   }
 
   /**
@@ -47,7 +44,7 @@ public final class ConnectionTypeModelProperty implements ModelProperty {
   }
 
   public Type getConnectionTypeElement() {
-    return type;
+    return getType();
   }
 
   /**

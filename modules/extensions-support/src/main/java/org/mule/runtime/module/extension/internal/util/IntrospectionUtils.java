@@ -112,7 +112,7 @@ import org.mule.runtime.module.extension.api.loader.java.type.Type;
 import org.mule.runtime.module.extension.api.loader.java.type.TypeGeneric;
 import org.mule.runtime.module.extension.api.loader.java.type.WithAnnotations;
 import org.mule.runtime.module.extension.internal.loader.java.enricher.MetadataTypeEnricher;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.DefaultEncodingModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingParameterModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.InjectedFieldModelProperty;
@@ -624,12 +624,12 @@ public final class IntrospectionUtils {
   }
 
   public static String getMemberName(EnrichableModel enrichableModel, String defaultName) {
-    return enrichableModel.getModelProperty(DeclaringMemberModelProperty.class).map(p -> p.getDeclaringField().getName())
+    return enrichableModel.getModelProperty(DeclaringMemberReferenceModelProperty.class).map(p -> p.getDeclaringField().getName())
         .orElse(defaultName);
   }
 
   public static Optional<Field> getMemberField(EnrichableModel enrichableModel) {
-    return enrichableModel.getModelProperty(DeclaringMemberModelProperty.class).map(p -> p.getDeclaringField());
+    return enrichableModel.getModelProperty(DeclaringMemberReferenceModelProperty.class).map(p -> p.getDeclaringField());
   }
 
   public static List<java.lang.reflect.Type> getInterfaceGenerics(final java.lang.reflect.Type type,
@@ -1335,8 +1335,8 @@ public final class IntrospectionUtils {
   }
 
   public static java.util.Optional<AnnotatedElement> getAnnotatedElement(BaseDeclaration<?> declaration) {
-    final java.util.Optional<DeclaringMemberModelProperty> declaringMember =
-        declaration.getModelProperty(DeclaringMemberModelProperty.class);
+    final java.util.Optional<DeclaringMemberReferenceModelProperty> declaringMember =
+        declaration.getModelProperty(DeclaringMemberReferenceModelProperty.class);
     final java.util.Optional<ImplementingParameterModelProperty> implementingParameter =
         declaration.getModelProperty(ImplementingParameterModelProperty.class);
 
@@ -1377,7 +1377,7 @@ public final class IntrospectionUtils {
   public static String getImplementingName(ParameterDeclaration parameterDeclaration) {
     return getImplementingName(parameterDeclaration.getName(),
                                () -> parameterDeclaration.getModelProperty(ImplementingParameterModelProperty.class),
-                               () -> parameterDeclaration.getModelProperty(DeclaringMemberModelProperty.class));
+                               () -> parameterDeclaration.getModelProperty(DeclaringMemberReferenceModelProperty.class));
   }
 
   /**
@@ -1389,18 +1389,18 @@ public final class IntrospectionUtils {
   public static String getImplementingName(ParameterModel parameterModel) {
     return getImplementingName(parameterModel.getName(),
                                () -> parameterModel.getModelProperty(ImplementingParameterModelProperty.class),
-                               () -> parameterModel.getModelProperty(DeclaringMemberModelProperty.class));
+                               () -> parameterModel.getModelProperty(DeclaringMemberReferenceModelProperty.class));
   }
 
   private static String getImplementingName(String originalName,
                                             Supplier<Optional<ImplementingParameterModelProperty>> implementingParameter,
-                                            Supplier<Optional<DeclaringMemberModelProperty>> declaringMember) {
+                                            Supplier<Optional<DeclaringMemberReferenceModelProperty>> declaringMember) {
     Optional<ImplementingParameterModelProperty> parameter = implementingParameter.get();
     if (parameter.isPresent()) {
       return parameter.get().getParameter().getName();
     }
 
-    Optional<DeclaringMemberModelProperty> field = declaringMember.get();
+    Optional<DeclaringMemberReferenceModelProperty> field = declaringMember.get();
     if (field.isPresent()) {
       return field.get().getDeclaringField().getName();
     }
@@ -1489,7 +1489,7 @@ public final class IntrospectionUtils {
   /**
    * Sets the {@code configName}, {@code encoding} and {@link MuleVersion} into the fields of the target annotated with
    * {@link RefName}, {@link DefaultEncoding} and {@link RuntimeVersion} respectively if present and the {@code model} contains
-   * the {@link DeclaringMemberModelProperty}.
+   * the {@link DeclaringMemberReferenceModelProperty}.
    *
    * @param model       enriched with {@link InjectedFieldModelProperty}
    * @param target      object in which the fields are going to be set
@@ -1506,7 +1506,7 @@ public final class IntrospectionUtils {
 
   /**
    * Sets the {@code encoding} value into the field of the {@code target} annotated {@link DefaultEncoding} if the {@code model}
-   * contains the {@link DeclaringMemberModelProperty} property and the value is not {@code null}.
+   * contains the {@link DeclaringMemberReferenceModelProperty} property and the value is not {@code null}.
    *
    * @param model    enriched with {@link DefaultEncodingModelProperty}
    * @param target   object in which the fields are going to be set
@@ -1519,7 +1519,7 @@ public final class IntrospectionUtils {
 
   /**
    * Sets the {@link MuleVersion} into the field of the {@code target} annotated {@link RuntimeVersion} if the {@code model}
-   * contains the {@link DeclaringMemberModelProperty} property and the value is not {@code null}.
+   * contains the {@link DeclaringMemberReferenceModelProperty} property and the value is not {@code null}.
    *
    * @param model       enriched with {@link DefaultEncodingModelProperty}
    * @param target      object in which the fields are going to be set

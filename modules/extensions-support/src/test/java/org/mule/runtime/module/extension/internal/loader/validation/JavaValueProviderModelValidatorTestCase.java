@@ -43,8 +43,7 @@ import org.mule.runtime.extension.api.loader.Problem;
 import org.mule.runtime.extension.api.loader.ProblemsReporter;
 import org.mule.runtime.extension.api.values.ValueProvider;
 import org.mule.runtime.extension.api.values.ValueResolvingException;
-import org.mule.runtime.module.extension.internal.loader.annotations.CustomDefinedStaticTypeAnnotation;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.FieldsValueProviderFactoryModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingParameterModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ValueProviderFactoryModelProperty;
@@ -384,7 +383,7 @@ public class JavaValueProviderModelValidatorTestCase {
                              String paramName, MetadataType type) {
     when(parameter.getModelProperty(ValueProviderFactoryModelProperty.class)).thenReturn(Optional.of(builder.build()));
     when(parameter.getModelProperty(ImplementingParameterModelProperty.class)).thenReturn(empty());
-    when(parameter.getModelProperty(DeclaringMemberModelProperty.class)).thenReturn(empty());
+    when(parameter.getModelProperty(DeclaringMemberReferenceModelProperty.class)).thenReturn(empty());
     when(parameter.getName()).thenReturn(paramName);
     when(parameter.getType()).thenReturn(type);
     when(parameter.getValueProviderModel())
@@ -408,7 +407,7 @@ public class JavaValueProviderModelValidatorTestCase {
     when(operationParameter.getModelProperty(FieldsValueProviderFactoryModelProperty.class))
         .thenReturn(of(fieldsValueProviderFactoryModelProperty));
     when(parameter.getModelProperty(ImplementingParameterModelProperty.class)).thenReturn(empty());
-    when(parameter.getModelProperty(DeclaringMemberModelProperty.class)).thenReturn(empty());
+    when(parameter.getModelProperty(DeclaringMemberReferenceModelProperty.class)).thenReturn(empty());
     when(parameter.getName()).thenReturn("someName");
     when(parameter.getType()).thenReturn(OBJECT_TYPE);
     when(parameter.getFieldValueProviderModels()).thenReturn(fieldValueProviderModels);
@@ -416,7 +415,7 @@ public class JavaValueProviderModelValidatorTestCase {
 
   private void mockAnotherParameter(ParameterModel parameter, MetadataType type) {
     when(parameter.getModelProperty(ImplementingParameterModelProperty.class)).thenReturn(empty());
-    when(parameter.getModelProperty(DeclaringMemberModelProperty.class)).thenReturn(empty());
+    when(parameter.getModelProperty(DeclaringMemberReferenceModelProperty.class)).thenReturn(empty());
     when(parameter.getName()).thenReturn("anotherParameter");
     when(parameter.getType()).thenReturn(type);
   }

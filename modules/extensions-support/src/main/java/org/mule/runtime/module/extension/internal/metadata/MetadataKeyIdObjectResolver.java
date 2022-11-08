@@ -36,7 +36,7 @@ import org.mule.runtime.extension.api.dsql.DsqlQuery;
 import org.mule.runtime.extension.api.metadata.NullMetadataKey;
 import org.mule.runtime.extension.api.property.MetadataKeyIdModelProperty;
 import org.mule.runtime.extension.api.property.MetadataKeyPartModelProperty;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.QueryParameterModelProperty;
 import org.mule.runtime.module.extension.internal.runtime.objectbuilder.DefaultObjectBuilder;
 import org.mule.runtime.module.extension.internal.runtime.resolver.StaticValueResolver;
@@ -140,8 +140,8 @@ final class MetadataKeyIdObjectResolver {
       @Override
       protected Map<Field, String> getFieldValuesMap() {
         return keyParts.stream()
-            .filter(p -> p.getModelProperty(DeclaringMemberModelProperty.class).isPresent())
-            .collect(toMap(p -> p.getModelProperty(DeclaringMemberModelProperty.class).get().getDeclaringField(),
+            .filter(p -> p.getModelProperty(DeclaringMemberReferenceModelProperty.class).isPresent())
+            .collect(toMap(p -> p.getModelProperty(DeclaringMemberReferenceModelProperty.class).get().getDeclaringField(),
                            p -> p.getDefaultValue().toString()));
       }
     };
@@ -149,7 +149,7 @@ final class MetadataKeyIdObjectResolver {
     return visitor.getResultId();
   }
 
-  private MetadataKeyBuilder getKeyFromField(Object resolvedKey, DeclaringMemberModelProperty declaringMemberModelProperty,
+  private MetadataKeyBuilder getKeyFromField(Object resolvedKey, DeclaringMemberReferenceModelProperty declaringMemberModelProperty,
                                              ReflectionCache reflectionCache)
       throws Exception {
     return newKey(valueOf(getFieldValue(resolvedKey, declaringMemberModelProperty.getDeclaringField().getName(),
@@ -178,9 +178,9 @@ final class MetadataKeyIdObjectResolver {
 
     for (ParameterModel p : keyParts) {
       try {
-        if (p.getModelProperty(DeclaringMemberModelProperty.class).isPresent()) {
+        if (p.getModelProperty(DeclaringMemberReferenceModelProperty.class).isPresent()) {
           MetadataKeyBuilder fieldBuilder =
-              getKeyFromField(resolvedKey, p.getModelProperty(DeclaringMemberModelProperty.class).get(), reflectionCache);
+              getKeyFromField(resolvedKey, p.getModelProperty(DeclaringMemberReferenceModelProperty.class).get(), reflectionCache);
           if (rootBuilder == null) {
             rootBuilder = fieldBuilder;
             childBuilder = rootBuilder;
@@ -220,8 +220,8 @@ final class MetadataKeyIdObjectResolver {
 
   private Map<Field, String> keyToFieldValueMap(MetadataKey key, boolean partial) throws MetadataResolvingException {
     final Map<String, Field> fieldParts = keyParts.stream()
-        .filter(p -> p.getModelProperty(DeclaringMemberModelProperty.class).isPresent())
-        .map(p -> p.getModelProperty(DeclaringMemberModelProperty.class).get().getDeclaringField())
+        .filter(p -> p.getModelProperty(DeclaringMemberReferenceModelProperty.class).isPresent())
+        .map(p -> p.getModelProperty(DeclaringMemberReferenceModelProperty.class).get().getDeclaringField())
         .collect(toMap(Field::getName, identity()));
 
     final Map<String, String> currentParts = getCurrentParts(key);

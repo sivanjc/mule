@@ -9,9 +9,9 @@ package org.mule.runtime.module.extension.internal.loader.java.property;
 import static org.mule.runtime.api.util.Preconditions.checkArgument;
 
 import org.mule.runtime.api.meta.model.EnrichableModel;
-import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
 /**
@@ -19,9 +19,13 @@ import java.lang.reflect.Parameter;
  *
  * @since 4.0
  */
-public final class ImplementingParameterModelProperty implements ModelProperty {
+public final class ImplementingParameterModelProperty implements SarazaInterface {
 
-  private final Parameter parameter;
+  private final String className;
+  private final String methodName;
+  private final String parameterName;
+
+  private transient Parameter parameter;
 
   /**
    * Creates a new instance referencing the given {@code parameter}
@@ -32,6 +36,17 @@ public final class ImplementingParameterModelProperty implements ModelProperty {
   public ImplementingParameterModelProperty(Parameter parameter) {
     checkArgument(parameter != null, "parameter cannot be null");
     this.parameter = parameter;
+
+    Method method = (Method) parameter.getDeclaringExecutable();
+    methodName = method.getName();
+    className = method.getDeclaringClass().getName();
+    parameterName = parameter.getName();
+  }
+
+  public ImplementingParameterModelProperty(String className, String methodName, String parameterName) {
+    this.className = className;
+    this.methodName = methodName;
+    this.parameterName = parameterName;
   }
 
   /**

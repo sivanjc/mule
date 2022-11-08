@@ -77,7 +77,7 @@ import org.mule.runtime.extension.internal.loader.util.InfrastructureTypeMapping
 import org.mule.runtime.module.extension.api.loader.java.type.ExtensionParameter;
 import org.mule.runtime.module.extension.api.loader.java.type.FieldElement;
 import org.mule.runtime.module.extension.api.loader.java.type.Type;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ExclusiveOptionalModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingParameterModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.NullSafeModelProperty;
@@ -381,7 +381,7 @@ public class JavaParameterModelParser implements ParameterModelParser {
   private void collectImplementingTypeProperties() {
     parameter.getDeclaringElement().ifPresent(element -> {
       if (element instanceof Field) {
-        additionalModelProperties.add(new DeclaringMemberModelProperty(((Field) element)));
+        additionalModelProperties.add(new DeclaringMemberReferenceModelProperty(((Field) element)));
       } else {
         additionalModelProperties.add(new ImplementingParameterModelProperty((java.lang.reflect.Parameter) element));
       }

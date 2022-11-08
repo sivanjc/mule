@@ -31,7 +31,7 @@ import org.mule.runtime.extension.api.dsql.DsqlQuery;
 import org.mule.runtime.extension.api.dsql.QueryTranslator;
 import org.mule.runtime.extension.api.property.MetadataKeyIdModelProperty;
 import org.mule.runtime.extension.api.property.MetadataKeyPartModelProperty;
-import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.property.DeclaringMemberReferenceModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.QueryParameterModelProperty;
 import org.mule.runtime.module.extension.internal.util.ReflectionCache;
 import org.mule.tck.junit4.AbstractMuleTestCase;
@@ -114,7 +114,7 @@ public class MetadataKeyIdObjectResolverTestCase extends AbstractMuleTestCase {
 
   private void mockDeclaringMemberModelProp(ParameterModel param, String name, ReflectionCache reflectionCache) {
     Field f = getField(LocationKey.class, name, reflectionCache).get();
-    when(param.getModelProperty(DeclaringMemberModelProperty.class)).thenReturn(of(new DeclaringMemberModelProperty(f)));
+    when(param.getModelProperty(DeclaringMemberReferenceModelProperty.class)).thenReturn(of(new DeclaringMemberReferenceModelProperty(f)));
   }
 
   private void mockQueryModelProp(ParameterModel param) {

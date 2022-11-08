@@ -6,10 +6,9 @@
  */
 package org.mule.runtime.module.extension.internal.loader.java.property;
 
-import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.api.meta.model.config.ConfigurationModel;
-import org.mule.runtime.api.meta.model.ModelProperty;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
+import org.mule.runtime.extension.api.annotation.Alias;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -26,12 +25,14 @@ import java.lang.reflect.Field;
  *
  * @since 4.0
  */
-public final class DeclaringMemberModelProperty implements ModelProperty {
+public final class DeclaringMemberReferenceModelProperty extends FieldReferenceModelProperty {
 
-  private final Field declaringField;
+  public DeclaringMemberReferenceModelProperty(Field declaringField) {
+    super(declaringField);
+  }
 
-  public DeclaringMemberModelProperty(Field declaringField) {
-    this.declaringField = declaringField;
+  public DeclaringMemberReferenceModelProperty(String className, String fieldName) {
+    super(className, fieldName);
   }
 
   /**
@@ -40,7 +41,7 @@ public final class DeclaringMemberModelProperty implements ModelProperty {
    * @return a {@link Field}
    */
   public Field getDeclaringField() {
-    return declaringField;
+    return getField();
   }
 
   /**
