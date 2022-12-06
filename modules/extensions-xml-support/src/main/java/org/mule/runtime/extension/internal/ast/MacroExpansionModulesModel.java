@@ -19,6 +19,7 @@ import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.ast.api.ArtifactAst;
 import org.mule.runtime.ast.api.ComponentAst;
 import org.mule.runtime.ast.api.util.BaseComponentAstDecorator;
+import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
 import org.mule.runtime.extension.api.property.XmlExtensionModelProperty;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class MacroExpansionModulesModel {
 
   private ArtifactAst applicationModel;
   private final List<ExtensionModel> sortedExtensions;
+  private final ConfigurationPropertiesResolver configurationPropertiesResolver;
 
   /**
    * From a mutable {@code applicationModel}, it will store it to apply changes when the {@link #expand()} method is executed.
@@ -66,9 +68,11 @@ public class MacroExpansionModulesModel {
    *                         up only those that are coming from an XML context through the {@link XmlExtensionModelProperty}
    *                         property.
    */
-  public MacroExpansionModulesModel(ArtifactAst applicationModel, Set<ExtensionModel> extensions) {
+  public MacroExpansionModulesModel(ArtifactAst applicationModel, Set<ExtensionModel> extensions,
+                                    ConfigurationPropertiesResolver configurationPropertiesResolver) {
     this.applicationModel = applicationModel;
     this.sortedExtensions = calculateExtensionByTopologicalOrder(extensions);
+    this.configurationPropertiesResolver = configurationPropertiesResolver;
   }
 
   /**
@@ -88,7 +92,8 @@ public class MacroExpansionModulesModel {
                               extensionModel.getXmlDslModel().getPrefix(),
                               extensionModel.getXmlDslModel().getNamespace()));
         }
-        applicationModel = new MacroExpansionModuleModel(applicationModel, extensionModel).expand();
+        applicationModel =
+            new MacroExpansionModuleModel(applicationModel, extensionModel, configurationPropertiesResolver).expand();
       }
     }
 

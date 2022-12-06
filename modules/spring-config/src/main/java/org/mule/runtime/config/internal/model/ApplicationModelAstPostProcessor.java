@@ -12,6 +12,7 @@ import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.util.LazyValue;
 import org.mule.runtime.ast.api.ArtifactAst;
 import org.mule.runtime.ast.api.ComponentAst;
+import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
 
 import java.util.Collection;
 import java.util.ServiceLoader;
@@ -39,7 +40,8 @@ public interface ApplicationModelAstPostProcessor {
    * @param extensionModels the extensions that are registered for this AST's artifact.
    * @return a newly created AST
    */
-  ArtifactAst postProcessAst(ArtifactAst ast, Set<ExtensionModel> extensionModels);
+  ArtifactAst postProcessAst(ArtifactAst ast, Set<ExtensionModel> extensionModels,
+                             ConfigurationPropertiesResolver configurationPropertiesResolver);
 
   /**
    * Create a new set of root components to create Spring bean definitions for.

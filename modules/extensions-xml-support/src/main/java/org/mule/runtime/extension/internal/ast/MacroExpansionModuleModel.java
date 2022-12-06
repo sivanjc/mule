@@ -54,6 +54,7 @@ import org.mule.runtime.ast.api.ComponentParameterAst;
 import org.mule.runtime.ast.api.util.AstTraversalDirection;
 import org.mule.runtime.ast.api.util.BaseComponentAst;
 import org.mule.runtime.ast.api.util.BaseComponentAstDecorator;
+import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.processor.Processor;
 import org.mule.runtime.dsl.api.component.config.DefaultComponentLocation;
@@ -130,7 +131,7 @@ public class MacroExpansionModuleModel {
 
   private final ArtifactAst applicationModel;
   private final ExtensionModel extensionModel;
-
+  private final ConfigurationPropertiesResolver configurationPropertiesResolver;
   private final boolean isDynamicConfigRefEnabled = getBoolean(ENABLE_DYNAMIC_CONFIG_REF_PROPERTY);
 
   /**
@@ -140,9 +141,11 @@ public class MacroExpansionModuleModel {
    *                         {@code extensions} map.
    * @param extensionModel   the {@link ExtensionModel}s to macro expand in the parameterized {@link ArtifactAst}
    */
-  MacroExpansionModuleModel(ArtifactAst applicationModel, ExtensionModel extensionModel) {
+  MacroExpansionModuleModel(ArtifactAst applicationModel, ExtensionModel extensionModel,
+                            ConfigurationPropertiesResolver configurationPropertiesResolver) {
     this.applicationModel = applicationModel;
     this.extensionModel = extensionModel;
+    this.configurationPropertiesResolver = configurationPropertiesResolver;
   }
 
   public ArtifactAst expand() {
@@ -161,7 +164,9 @@ public class MacroExpansionModuleModel {
 
     if (shouldAddImplicitConfiguration()) {
       expandedArtifactAst = copyRecursively(applicationModel, identity(),
-                                            () -> singletonList(new XmlSdkImplicitConfig(extensionModel)), comp -> false);
+                                            () -> singletonList(new XmlSdkImplicitConfig(extensionModel,
+                                                                                         configurationPropertiesResolver)),
+                                            comp -> false);
     } else {
       expandedArtifactAst = applicationModel;
     }

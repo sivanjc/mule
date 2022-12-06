@@ -37,12 +37,15 @@ import static org.mule.runtime.internal.dsl.DslConstants.TLS_PREFIX;
 import static org.mule.runtime.internal.dsl.DslConstants.TLS_REVOCATION_CHECK_ELEMENT_IDENTIFIER;
 
 import org.mule.runtime.api.component.ComponentIdentifier;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.source.SourceModel;
 import org.mule.runtime.ast.api.ArtifactAst;
 import org.mule.runtime.ast.api.ComponentAst;
 import org.mule.runtime.ast.api.ComponentParameterAst;
 import org.mule.runtime.ast.api.util.BaseComponentAstDecorator;
+import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
+import org.mule.runtime.core.api.MuleContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -149,11 +152,12 @@ public abstract class ApplicationModel {
    *
    * @param extensionModels Extension models to be used when macro expand the current {@link ApplicationModel}
    */
-  public static ArtifactAst prepareAstForRuntime(ArtifactAst ast, Set<ExtensionModel> extensionModels) {
+  public static ArtifactAst prepareAstForRuntime(ArtifactAst ast, Set<ExtensionModel> extensionModels,
+                                                 ConfigurationPropertiesResolver configurationPropertiesResolver) {
     ast = processSourcesRedeliveryPolicy(ast);
 
     for (ApplicationModelAstPostProcessor astPostProcessor : AST_POST_PROCESSORS.get()) {
-      ast = astPostProcessor.postProcessAst(ast, extensionModels);
+      ast = astPostProcessor.postProcessAst(ast, extensionModels, configurationPropertiesResolver);
     }
 
     return ast;

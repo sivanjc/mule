@@ -11,13 +11,16 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static org.mule.runtime.extension.internal.ast.MacroExpansionModuleModel.DEFAULT_GLOBAL_ELEMENTS;
 
+import org.mule.runtime.api.config.FeatureFlaggingService;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.config.ConfigurationModel;
 import org.mule.runtime.ast.api.ArtifactAst;
 import org.mule.runtime.ast.api.ComponentAst;
+import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
 import org.mule.runtime.config.internal.model.ApplicationModelAstPostProcessor;
 import org.mule.runtime.extension.api.property.XmlExtensionModelProperty;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Set;
@@ -26,9 +29,13 @@ import java.util.stream.Stream;
 
 public class MacroExpansionAstPostProcessor implements ApplicationModelAstPostProcessor {
 
+  @Inject
+  private ConfigurationPropertiesResolver configurationPropertiesResolver;
+
   @Override
-  public ArtifactAst postProcessAst(ArtifactAst ast, Set<ExtensionModel> extensionModels) {
-    return new MacroExpansionModulesModel(ast, extensionModels).expand();
+  public ArtifactAst postProcessAst(ArtifactAst ast, Set<ExtensionModel> extensionModels,
+                                    ConfigurationPropertiesResolver configurationPropertiesResolver) {
+    return new MacroExpansionModulesModel(ast, extensionModels, configurationPropertiesResolver).expand();
   }
 
   @Override

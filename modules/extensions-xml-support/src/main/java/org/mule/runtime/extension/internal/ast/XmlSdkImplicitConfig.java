@@ -30,6 +30,7 @@ import org.mule.runtime.ast.api.ComponentGenerationInformation;
 import org.mule.runtime.ast.api.ComponentMetadataAst;
 import org.mule.runtime.ast.api.ComponentParameterAst;
 import org.mule.runtime.ast.api.util.BaseComponentAst;
+import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -50,23 +51,22 @@ public class XmlSdkImplicitConfig extends BaseComponentAst {
   private final String configName;
   private final Set<ComponentParameterAst> componentParameterAsts = new HashSet<>();
 
-  public XmlSdkImplicitConfig(ExtensionModel extensionModel) {
+  public XmlSdkImplicitConfig(ExtensionModel extensionModel, ConfigurationPropertiesResolver configurationPropertiesResolver) {
     this.extensionModel = extensionModel;
     this.configName = format(IMPLICIT_CONFIG_NAME_SUFFIX, extensionModel.getName());
 
-    final List<ParameterModel> parameterModels = getModel(ParameterizedModel.class)
+    getModel(ParameterizedModel.class)
         .map(ParameterizedModel::getParameterGroupModels)
         .orElse(emptyList())
         .stream()
         .filter(parameterGroupModel -> parameterGroupModel.getName().equals(DEFAULT_GROUP_NAME))
-        .findFirst()
-        .map(ParameterGroupModel::getParameterModels)
-        .orElse(emptyList());
-
-    for (ParameterModel parameterModel : parameterModels) {
-      Object value = parameterModel.getName().equals("name") ? configName : parameterModel.getDefaultValue();
-      componentParameterAsts.add(new XmlSdkImplicitConfigParameter(parameterModel, value));
-    }
+        .findFirst().ifPresent(parameterGroupModel -> {
+          for (ParameterModel parameterModel : parameterGroupModel.getParameterModels()) {
+            Object value = parameterModel.getName().equals("name") ? configName : parameterModel.getDefaultValue();
+            componentParameterAsts.add(new XmlSdkImplicitConfigParameter(parameterGroupModel, parameterModel, value,
+                                                                         configurationPropertiesResolver));
+          }
+        });
   }
 
   @Override
