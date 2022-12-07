@@ -4,24 +4,44 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-
 package org.mule.runtime.module.extension.internal.loader.utils;
 
-import static org.mule.runtime.extension.api.util.ExtensionMetadataTypeUtils.getType;
 
 import static java.util.stream.Collectors.toList;
+import static org.mule.runtime.api.util.collection.Collectors.toImmutableMap;
+import static org.mule.runtime.extension.api.util.ExtensionMetadataTypeUtils.getType;
+import static org.mule.sdk.api.metadata.NullMetadataResolver.NULL_RESOLVER_NAME;
 
 import org.mule.metadata.api.model.MetadataType;
+import org.mule.runtime.api.meta.model.declaration.fluent.BaseDeclaration;
+import org.mule.runtime.api.metadata.resolving.AttributesTypeResolver;
+import org.mule.runtime.api.metadata.resolving.InputTypeResolver;
+import org.mule.runtime.api.metadata.resolving.OutputTypeResolver;
+import org.mule.runtime.api.metadata.resolving.TypeKeysResolver;
 import org.mule.runtime.extension.api.annotation.source.EmitsResponse;
+import org.mule.runtime.extension.api.metadata.MetadataResolverFactory;
+import org.mule.runtime.extension.api.metadata.NullMetadataResolver;
+import org.mule.runtime.extension.api.property.TypeResolversInformationModelProperty;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.mule.runtime.extension.api.runtime.route.Chain;
 import org.mule.runtime.extension.api.runtime.route.Route;
+import org.mule.runtime.metadata.internal.DefaultMetadataResolverFactory;
+import org.mule.runtime.metadata.internal.NullMetadataResolverFactory;
 import org.mule.runtime.module.extension.api.loader.java.type.ExtensionParameter;
 import org.mule.runtime.module.extension.api.loader.java.type.MethodElement;
 import org.mule.runtime.module.extension.api.loader.java.type.SourceElement;
+import org.mule.runtime.module.extension.internal.loader.java.property.MetadataResolverFactoryModelProperty;
+import org.mule.runtime.module.extension.internal.loader.parser.AttributesResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.OutputResolverModelParser;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class JavaModelLoaderUtils {
 
@@ -106,11 +126,11 @@ public class JavaModelLoaderUtils {
   /**
    * @param sourceElement a source
    * @return whether the given source emits response or not
-   * 
    * @since 4.5.0
    */
   public static boolean emitsResponse(SourceElement sourceElement) {
     return sourceElement.isAnnotatedWith(EmitsResponse.class)
         || sourceElement.isAnnotatedWith(org.mule.sdk.api.annotation.source.EmitsResponse.class);
   }
+
 }
