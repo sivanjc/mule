@@ -784,9 +784,10 @@ public final class XmlExtensionLoaderDelegate {
 
       Map<String, String> propertiesDefaultValues = configurationProperties
           .stream()
-          .filter(p -> p.getParameter(DEFAULT_GROUP_NAME, PARAMETER_DEFAULT_VALUE) != null)
+          .filter(p -> paramDefaultValueParameter(p) != null
+              && paramDefaultValueParameter(p).getRawValue() != null)
           .collect(toMap(p -> p.getParameter(DEFAULT_GROUP_NAME, PARAMETER_NAME).getRawValue(),
-                         p -> p.getParameter(DEFAULT_GROUP_NAME, PARAMETER_DEFAULT_VALUE).getRawValue()));
+                         p -> paramDefaultValueParameter(p).getRawValue()));
 
       delegateConnectionProviderFactory(testConnectionGlobalElementOptional, connectionProviderDeclarer, propertiesDefaultValues);
 
@@ -797,6 +798,10 @@ public final class XmlExtensionLoaderDelegate {
           .ifPresent(testConnectionGlobalElementName -> connectionProviderDeclarer
               .withModelProperty(new TestConnectionGlobalElementModelProperty((String) testConnectionGlobalElementName)));
     }
+  }
+
+  private ComponentParameterAst paramDefaultValueParameter(ComponentAst parameterComponent) {
+    return parameterComponent.getParameter(DEFAULT_GROUP_NAME, PARAMETER_DEFAULT_VALUE);
   }
 
   /**
@@ -816,30 +821,45 @@ public final class XmlExtensionLoaderDelegate {
             .filter(child -> child.getModel(ConnectionProviderModel.class).isPresent())
             .findFirst());
 
-    Map<ParameterModel, String> connectionParamsDefaultValues = new HashMap<>();
     connectionProvider
-        .ifPresent(conn -> {
-          conn.recursiveStream()
-              .forEach(c -> {
-                c.getParameters()
-                    .stream()
-                    .filter(p -> p.getRawValue() != null)
-                    .forEach(p -> {
-                      Matcher matcher = VARS_EXPRESSION_PATTERN.matcher(p.getRawValue());
-                      if (matcher.matches()) {
-                        connectionParamsDefaultValues.put(p.getModel(), propertiesDefaultValues.get(matcher.group()));
-                      }
-                    });
+        .flatMap(connectionProviderComponent -> connectionProviderComponent.getModel(ConnectionProviderModel.class)
+            .flatMap(connectionProviderModel -> connectionProviderModel
+                .getModelProperty(ConnectionProviderFactoryModelProperty.class)
+                .map(connectionProviderFactoryModelProperty -> new XmlSdkConnectionProviderFactory(connectionProviderModel,
+                                                                                                   connectionProviderFactoryModelProperty
+                                                                                                       .getConnectionProviderFactory(),
+                                                                                                   resolveConnectionParamsDefaultValues(propertiesDefaultValues,
+                                                                                                                                        connectionProviderComponent)))))
+        .ifPresent(xmlSdkConnectionProviderFactory -> connectionProviderDeclarer
+            .withModelProperty(new ConnectionProviderFactoryModelProperty(xmlSdkConnectionProviderFactory)));
+  }
+
+  /**
+   * Default values defined as properties at the config level but used in the connection provider.
+   * 
+   * @param propertiesDefaultValues
+   * @param connectionProvider
+   * @return default values defined as properties at the config level but used in the connection provider.
+   */
+  private Map<ParameterModel, String> resolveConnectionParamsDefaultValues(Map<String, String> propertiesDefaultValues,
+                                                                           ComponentAst connectionProviderComponent) {
+    Map<ParameterModel, String> connectionParamsDefaultValues = new HashMap<>();
+    connectionProviderComponent.recursiveStream()
+        .forEach(c -> {
+          c.getParameters()
+              .stream()
+              .filter(p -> p.getRawValue() != null)
+              .forEach(p -> {
+                Matcher matcher = VARS_EXPRESSION_PATTERN.matcher(p.getRawValue());
+                if (matcher.matches()) {
+                  String defaultValue = propertiesDefaultValues.get(matcher.group(1));
+                  if (defaultValue != null) {
+                    connectionParamsDefaultValues.put(p.getModel(), defaultValue);
+                  }
+                }
               });
         });
-
-    connectionProvider
-        .flatMap(child -> child.getModel(ConnectionProviderModel.class))
-        .flatMap(connectionProviderModel -> connectionProviderModel
-            .getModelProperty(ConnectionProviderFactoryModelProperty.class))
-        .ifPresent(connectionProviderFactoryModelProperty -> connectionProviderDeclarer
-            .withModelProperty(new ConnectionProviderFactoryModelProperty(new XmlSdkConnectionProviderFactory(connectionProviderFactoryModelProperty
-                .getConnectionProviderFactory(), connectionParamsDefaultValues))));
+    return connectionParamsDefaultValues;
   }
 
   private Optional<ComponentAst> getTestConnectionGlobalElement(ConfigurationDeclarer configurationDeclarer,
@@ -1079,7 +1099,7 @@ public final class XmlExtensionLoaderDelegate {
    */
   private ParameterDeclarer getParameterDeclarer(ParameterizedDeclarer parameterizedDeclarer, ComponentAst param) {
     final String parameterName = param.getParameter(DEFAULT_GROUP_NAME, PARAMETER_NAME).getRawValue();
-    final Optional<String> parameterDefaultValue = param.getParameter(DEFAULT_GROUP_NAME, PARAMETER_DEFAULT_VALUE).getValue()
+    final Optional<String> parameterDefaultValue = paramDefaultValueParameter(param).getValue()
         .mapLeft(expr -> "#[" + expr + "]")
         .getValue();
     final UseEnum use = UseEnum.valueOf(param.getParameter(DEFAULT_GROUP_NAME, ATTRIBUTE_USE).getValue().getRight().toString());
