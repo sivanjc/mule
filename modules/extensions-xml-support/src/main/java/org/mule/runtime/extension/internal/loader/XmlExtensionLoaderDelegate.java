@@ -6,24 +6,6 @@
  */
 package org.mule.runtime.extension.internal.loader;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.Math.max;
-import static java.lang.Runtime.getRuntime;
-import static java.lang.String.format;
-import static java.lang.String.join;
-import static java.lang.Thread.currentThread;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
 import static org.mule.metadata.api.model.MetadataFormat.JAVA;
 import static org.mule.metadata.catalog.api.PrimitiveTypesTypeLoader.PRIMITIVE_TYPES;
 import static org.mule.runtime.api.component.ComponentIdentifier.buildFromStringRepresentation;
@@ -42,6 +24,27 @@ import static org.mule.runtime.extension.internal.dsl.xml.XmlDslConstants.MODULE
 import static org.mule.runtime.extension.internal.dsl.xml.XmlDslConstants.MODULE_ROOT_NODE_NAME;
 import static org.mule.runtime.internal.dsl.DslConstants.CORE_PREFIX;
 import static org.mule.runtime.module.extension.internal.runtime.exception.ErrorMappingUtils.forEachErrorMappingDo;
+
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.Math.max;
+import static java.lang.Runtime.getRuntime;
+import static java.lang.String.format;
+import static java.lang.String.join;
+import static java.lang.Thread.currentThread;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newHashSet;
+import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
 
 import org.mule.metadata.api.builder.BaseTypeBuilder;
 import org.mule.metadata.api.model.MetadataType;
@@ -70,6 +73,7 @@ import org.mule.runtime.api.meta.model.display.LayoutModel;
 import org.mule.runtime.api.meta.model.error.ErrorModel;
 import org.mule.runtime.api.meta.model.error.ErrorModelBuilder;
 import org.mule.runtime.api.meta.model.operation.OperationModel;
+import org.mule.runtime.api.meta.model.parameter.ParameterModel;
 import org.mule.runtime.api.meta.model.parameter.ParameterRole;
 import org.mule.runtime.api.meta.model.parameter.ParameterizedModel;
 import org.mule.runtime.api.util.LazyValue;
@@ -80,8 +84,8 @@ import org.mule.runtime.ast.api.util.BaseComponentAstDecorator;
 import org.mule.runtime.ast.api.xml.AstXmlParser;
 import org.mule.runtime.ast.api.xml.AstXmlParser.Builder;
 import org.mule.runtime.config.api.properties.ConfigurationPropertiesHierarchyBuilder;
-import org.mule.runtime.config.internal.dsl.model.ClassLoaderResourceProvider;
 import org.mule.runtime.config.api.properties.ConfigurationPropertiesResolver;
+import org.mule.runtime.config.internal.dsl.model.ClassLoaderResourceProvider;
 import org.mule.runtime.config.internal.dsl.model.config.DefaultConfigurationProperty;
 import org.mule.runtime.extension.api.dsl.syntax.resolver.DslSyntaxResolver;
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
@@ -91,14 +95,17 @@ import org.mule.runtime.extension.api.loader.ExtensionLoadingContext;
 import org.mule.runtime.extension.api.loader.xml.declaration.DeclarationOperation;
 import org.mule.runtime.extension.api.model.operation.ImmutableOperationModel;
 import org.mule.runtime.extension.api.property.XmlExtensionModelProperty;
+import org.mule.runtime.extension.api.runtime.connectivity.ConnectionProviderFactory;
 import org.mule.runtime.extension.internal.ast.MacroExpansionModuleModel;
 import org.mule.runtime.extension.internal.ast.property.GlobalElementComponentModelModelProperty;
 import org.mule.runtime.extension.internal.ast.property.OperationComponentModelModelProperty;
 import org.mule.runtime.extension.internal.ast.property.PrivateOperationsModelProperty;
 import org.mule.runtime.extension.internal.ast.property.TestConnectionGlobalElementModelProperty;
+import org.mule.runtime.extension.internal.factories.XmlSdkConnectionProviderFactory;
 import org.mule.runtime.extension.internal.loader.validator.property.InvalidTestConnectionMarkerModelProperty;
 import org.mule.runtime.extension.internal.property.NoReconnectionStrategyModelProperty;
 import org.mule.runtime.internal.dsl.NullDslResolvingContext;
+import org.mule.runtime.module.extension.internal.loader.java.property.ConnectionProviderFactoryModelProperty;
 import org.mule.runtime.properties.api.ConfigurationProperty;
 
 import java.io.BufferedInputStream;
@@ -120,6 +127,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.jgrapht.Graph;
@@ -136,6 +146,8 @@ import org.vibur.objectpool.util.ConcurrentLinkedQueueCollection;
  * @since 4.0
  */
 public final class XmlExtensionLoaderDelegate {
+
+  private static final Pattern VARS_EXPRESSION_PATTERN = Pattern.compile("^#\\[vars\\.(\\w+)\\]$");
 
   public static final String CYCLIC_OPERATIONS_ERROR = "Cyclic operations detected, offending ones: [%s]";
 
@@ -685,7 +697,7 @@ public final class XmlExtensionLoaderDelegate {
       declarer.withModelProperty(new NoReconnectionStrategyModelProperty());
       ConfigurationDeclarer configurationDeclarer = declarer.withConfig(CONFIG_NAME);
       configurationProperties.forEach(param -> extractProperty(configurationDeclarer, param));
-      addConnectionProvider(configurationDeclarer, connectionProperties, globalElementsComponentModel);
+      addConnectionProvider(configurationDeclarer, configurationProperties, connectionProperties, globalElementsComponentModel);
       return of(configurationDeclarer);
     }
     return empty();
@@ -746,14 +758,18 @@ public final class XmlExtensionLoaderDelegate {
    * Adds a connection provider if (a) there's at least one global element that has test connection or (b) there's at least one
    * <property/> that has been placed within a <connection/> wrapper in the <module/> element.
    *
-   * @param configurationDeclarer        declarer to add the {@link ConnectionProviderDeclarer} if applies.
-   * @param connectionProperties         collection of <property/>s that should be added to the
-   *                                     {@link ConnectionProviderDeclarer}.
-   * @param globalElementsComponentModel collection of global elements where through
-   *                                     {@link #getTestConnectionGlobalElement(ConfigurationDeclarer, List, Set)} will look for
-   *                                     one that supports test connectivity.
+   * @param configurationDeclarer         declarer to add the {@link ConnectionProviderDeclarer} if applies.
+   * @param configurationProperties       collection of <property/>s that could be used in the {@link ConnectionProviderDeclarer},
+   *                                      since there is no validation preventing this.
+   * @param connectionProperties          collection of <property/>s that should be added to the
+   *                                      {@link ConnectionProviderDeclarer}.
+   * @param globalElementsComponentModel  collection of global elements where through
+   *                                      {@link #getTestConnectionGlobalElement(ConfigurationDeclarer, List, Set)} will look for
+   *                                      one that supports test connectivity.
+   * @param globalElementsComponentModel2
    */
   private void addConnectionProvider(ConfigurationDeclarer configurationDeclarer,
+                                     List<ComponentAst> configurationProperties,
                                      List<ComponentAst> connectionProperties,
                                      List<ComponentAst> globalElementsComponentModel) {
     final Optional<ComponentAst> testConnectionGlobalElementOptional =
@@ -766,6 +782,13 @@ public final class XmlExtensionLoaderDelegate {
           .withConnectionManagementType(ConnectionManagementType.NONE);
       connectionProperties.stream().forEach(param -> extractProperty(connectionProviderDeclarer, param));
 
+      Map<String, String> propertiesDefaultValues = configurationProperties
+          .stream()
+          .filter(p -> p.getParameter(DEFAULT_GROUP_NAME, PARAMETER_DEFAULT_VALUE) != null)
+          .collect(toMap(p -> p.getParameter(DEFAULT_GROUP_NAME, PARAMETER_NAME).getRawValue(),
+                         p -> p.getParameter(DEFAULT_GROUP_NAME, PARAMETER_DEFAULT_VALUE).getRawValue()));
+
+      delegateConnectionProviderFactory(testConnectionGlobalElementOptional, connectionProviderDeclarer, propertiesDefaultValues);
 
       testConnectionGlobalElementOptional
           .flatMap(testConnectionGlobalElement -> testConnectionGlobalElement
@@ -774,7 +797,49 @@ public final class XmlExtensionLoaderDelegate {
           .ifPresent(testConnectionGlobalElementName -> connectionProviderDeclarer
               .withModelProperty(new TestConnectionGlobalElementModelProperty((String) testConnectionGlobalElementName)));
     }
+  }
 
+  /**
+   * Make the connectionProviderFactory for the XML SDK extension be just a delegate to the connectionProviderFactory of its used
+   * connection provider.
+   * 
+   * @param testConnectionGlobalElementOptional the connection from the XML SDK extension to use for connectivity testing.
+   * @param connectionProviderDeclarer          the declarer to enrich with the {@link ConnectionProviderFactory}, is any.
+   * @param propertiesDefaultValues             the default values defined as properties at the config level but used in the
+   *                                            connection provider
+   */
+  private void delegateConnectionProviderFactory(final Optional<ComponentAst> testConnectionGlobalElementOptional,
+                                                 final ConnectionProviderDeclarer connectionProviderDeclarer,
+                                                 Map<String, String> propertiesDefaultValues) {
+    Optional<ComponentAst> connectionProvider = testConnectionGlobalElementOptional
+        .flatMap(testConnectionGlobalElement -> testConnectionGlobalElement.directChildrenStream()
+            .filter(child -> child.getModel(ConnectionProviderModel.class).isPresent())
+            .findFirst());
+
+    Map<ParameterModel, String> connectionParamsDefaultValues = new HashMap<>();
+    connectionProvider
+        .ifPresent(conn -> {
+          conn.recursiveStream()
+              .forEach(c -> {
+                c.getParameters()
+                    .stream()
+                    .filter(p -> p.getRawValue() != null)
+                    .forEach(p -> {
+                      Matcher matcher = VARS_EXPRESSION_PATTERN.matcher(p.getRawValue());
+                      if (matcher.matches()) {
+                        connectionParamsDefaultValues.put(p.getModel(), propertiesDefaultValues.get(matcher.group()));
+                      }
+                    });
+              });
+        });
+
+    connectionProvider
+        .flatMap(child -> child.getModel(ConnectionProviderModel.class))
+        .flatMap(connectionProviderModel -> connectionProviderModel
+            .getModelProperty(ConnectionProviderFactoryModelProperty.class))
+        .ifPresent(connectionProviderFactoryModelProperty -> connectionProviderDeclarer
+            .withModelProperty(new ConnectionProviderFactoryModelProperty(new XmlSdkConnectionProviderFactory(connectionProviderFactoryModelProperty
+                .getConnectionProviderFactory(), connectionParamsDefaultValues))));
   }
 
   private Optional<ComponentAst> getTestConnectionGlobalElement(ConfigurationDeclarer configurationDeclarer,
