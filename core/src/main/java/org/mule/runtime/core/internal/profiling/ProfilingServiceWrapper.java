@@ -56,6 +56,9 @@ public class ProfilingServiceWrapper implements InternalProfilingService, Privil
   @Inject
   FeatureFlaggingService featureFlaggingService;
 
+  @Inject
+  EventTracer<CoreEvent> coreEventEventTracer;
+
   @Override
   public <T extends ProfilingEventContext, S> ProfilingDataProducer<T, S> getProfilingDataProducer(
                                                                                                    ProfilingEventType<T> profilingEventType) {
@@ -161,7 +164,7 @@ public class ProfilingServiceWrapper implements InternalProfilingService, Privil
 
   @Override
   public EventTracer<CoreEvent> getCoreEventTracer() {
-    return getProfilingService().getCoreEventTracer();
+    return coreEventEventTracer;
   }
 
   @Override

@@ -16,13 +16,16 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.mule.runtime.tracer.impl.exporter.config.SpanExporterConfigurationDiscoverer.discoverSpanExporterConfiguration;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import io.opentelemetry.sdk.trace.IdGenerator;
 import org.mule.runtime.tracer.api.span.info.InitialExportInfo;
 import org.mule.runtime.tracer.api.span.InternalSpan;
 import org.mule.runtime.tracer.api.span.exporter.SpanExporter;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.exporter.api.config.SpanExporterConfiguration;
 import org.mule.runtime.tracer.impl.exporter.DecoratedMuleOpenTelemetrySpan;
+import org.mule.runtime.tracer.impl.exporter.OptelExporter;
 import org.mule.runtime.tracer.impl.exporter.optel.resources.SpanExporterConfiguratorException;
+import org.mule.runtime.tracer.impl.exporter.optel.resources.ThreadIdGenerator;
 import org.mule.runtime.tracer.impl.exporter.optel.span.MuleOpenTelemetrySpan;
 import org.mule.runtime.tracer.impl.exporter.optel.span.NoopMuleOpenTelemetrySpan;
 import org.mule.runtime.tracer.impl.exporter.OpenTelemetrySpanExporter;
@@ -77,6 +80,7 @@ public class MuleOpenTelemetrySpanProvider {
                                                          boolean isPolicy,
                                                          boolean isRoot)
       throws SpanExporterConfiguratorException {
+    ThreadIdGenerator.setSpanIdHolder(internalSpan.getIdentifier().getId());
     SpanBuilder spanBuilder = getTracer(CONFIGURATION, serviceName).spanBuilder(internalSpan.getName())
         .setStartTimestamp(internalSpan.getDuration().getStart(), NANOSECONDS);
 
@@ -86,8 +90,8 @@ public class MuleOpenTelemetrySpanProvider {
     if (parentSpan != null) {
       SpanExporter spanExporter = parentSpan.getSpanExporter();
 
-      if (spanExporter instanceof OpenTelemetrySpanExporter) {
-        spanBuilder.setParent(Context.current().with(((OpenTelemetrySpanExporter) spanExporter).getOpenTelemetrySpan()));
+      if (spanExporter instanceof OptelExporter) {
+        spanBuilder.setParent(((OptelExporter) spanExporter).getOpenTelemetrySpan());
       } else {
         spanBuilder.setParent(getPropagator().getTextMapPropagator().extract(Context.current(), parentSpan.serializeAsMap(),
                                                                              OPEN_TELEMETRY_SPAN_GETTER));

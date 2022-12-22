@@ -24,8 +24,6 @@ public interface EventSpanFactory {
    * Provides a span for related to a component that is hit by an event.
    *
    * @param spanContext     the {@link SpanContext}.
-   * @param artifactId      the artifact id.
-   * @param artifactType    the {@link ArtifactType}
    * @param initialSpanInfo the {@link InitialSpanInfo}.
    *
    * @return the resulting {@link InternalSpan}

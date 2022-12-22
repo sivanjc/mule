@@ -26,6 +26,7 @@ import static io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder;
 import static io.opentelemetry.sdk.trace.export.SimpleSpanProcessor.create;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import org.mule.runtime.tracer.api.sniffer.ExportedSpanSniffer;
 import org.mule.runtime.tracer.exporter.api.config.SpanExporterConfiguration;
 import org.mule.runtime.tracer.impl.exporter.capturer.CapturingSpanExporterWrapper;
@@ -53,6 +54,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * @since 4.5.0
  */
 public class OpenTelemetryResources {
+
+  private static IdGenerator ID_GENERATOR = new ThreadIdGenerator();
 
   private OpenTelemetryResources() {}
 
@@ -85,6 +88,7 @@ public class OpenTelemetryResources {
   private static Tracer doGetTracer(SpanExporterConfiguration spanExporterConfiguration, String serviceName)
       throws SpanExporterConfiguratorException {
     SdkTracerProviderBuilder sdkTracerProviderBuilder = SdkTracerProvider.builder();
+    sdkTracerProviderBuilder.setIdGenerator(ID_GENERATOR);
 
     Resource resource = getDefault().merge(Resource.create(Attributes.of(SERVICE_NAME_KEY, serviceName)));
 

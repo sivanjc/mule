@@ -10,6 +10,7 @@ package org.mule.runtime.tracer.impl.exporter;
 import org.mule.runtime.tracer.api.span.InternalSpan;
 import org.mule.runtime.tracer.api.span.exporter.SpanExporter;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
+import org.mule.runtime.tracer.impl.exporter.optel.resources.ThreadIdGenerator;
 import org.mule.runtime.tracer.impl.exporter.optel.span.MuleOpenTelemetrySpan;
 import org.mule.runtime.tracer.impl.exporter.optel.span.NoExportInitialSpanInfo;
 

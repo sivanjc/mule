@@ -25,11 +25,7 @@ public class ExecutionSpanFactory implements EventSpanFactory {
   @Override
   public InternalSpan getSpan(SpanContext spanContext,
                               InitialSpanInfo initialSpanInfo) {
-    return getExecutionSpanBuilder()
-        .withStartSpanInfo(initialSpanInfo)
-        .withParentSpan(spanContext.getSpan().orElse(null))
-        .withSpanExporterFactory(spanExporterFactory)
-        .build();
+    return new LazyExecutionSpan(initialSpanInfo, spanContext.getSpan().orElse(null), spanExporterFactory);
   }
 
   @Override
