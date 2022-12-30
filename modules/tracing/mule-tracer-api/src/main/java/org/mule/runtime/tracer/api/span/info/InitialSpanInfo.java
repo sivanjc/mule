@@ -8,10 +8,13 @@
 package org.mule.runtime.tracer.api.span.info;
 
 import org.mule.runtime.tracer.api.span.InternalSpan;
+import org.mule.runtime.tracer.api.span.exporter.DataFromParentPuller;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Optional.empty;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /**
@@ -71,5 +74,11 @@ public interface InitialSpanInfo {
    */
   default int getInitialAttributesCount() {
     return 0;
+  }
+
+  default void addSpanExporterDataPuller(DataFromParentPuller<?> dataFromParentPuller) {}
+
+  default Optional<DataFromParentPuller<?>> getSpanExporterDataPuller() {
+    return empty();
   }
 }

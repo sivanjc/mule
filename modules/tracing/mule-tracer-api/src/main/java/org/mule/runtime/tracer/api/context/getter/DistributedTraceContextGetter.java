@@ -35,6 +35,10 @@ public interface DistributedTraceContextGetter {
    */
   Optional<String> get(String key);
 
+  default boolean isEmpty() {
+    return false;
+  }
+
   /**
    * @return an empty {@link DistributedTraceContextGetter}
    */
@@ -50,6 +54,13 @@ public interface DistributedTraceContextGetter {
       public Optional<String> get(String key) {
         return empty();
       }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
   }
+
+
 }

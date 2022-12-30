@@ -13,10 +13,12 @@ import org.mule.runtime.tracer.api.span.InternalSpan;
 import org.mule.runtime.tracer.impl.context.extractor.RuntimeEventTraceExtractors;
 import org.mule.runtime.tracer.impl.context.extractor.TraceContextFieldExtractor;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
+import static java.util.Collections.emptyMap;
 
 public class DeserializedSpan extends RootInternalSpan {
 
@@ -26,10 +28,15 @@ public class DeserializedSpan extends RootInternalSpan {
       RuntimeEventTraceExtractors.getDefaultBaggageExtractor();
 
   public static InternalSpan getDeserializedRootSpan(DistributedTraceContextGetter distributedTraceContextGetter) {
+    if (distributedTraceContextGetter.isEmpty()) {
+      return new DeserializedSpan(emptyMap());
+    }
+
     Map<String, String> mapSerialization = new HashMap<>();
     mapSerialization.putAll(TRACING_FIELD_EXTRACTOR.extract(distributedTraceContextGetter));
     mapSerialization.putAll(BAGGAGE_ITEMS_EXTRACTOR.extract(distributedTraceContextGetter));
-    return new DeserializedSpan(copyOf(mapSerialization));
+
+    return new DeserializedSpan(mapSerialization);
   }
 
   private final Map<String, String> mapSerialization;

@@ -38,7 +38,9 @@ import static io.opentelemetry.api.trace.SpanContext.getInvalid;
 
 import org.mule.runtime.tracer.api.span.InternalSpan;
 import org.mule.runtime.tracer.api.span.error.InternalSpanError;
+import org.mule.runtime.tracer.api.span.exporter.DataFromParentPuller;
 import org.mule.runtime.tracer.api.span.exporter.SpanExporter;
+import org.mule.runtime.tracer.api.span.info.EnrichedInitialSpanInfo;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.impl.exporter.optel.resources.OpenTelemetryResources;
 
@@ -60,6 +62,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +90,7 @@ public class OpenTelemetrySpanExporter implements SpanExporter, SpanData, Readab
   private final String artifactType;
   private final Map<String, String> rootAttributes = new HashMap<>();
   private final SpanProcessor spanProcessor;
+  private final EnrichedInitialSpanInfo initialSpanInfo;
 
   private boolean exportable;
   private SpanContext spanContext;
@@ -102,12 +106,13 @@ public class OpenTelemetrySpanExporter implements SpanExporter, SpanData, Readab
 
 
   private OpenTelemetrySpanExporter(InternalSpan internalSpan,
-                                    InitialSpanInfo initialSpanInfo,
+                                    EnrichedInitialSpanInfo initialSpanInfo,
                                     String artifactId,
                                     String artifactType,
                                     SpanProcessor spanProcessor) {
     this.internalSpan = internalSpan;
     this.noExportUntil = initialSpanInfo.getInitialExportInfo().noExportUntil();
+    this.initialSpanInfo = initialSpanInfo;
     this.isRootSpan = initialSpanInfo.isRootSpan();
     this.isPolicySpan = initialSpanInfo.isPolicySpan();
     this.exportable = initialSpanInfo.getInitialExportInfo().isExportable();
@@ -208,46 +213,62 @@ public class OpenTelemetrySpanExporter implements SpanExporter, SpanData, Readab
   @Override
   public void updateChildSpanExporter(SpanExporter childSpanExporter) {
     if (childSpanExporter instanceof OpenTelemetrySpanExporter) {
-      OpenTelemetrySpanExporter childOpenTelemetrySpanExporter = (OpenTelemetrySpanExporter) childSpanExporter;
-
-      // If it isn't exportable propagate the traceId and spanId
-      if (!childOpenTelemetrySpanExporter.exportable) {
-        childOpenTelemetrySpanExporter.parentSpanContext = parentSpanContext;
-        childOpenTelemetrySpanExporter.spanContext = spanContext;
-        childOpenTelemetrySpanExporter.rootSpan = rootSpan;
-        childOpenTelemetrySpanExporter.noExportUntil = noExportUntil;
-        childOpenTelemetrySpanExporter.setRootName(rootName);
-        return;
-      }
-
-      // If it is a policy span, propagate the rootSpan.
-      if (childOpenTelemetrySpanExporter.isPolicySpan) {
-        childOpenTelemetrySpanExporter.setRootName(rootName);
-        childOpenTelemetrySpanExporter.rootSpan = rootSpan;
-      }
-
-      // Propagates the root name until it finds a root.
-      if (rootName != null) {
-        childOpenTelemetrySpanExporter.setRootName(rootName);
-        rootAttributes.forEach(childOpenTelemetrySpanExporter::setRootAttribute);
-      }
-
-      // In case "no export until" is set, and it is not a child span that resets that condition (because
-      // we have a span that begins again to be exportable), we have to propagate that condition to the
-      // child span.
-      if (!noExportUntil.isEmpty()
-          && !noExportUntil.contains(getNameWithoutNamespace(childSpanExporter.getInternalSpan().getName()))) {
-        childOpenTelemetrySpanExporter.parentSpanContext = parentSpanContext;
-        childOpenTelemetrySpanExporter.noExportUntil = noExportUntil;
-        childOpenTelemetrySpanExporter.spanContext = spanContext;
-        childOpenTelemetrySpanExporter.rootSpan = rootSpan;
-        childOpenTelemetrySpanExporter.exportable = false;
-      }
-
-      if (childOpenTelemetrySpanExporter.parentSpanContext == getInvalid()) {
-        childOpenTelemetrySpanExporter.parentSpanContext = spanContext;
-      }
+      ((OpenTelemetrySpanExporter) childSpanExporter).pullDataFromParent(this);
     }
+  }
+
+  protected void pullDataFromParent(OpenTelemetrySpanExporter parentTelemetrySpanExporter) {
+    InitialSpanInfo baseInitialSpanInfo = initialSpanInfo.getBaseInitialSpanInfo();
+
+    if (baseInitialSpanInfo.getSpanExporterDataPuller().isPresent()) {
+      DataFromParentPuller<OpenTelemetrySpanExporter> dataPuller =
+          (DataFromParentPuller<OpenTelemetrySpanExporter>) baseInitialSpanInfo.getSpanExporterDataPuller().get();
+      dataPuller.pullData(parentTelemetrySpanExporter, this);
+      return;
+    }
+
+    CompositeDataFromParentPuller compositeDataFromParentPuller = new CompositeDataFromParentPuller();
+    compositeDataFromParentPuller.add(new ParentContextSpanPuller());
+
+    // If it isn't exportable propagate the traceId and spanId
+    if (!exportable) {
+      NoExportableDataFromParentPuller dataFromParentPuller = new NoExportableDataFromParentPuller();
+      dataFromParentPuller.pullData(parentTelemetrySpanExporter, this);
+      compositeDataFromParentPuller.add(dataFromParentPuller);
+      baseInitialSpanInfo.addSpanExporterDataPuller(compositeDataFromParentPuller);
+      return;
+    }
+
+    // If it is a policy span, propagate the rootSpan.
+    if (isPolicySpan) {
+      PolicySpanDataPuller policySpanDataPuller = new PolicySpanDataPuller();
+      policySpanDataPuller.pullData(parentTelemetrySpanExporter, this);
+      compositeDataFromParentPuller.add(policySpanDataPuller);
+    }
+
+    // Propagates the root name until it finds a root.
+    if (parentTelemetrySpanExporter.rootName != null) {
+      RootNameAndAttributesDataPuller rootNameAndAttributesDataPuller = new RootNameAndAttributesDataPuller();
+      rootNameAndAttributesDataPuller.pullData(parentTelemetrySpanExporter, this);
+      compositeDataFromParentPuller.add(rootNameAndAttributesDataPuller);
+    }
+
+    // In case "no export until" is set, and it is not a child span that resets that condition (because
+    // we have a span that begins again to be exportable), we have to propagate that condition to the
+    // child span.
+    if (!parentTelemetrySpanExporter.noExportUntil.isEmpty()
+        && !parentTelemetrySpanExporter.noExportUntil.contains(getNameWithoutNamespace(getInternalSpan().getName()))) {
+      NoExportUntilDataPuller noExportUntilDataPuller = new NoExportUntilDataPuller();
+      noExportUntilDataPuller.pullData(parentTelemetrySpanExporter, this);
+      compositeDataFromParentPuller.add(noExportUntilDataPuller);
+    }
+
+    if (parentSpanContext == getInvalid()) {
+      parentSpanContext = parentTelemetrySpanExporter.spanContext;
+    }
+
+
+    baseInitialSpanInfo.addSpanExporterDataPuller(compositeDataFromParentPuller);
   }
 
   @Override
@@ -413,13 +434,13 @@ public class OpenTelemetrySpanExporter implements SpanExporter, SpanData, Readab
    */
   public static class OpenTelemetrySpanExportBuilder {
 
-    private InitialSpanInfo initialSpanInfo;
+    private EnrichedInitialSpanInfo initialSpanInfo;
     private InternalSpan internalSpan;
     private String artifactId;
     private String artifactType;
     private SpanProcessor spanProcessor;
 
-    public OpenTelemetrySpanExportBuilder withStartSpanInfo(InitialSpanInfo initialSpanInfo) {
+    public OpenTelemetrySpanExportBuilder withStartSpanInfo(EnrichedInitialSpanInfo initialSpanInfo) {
       this.initialSpanInfo = initialSpanInfo;
       return this;
     }
@@ -466,4 +487,84 @@ public class OpenTelemetrySpanExporter implements SpanExporter, SpanData, Readab
     }
   }
 
+
+  private class NoExportableDataFromParentPuller implements DataFromParentPuller<OpenTelemetrySpanExporter> {
+
+    @Override
+    public void pullData(OpenTelemetrySpanExporter parentSpanExporter,
+                         OpenTelemetrySpanExporter childSpanExporter) {
+      childSpanExporter.parentSpanContext = parentSpanExporter.parentSpanContext;
+      childSpanExporter.spanContext = parentSpanExporter.spanContext;
+      childSpanExporter.rootSpan = parentSpanExporter.rootSpan;
+      childSpanExporter.noExportUntil = parentSpanExporter.noExportUntil;
+      childSpanExporter.setRootName(parentSpanExporter.rootName);
+    }
+  }
+
+
+  private class PolicySpanDataPuller implements DataFromParentPuller<OpenTelemetrySpanExporter> {
+
+    @Override
+    public void pullData(OpenTelemetrySpanExporter parentSpanExporter,
+                         OpenTelemetrySpanExporter childSpanExporter) {
+      childSpanExporter.setRootName(parentSpanExporter.rootName);
+      childSpanExporter.rootSpan = parentSpanExporter.rootSpan;
+    }
+  }
+
+
+  private class RootNameAndAttributesDataPuller implements DataFromParentPuller<OpenTelemetrySpanExporter> {
+
+    @Override
+    public void pullData(OpenTelemetrySpanExporter parentTelemetrySpanExporter,
+                         OpenTelemetrySpanExporter openTelemetrySpanExporter) {
+      openTelemetrySpanExporter.setRootName(parentTelemetrySpanExporter.rootName);
+      parentTelemetrySpanExporter.rootAttributes.forEach(openTelemetrySpanExporter::setRootAttribute);
+    }
+  }
+
+
+  private class NoExportUntilDataPuller implements DataFromParentPuller<OpenTelemetrySpanExporter> {
+
+    @Override
+    public void pullData(OpenTelemetrySpanExporter parentTelemetrySpanExporter,
+                         OpenTelemetrySpanExporter openTelemetrySpanExporter) {
+      openTelemetrySpanExporter.parentSpanContext = parentTelemetrySpanExporter.parentSpanContext;
+      openTelemetrySpanExporter.noExportUntil = parentTelemetrySpanExporter.noExportUntil;
+      openTelemetrySpanExporter.spanContext = parentTelemetrySpanExporter.spanContext;
+      openTelemetrySpanExporter.rootSpan = parentTelemetrySpanExporter.rootSpan;
+      openTelemetrySpanExporter.exportable = false;
+    }
+  }
+
+
+  private class CompositeDataFromParentPuller implements DataFromParentPuller<OpenTelemetrySpanExporter> {
+
+    List<DataFromParentPuller<OpenTelemetrySpanExporter>> pullers = new ArrayList<>();
+
+    public void add(DataFromParentPuller<OpenTelemetrySpanExporter> dataPuller) {
+      pullers.add(dataPuller);
+    }
+
+    @Override
+    public void pullData(OpenTelemetrySpanExporter parentTelemetrySpanExporter,
+                         OpenTelemetrySpanExporter openTelemetrySpanExporter) {
+      for (DataFromParentPuller<OpenTelemetrySpanExporter> puller : pullers) {
+        puller.pullData(parentTelemetrySpanExporter, openTelemetrySpanExporter);
+      }
+    }
+  }
+
+
+  private class ParentContextSpanPuller implements DataFromParentPuller<OpenTelemetrySpanExporter> {
+
+    @Override
+    public void pullData(OpenTelemetrySpanExporter parentTelemetrySpanExporter,
+                         OpenTelemetrySpanExporter openTelemetrySpanExporter) {
+      if (openTelemetrySpanExporter.parentSpanContext == getInvalid()) {
+        openTelemetrySpanExporter.parentSpanContext = parentTelemetrySpanExporter.getSpanContext();
+      }
+
+    }
+  }
 }
