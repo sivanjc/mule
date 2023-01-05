@@ -7,6 +7,7 @@
 package org.mule.runtime.module.reboot;
 
 import static org.mule.runtime.core.api.config.MuleProperties.MULE_HOME_DIRECTORY_PROPERTY;
+
 import org.mule.runtime.module.reboot.api.MuleContainerBootstrapUtils;
 import org.mule.runtime.module.reboot.internal.MuleContainerWrapper;
 
@@ -22,7 +23,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
  * Determine which is the main class to run and delegate control to the Java Service Wrapper. If OSGi is not being used to boot
@@ -55,7 +55,8 @@ public class MuleContainerBootstrap {
     prepareBootstrapPhase(commandLine);
 
     System.out.println("Starting the Mule Container...");
-    WrapperManager.start(new MuleContainerWrapper(), remainingArgs);
+    // WrapperManager.start(new MuleContainerWrapper(), remainingArgs);
+    new MuleContainerWrapper().start(remainingArgs);
   }
 
   private static void prepareBootstrapPhase(CommandLine commandLine) throws Exception {
@@ -91,23 +92,23 @@ public class MuleContainerBootstrap {
     return muleBase;
   }
 
-  /**
-   * @return The Mule Runtime wrapper pid
-   *
-   * @since 4.3.0
-   */
-  public static long getWrapperPID() {
-    return WrapperManager.getWrapperPID();
-  }
-
-  /**
-   * @return The Mule Runtime JVM PID
-   *
-   * @since 4.3.0
-   */
-  public static long getJavaPID() {
-    return WrapperManager.getJavaPID();
-  }
+  // /**
+  // * @return The Mule Runtime wrapper pid
+  // *
+  // * @since 4.3.0
+  // */
+  // public static long getWrapperPID() {
+  // return WrapperManager.getWrapperPID();
+  // }
+  //
+  // /**
+  // * @return The Mule Runtime JVM PID
+  // *
+  // * @since 4.3.0
+  // */
+  // public static long getJavaPID() {
+  // return WrapperManager.getJavaPID();
+  // }
 
   private static void setSystemMuleVersion() {
     InputStream propertiesStream = null;

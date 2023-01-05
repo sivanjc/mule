@@ -7,8 +7,6 @@
 package org.mule.runtime.module.reboot.internal;
 
 import org.mule.runtime.module.reboot.MuleContainerBootstrap;
-import static org.tanukisoftware.wrapper.WrapperManager.WRAPPER_LOG_LEVEL_ERROR;
-import static org.tanukisoftware.wrapper.WrapperManager.log;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -16,10 +14,8 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import org.tanukisoftware.wrapper.WrapperListener;
-import org.tanukisoftware.wrapper.WrapperManager;
-
-public class MuleContainerWrapper implements WrapperListener {
+public class MuleContainerWrapper // implements WrapperListener
+{
 
   protected static final String CLASSNAME_MULE_CONTAINER = "org.mule.runtime.module.launcher.MuleContainer";
 
@@ -56,7 +52,7 @@ public class MuleContainerWrapper implements WrapperListener {
       StringWriter stackWriter = new StringWriter();
       e.printStackTrace(new PrintWriter(stackWriter));
 
-      log(WRAPPER_LOG_LEVEL_ERROR, stackWriter.toString());
+      System.err.println(stackWriter.toString());
       return 1;
     }
   }
@@ -90,23 +86,23 @@ public class MuleContainerWrapper implements WrapperListener {
     return exitCode;
   }
 
-  /**
-   * Called whenever the native wrapper code traps a system control signal against the Java process. It is up to the callback to
-   * take any actions necessary. Possible values are: WrapperManager.WRAPPER_CTRL_C_EVENT, WRAPPER_CTRL_CLOSE_EVENT,
-   * WRAPPER_CTRL_LOGOFF_EVENT, or WRAPPER_CTRL_SHUTDOWN_EVENT
-   *
-   * @param event The system control signal.
-   */
-  public void controlEvent(int event) {
-    if (WrapperManager.isControlledByNativeWrapper()) {
-      // The Wrapper will take care of this event
-    } else {
-      // We are not being controlled by the Wrapper, so
-      // handle the event ourselves.
-      if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT) || (event == WrapperManager.WRAPPER_CTRL_CLOSE_EVENT)
-          || (event == WrapperManager.WRAPPER_CTRL_SHUTDOWN_EVENT)) {
-        WrapperManager.stop(0);
-      }
-    }
-  }
+  // /**
+  // * Called whenever the native wrapper code traps a system control signal against the Java process. It is up to the callback to
+  // * take any actions necessary. Possible values are: WrapperManager.WRAPPER_CTRL_C_EVENT, WRAPPER_CTRL_CLOSE_EVENT,
+  // * WRAPPER_CTRL_LOGOFF_EVENT, or WRAPPER_CTRL_SHUTDOWN_EVENT
+  // *
+  // * @param event The system control signal.
+  // */
+  // public void controlEvent(int event) {
+  // if (WrapperManager.isControlledByNativeWrapper()) {
+  // // The Wrapper will take care of this event
+  // } else {
+  // // We are not being controlled by the Wrapper, so
+  // // handle the event ourselves.
+  // if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT) || (event == WrapperManager.WRAPPER_CTRL_CLOSE_EVENT)
+  // || (event == WrapperManager.WRAPPER_CTRL_SHUTDOWN_EVENT)) {
+  // WrapperManager.stop(0);
+  // }
+  // }
+  // }
 }

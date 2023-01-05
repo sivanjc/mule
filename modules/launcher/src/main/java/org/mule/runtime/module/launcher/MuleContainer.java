@@ -270,7 +270,7 @@ public class MuleContainer {
       coreExtensionManager.setServiceRepository(serviceManager);
       coreExtensionManager.setTroubleshootingService(troubleshootingService);
 
-      validateLicense();
+      // validateLicense();
       showSplashScreen();
 
       coreExtensionManager.initialise();
