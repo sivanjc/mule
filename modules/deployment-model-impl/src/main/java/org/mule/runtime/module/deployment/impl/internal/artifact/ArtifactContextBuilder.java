@@ -433,97 +433,98 @@ public class ArtifactContextBuilder {
     checkState(classLoaderRepository != null, CLASS_LOADER_REPOSITORY_WAS_NOT_SET);
     checkState(POLICY.equals(artifactType) || APP.equals(artifactType) || parentArtifact == null,
                ONLY_APPLICATIONS_OR_POLICIES_ARE_ALLOWED_TO_HAVE_A_PARENT_ARTIFACT);
+
+    List<ConfigurationBuilder> builders = new LinkedList<>(additionalBuilders);
+    builders.add(new ArtifactBootstrapServiceDiscovererConfigurationBuilder(artifactPlugins));
+    boolean hasEmptyParentDomain = isConfigLess(parentArtifact);
+    if (extensionManagerFactory == null) {
+      MuleContext parentMuleContext = getMuleContext(parentArtifact).orElse(null);
+      if (parentMuleContext == null || hasEmptyParentDomain) {
+        extensionManagerFactory =
+            new ArtifactExtensionManagerFactory(artifactPlugins, extensionModelLoaderRepository,
+                                                new DefaultExtensionManagerFactory());
+      } else {
+        extensionManagerFactory = new CompositeArtifactExtensionManagerFactory(parentArtifact, extensionModelLoaderRepository,
+                                                                               artifactPlugins,
+                                                                               new DefaultExtensionManagerFactory());
+      }
+
+    }
+
+    builders.add(new ArtifactExtensionManagerConfigurationBuilder(artifactPlugins,
+                                                                  extensionManagerFactory));
+    builders.add(createConfigurationBuilderFromApplicationProperties());
+
+    AtomicReference<ArtifactContext> artifactContext = new AtomicReference<>();
+    builders.add(new ConfigurationBuilder() {
+
+      @Override
+      public void configure(MuleContext muleContext) throws ConfigurationException {
+        if (serviceRepository != null) {
+          serviceConfigurators.add(new ContainerServiceConfigurator(serviceRepository.getServices()));
+        }
+        if (classLoaderRepository != null) {
+          serviceConfigurators.add(customizationService -> customizationService
+              .registerCustomServiceImpl(OBJECT_CLASSLOADER_REPOSITORY, classLoaderRepository));
+        }
+        if (policyProvider != null) {
+          serviceConfigurators.add(customizationService -> customizationService
+              .registerCustomServiceImpl(OBJECT_POLICY_PROVIDER, policyProvider));
+        }
+        ArtifactContextConfiguration.ArtifactContextConfigurationBuilder artifactContextConfigurationBuilder =
+            ArtifactContextConfiguration.builder()
+                .setMuleContext(muleContext)
+                .setConfigResources(configurationFiles)
+                .setArtifactDeclaration(artifactDeclaration)
+                .setArtifactProperties(merge(artifactProperties, muleContext.getDeploymentProperties()))
+                .setArtifactType(artifactType)
+                .setEnableLazyInitialization(enableLazyInit)
+                .setDisableXmlValidations(disableXmlValidations)
+                .setAddToolingObjectsToRegistry(addToolingObjectsToRegistry)
+                .setServiceConfigurators(serviceConfigurators)
+                .setRuntimeLockFactory(runtimeLockFactory)
+                .setMemoryManagementService(memoryManagementService)
+                .setExpressionLanguageMetadataService(expressionLanguageMetadataService);
+
+        if (parentArtifact != null && parentArtifact.getArtifactContext() != null) {
+          artifactContextConfigurationBuilder.setParentArtifactContext(parentArtifact.getArtifactContext());
+        }
+
+        artifactContext
+            .set(artifactConfigurationProcessor.createArtifactContext(artifactContextConfigurationBuilder.build()));
+        ((DefaultMuleConfiguration) muleContext.getConfiguration()).setDataFolderName(dataFolderName);
+      }
+
+      @Override
+      public void addServiceConfigurator(ServiceConfigurator serviceConfigurator) {
+        // Nothing to do
+      }
+    });
+    DefaultMuleContextFactory muleContextFactory = new DefaultMuleContextFactory();
+    if (muleContextListener != null) {
+      muleContextFactory.addListener(muleContextListener);
+    }
+    if (APP.equals(artifactType)) {
+      muleContextBuilder = new ApplicationMuleContextBuilder(artifactName, artifactProperties, defaultEncoding);
+    } else if (POLICY.equals(artifactType)) {
+      muleContextBuilder = new PolicyMuleContextBuilder(artifactName, artifactProperties, defaultEncoding);
+    } else {
+      muleContextBuilder = new DomainMuleContextBuilder(artifactName);
+    }
+    muleContextBuilder.setExecutionClassLoader(this.executionClassLoader);
+    ArtifactObjectSerializer objectSerializer = new ArtifactObjectSerializer(classLoaderRepository);
+    muleContextBuilder.setObjectSerializer(objectSerializer);
+    muleContextBuilder.setDeploymentProperties(properties);
+    muleContextBuilder.setArtifactCoordinates(artifactCoordinates);
+
+    if (parentArtifact != null) {
+      builders.add(new ConnectionManagerConfigurationBuilder(parentArtifact));
+    } else {
+      builders.add(new ConnectionManagerConfigurationBuilder());
+    }
+
     try {
       return withContextClassLoader(executionClassLoader, () -> {
-        List<ConfigurationBuilder> builders = new LinkedList<>(additionalBuilders);
-        builders.add(new ArtifactBootstrapServiceDiscovererConfigurationBuilder(artifactPlugins));
-        boolean hasEmptyParentDomain = isConfigLess(parentArtifact);
-        if (extensionManagerFactory == null) {
-          MuleContext parentMuleContext = getMuleContext(parentArtifact).orElse(null);
-          if (parentMuleContext == null || hasEmptyParentDomain) {
-            extensionManagerFactory =
-                new ArtifactExtensionManagerFactory(artifactPlugins, extensionModelLoaderRepository,
-                                                    new DefaultExtensionManagerFactory());
-          } else {
-            extensionManagerFactory = new CompositeArtifactExtensionManagerFactory(parentArtifact, extensionModelLoaderRepository,
-                                                                                   artifactPlugins,
-                                                                                   new DefaultExtensionManagerFactory());
-          }
-
-        }
-
-        builders.add(new ArtifactExtensionManagerConfigurationBuilder(artifactPlugins,
-                                                                      extensionManagerFactory));
-        builders.add(createConfigurationBuilderFromApplicationProperties());
-
-        AtomicReference<ArtifactContext> artifactContext = new AtomicReference<>();
-        builders.add(new ConfigurationBuilder() {
-
-          @Override
-          public void configure(MuleContext muleContext) throws ConfigurationException {
-            if (serviceRepository != null) {
-              serviceConfigurators.add(new ContainerServiceConfigurator(serviceRepository.getServices()));
-            }
-            if (classLoaderRepository != null) {
-              serviceConfigurators.add(customizationService -> customizationService
-                  .registerCustomServiceImpl(OBJECT_CLASSLOADER_REPOSITORY, classLoaderRepository));
-            }
-            if (policyProvider != null) {
-              serviceConfigurators.add(customizationService -> customizationService
-                  .registerCustomServiceImpl(OBJECT_POLICY_PROVIDER, policyProvider));
-            }
-            ArtifactContextConfiguration.ArtifactContextConfigurationBuilder artifactContextConfigurationBuilder =
-                ArtifactContextConfiguration.builder()
-                    .setMuleContext(muleContext)
-                    .setConfigResources(configurationFiles)
-                    .setArtifactDeclaration(artifactDeclaration)
-                    .setArtifactProperties(merge(artifactProperties, muleContext.getDeploymentProperties()))
-                    .setArtifactType(artifactType)
-                    .setEnableLazyInitialization(enableLazyInit)
-                    .setDisableXmlValidations(disableXmlValidations)
-                    .setAddToolingObjectsToRegistry(addToolingObjectsToRegistry)
-                    .setServiceConfigurators(serviceConfigurators)
-                    .setRuntimeLockFactory(runtimeLockFactory)
-                    .setMemoryManagementService(memoryManagementService)
-                    .setExpressionLanguageMetadataService(expressionLanguageMetadataService);
-
-            if (parentArtifact != null && parentArtifact.getArtifactContext() != null) {
-              artifactContextConfigurationBuilder.setParentArtifactContext(parentArtifact.getArtifactContext());
-            }
-
-            artifactContext
-                .set(artifactConfigurationProcessor.createArtifactContext(artifactContextConfigurationBuilder.build()));
-            ((DefaultMuleConfiguration) muleContext.getConfiguration()).setDataFolderName(dataFolderName);
-          }
-
-          @Override
-          public void addServiceConfigurator(ServiceConfigurator serviceConfigurator) {
-            // Nothing to do
-          }
-        });
-        DefaultMuleContextFactory muleContextFactory = new DefaultMuleContextFactory();
-        if (muleContextListener != null) {
-          muleContextFactory.addListener(muleContextListener);
-        }
-        if (APP.equals(artifactType)) {
-          muleContextBuilder = new ApplicationMuleContextBuilder(artifactName, artifactProperties, defaultEncoding);
-        } else if (POLICY.equals(artifactType)) {
-          muleContextBuilder = new PolicyMuleContextBuilder(artifactName, artifactProperties, defaultEncoding);
-        } else {
-          muleContextBuilder = new DomainMuleContextBuilder(artifactName);
-        }
-        muleContextBuilder.setExecutionClassLoader(this.executionClassLoader);
-        ArtifactObjectSerializer objectSerializer = new ArtifactObjectSerializer(classLoaderRepository);
-        muleContextBuilder.setObjectSerializer(objectSerializer);
-        muleContextBuilder.setDeploymentProperties(properties);
-        muleContextBuilder.setArtifactCoordinates(artifactCoordinates);
-
-        if (parentArtifact != null) {
-          builders.add(new ConnectionManagerConfigurationBuilder(parentArtifact));
-        } else {
-          builders.add(new ConnectionManagerConfigurationBuilder());
-        }
-
         try {
           muleContextFactory.createMuleContext(builders, muleContextBuilder);
           return artifactContext.get();
