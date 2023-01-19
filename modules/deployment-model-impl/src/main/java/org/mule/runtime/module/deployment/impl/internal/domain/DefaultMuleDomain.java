@@ -181,11 +181,10 @@ public class DefaultMuleDomain extends AbstractDeployableArtifact<DomainDescript
 
   public void doInit(boolean lazy, boolean disableXmlValidations, boolean addToolingObjectsToRegistry)
       throws DeploymentInitException {
-    withContextClassLoader(null, () -> {
-      if (LOGGER.isInfoEnabled()) {
-        log(miniSplash(format("Initializing domain '%s'", getArtifactName())));
-      }
-    });
+    if (LOGGER.isInfoEnabled()) {
+      log(miniSplash(format("Initializing domain '%s'", getArtifactName())));
+    }
+
     try {
       ArtifactContextBuilder artifactBuilder = getArtifactContextBuilder().setArtifactName(getArtifactName())
           .setDataFolderName(getDescriptor().getDataFolderName())

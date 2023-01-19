@@ -86,12 +86,12 @@ public class DeployableArtifactWrapper<T extends DeployableArtifact<D>, D extend
 
   @Override
   public void init() {
-    executeWithinArtifactClassLoader(delegate::init);
+    delegate.init();
   }
 
   @Override
   public void initTooling() {
-    executeWithinArtifactClassLoader(delegate::initTooling);
+    delegate.initTooling();
   }
 
   @Override
@@ -150,6 +150,7 @@ public class DeployableArtifactWrapper<T extends DeployableArtifact<D>, D extend
   }
 
   private void executeWithinArtifactClassLoader(ArtifactAction artifactAction) {
+    // TODO
     ClassLoader classLoader = getArtifactClassLoader() != null ? getArtifactClassLoader().getClassLoader()
         : Thread.currentThread().getContextClassLoader();
 
