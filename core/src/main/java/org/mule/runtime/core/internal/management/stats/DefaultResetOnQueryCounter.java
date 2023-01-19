@@ -17,23 +17,35 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DefaultResetOnQueryCounter implements ResetOnQueryCounter {
 
-  private final AtomicLong counter = new AtomicLong(0);
+  private final AtomicLong counter;
+  private final AtomicLong accumulator = new AtomicLong(0);
+
+  public DefaultResetOnQueryCounter(AtomicLong counter) {
+    this.counter = counter;
+  }
+
+  //  private final AtomicLong counter = new AtomicLong(0);
 
   @Override
   public long getAndReset() {
-    return counter.getAndSet(0);
+    long realValue = counter.get();
+    return realValue - accumulator.getAndSet(realValue);
   }
 
   @Override
   public long get() {
-    return counter.get();
+    return counter.get() - accumulator.get();
   }
 
-  public void increment() {
-    counter.incrementAndGet();
+  void clear() {
+    accumulator.set(0);
   }
 
-  public void add(long value) {
-    counter.addAndGet(value);
-  }
+//  public void increment() {
+//    counter.incrementAndGet();
+//  }
+//
+//  public void add(long value) {
+//    counter.addAndGet(value);
+//  }
 }

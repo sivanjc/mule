@@ -61,7 +61,7 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
   public void incExecutionError() {
     if (isEnabled()) {
       executionError.addAndGet(1);
-      executionErrorsCounters.forEach(DefaultResetOnQueryCounter::increment);
+//      executionErrorsCounters.forEach(DefaultResetOnQueryCounter::increment);
     }
   }
 
@@ -69,7 +69,7 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
   public void incFatalError() {
     if (isEnabled()) {
       fatalError.addAndGet(1);
-      fatalErrorsCounters.forEach(DefaultResetOnQueryCounter::increment);
+//      fatalErrorsCounters.forEach(DefaultResetOnQueryCounter::increment);
     }
   }
 
@@ -102,7 +102,17 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
     if (flowStatistics != null) {
       flowStatistics.clear();
     }
+    clearResetCounters(eventsReceivedCounters);
+    clearResetCounters(messagesDispatchedCounters);
+    clearResetCounters(executionErrorsCounters);
+    clearResetCounters(connectionErrorsCounters);
+    clearResetCounters(fatalErrorsCounters);
   }
+  
+  private void clearResetCounters(List<DefaultResetOnQueryCounter> counters) {
+    counters.forEach(DefaultResetOnQueryCounter::clear);
+  }
+  
 
   @Override
   public void addCompleteFlowExecutionTime(long time) {
@@ -158,7 +168,7 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
   public void incReceivedEvents() {
     if (isEnabled()) {
       receivedEvents.addAndGet(1);
-      eventsReceivedCounters.forEach(DefaultResetOnQueryCounter::increment);
+//      eventsReceivedCounters.forEach(DefaultResetOnQueryCounter::increment);
     }
   }
 
@@ -166,7 +176,7 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
   public void incMessagesDispatched() {
     if (isEnabled()) {
       dispatchedMessages.addAndGet(1);
-      messagesDispatchedCounters.forEach(DefaultResetOnQueryCounter::increment);
+//      messagesDispatchedCounters.forEach(DefaultResetOnQueryCounter::increment);
     }
   }
 
@@ -174,7 +184,7 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
   public void incConnectionErrors() {
     if (isEnabled()) {
       connectionErrors.addAndGet(1);
-      connectionErrorsCounters.forEach(DefaultResetOnQueryCounter::increment);
+//      connectionErrorsCounters.forEach(DefaultResetOnQueryCounter::increment);
     }
   }
 
@@ -194,41 +204,41 @@ public class DefaultFlowConstructStatistics implements FlowConstructStatistics {
 
   @Override
   public ResetOnQueryCounter getEventsReceivedCounter() {
-    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter();
+    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter(receivedEvents);
     eventsReceivedCounters.add(counter);
-    counter.add(getTotalEventsReceived());
+//    counter.add(getTotalEventsReceived());
     return counter;
   }
 
   @Override
   public ResetOnQueryCounter getDispatchedMessagesCounter() {
-    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter();
+    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter(dispatchedMessages);
     messagesDispatchedCounters.add(counter);
-    counter.add(getTotalDispatchedMessages());
+//    counter.add(getTotalDispatchedMessages());
     return counter;
   }
 
   @Override
   public ResetOnQueryCounter getExecutionErrorsCounter() {
-    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter();
+    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter(executionError);
     executionErrorsCounters.add(counter);
-    counter.add(getExecutionErrors());
+//    counter.add(getExecutionErrors());
     return counter;
   }
 
   @Override
   public ResetOnQueryCounter getConnectionErrorsCounter() {
-    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter();
+    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter(connectionErrors);
     connectionErrorsCounters.add(counter);
-    counter.add(getConnectionErrors());
+//    counter.add(getConnectionErrors());
     return counter;
   }
 
   @Override
   public ResetOnQueryCounter getFatalErrorsCounter() {
-    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter();
+    DefaultResetOnQueryCounter counter = new DefaultResetOnQueryCounter(fatalError);
     fatalErrorsCounters.add(counter);
-    counter.add(getFatalErrors());
+//    counter.add(getFatalErrors());
     return counter;
   }
 }

@@ -7,7 +7,7 @@
 package org.mule.runtime.core.api.management.stats;
 
 /**
- * Provides a counter that can be reseted on a value fetch, which is useful for getting statistics of a given time frame if
+ * Provides a counter that can be reset on a value fetch, which is useful for getting statistics of a given time frame if
  * consumed periodically.
  * <p>
  * Multiple instances obtained from the same statistics object are independent.
