@@ -6,11 +6,8 @@
  */
 package org.mule.runtime.deployment.model.api.artifact;
 
-import static java.lang.Thread.currentThread;
-
 import org.mule.api.annotation.NoImplement;
 import org.mule.runtime.core.api.config.ConfigurationException;
-import org.mule.runtime.core.api.registry.SpiServiceRegistry;
 
 /**
  * Implementation of this interface are responsible of processing the configuration files of a Mule artifact and create an
@@ -30,7 +27,7 @@ public interface ArtifactConfigurationProcessor {
    */
   @Deprecated
   static ArtifactConfigurationProcessor discover() {
-    return new SpiServiceRegistry().lookupProvider(ArtifactConfigurationProcessor.class, currentThread().getContextClassLoader());
+    throw new UnsupportedOperationException("Pass the instance to use instead of relying on SPI for discovery.");
   }
 
   /**
