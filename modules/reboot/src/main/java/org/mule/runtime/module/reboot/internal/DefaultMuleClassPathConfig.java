@@ -14,7 +14,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,7 +26,11 @@ public class DefaultMuleClassPathConfig {
   protected static final String USER_DIR = "/lib/user";
   protected static final String OPT_DIR = "/lib/opt";
 
-  protected List<URL> urls = new ArrayList<URL>();
+  protected List<File> muleJars = new ArrayList<>();
+  protected List<File> optJars = new ArrayList<>();
+  protected List<File> userJars = new ArrayList<>();
+
+  protected List<URL> urls = new ArrayList<>();
 
   public DefaultMuleClassPathConfig(File muleHome, File muleBase) {
     init(muleHome, muleBase);
@@ -40,9 +43,9 @@ public class DefaultMuleClassPathConfig {
      */
     addMuleBaseUserLibs(muleHome, muleBase);
 
-    addLibraryDirectory(muleHome, USER_DIR);
-    addLibraryDirectory(muleHome, MULE_DIR);
-    addLibraryDirectory(muleHome, OPT_DIR);
+    userJars.addAll(addLibraryDirectory(muleHome, USER_DIR));
+    muleJars.addAll(addLibraryDirectory(muleHome, MULE_DIR));
+    optJars.addAll(addLibraryDirectory(muleHome, OPT_DIR));
   }
 
   protected void addMuleBaseUserLibs(File muleHome, File muleBase) {
@@ -57,14 +60,16 @@ public class DefaultMuleClassPathConfig {
     }
   }
 
-  protected void addLibraryDirectory(File muleHome, String libDirectory) {
+  protected List<File> addLibraryDirectory(File muleHome, String libDirectory) {
     File directory = new File(muleHome, libDirectory);
     addFile(directory);
-    addFiles(listJars(directory));
+    List<File> listJars = listJars(directory);
+    addFiles(listJars);
+    return listJars;
   }
 
   public List<URL> getURLs() {
-    return new ArrayList<URL>(this.urls);
+    return new ArrayList<>(this.urls);
   }
 
   public void addURLs(List<URL> moreUrls) {
@@ -83,8 +88,8 @@ public class DefaultMuleClassPathConfig {
   }
 
   public void addFiles(List<File> files) {
-    for (Iterator<File> i = files.iterator(); i.hasNext();) {
-      this.addFile(i.next());
+    for (File file : files) {
+      this.addFile(file);
     }
   }
 
@@ -102,14 +107,11 @@ public class DefaultMuleClassPathConfig {
    * @return a list of {@link java.io.File}s
    */
   protected List<File> listJars(File path) {
-    File[] jars = path.listFiles(new FileFilter() {
-
-      public boolean accept(File pathname) {
-        try {
-          return pathname.getCanonicalPath().endsWith(".jar");
-        } catch (IOException e) {
-          throw new RuntimeException(e.getMessage());
-        }
+    File[] jars = path.listFiles((FileFilter) pathname -> {
+      try {
+        return pathname.getCanonicalPath().endsWith(".jar");
+      } catch (IOException e) {
+        throw new RuntimeException(e.getMessage());
       }
     });
 
@@ -119,4 +121,11 @@ public class DefaultMuleClassPathConfig {
     return Collections.emptyList();
   }
 
+  public List<File> getMuleJars() {
+    return muleJars;
+  }
+
+  public List<File> getOptJars() {
+    return optJars;
+  }
 }
