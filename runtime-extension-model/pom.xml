@@ -13,6 +13,7 @@
 
     <properties>
         <formatterConfigPath>../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>mule_runtime_extension_model</automaticModuleNameSuffix>
     </properties>
 
     <build>

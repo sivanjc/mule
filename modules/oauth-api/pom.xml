@@ -10,6 +10,8 @@
     
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>oauth_api</automaticModuleNameSuffix>
+
         <muleOAuthClientVersion>1.2.0-SNAPSHOT</muleOAuthClientVersion>
     </properties>
 

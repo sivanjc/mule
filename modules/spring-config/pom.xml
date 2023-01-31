@@ -15,6 +15,7 @@
     
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>spring_config</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

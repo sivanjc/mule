@@ -16,6 +16,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>extensions_mule_support</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

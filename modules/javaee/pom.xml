@@ -25,6 +25,7 @@
         <jaxb-impl.version>2.3.1-MULE-001</jaxb-impl.version>
 
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>javaee</automaticModuleNameSuffix>
     </properties>
 
     <build>

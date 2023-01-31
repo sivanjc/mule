@@ -20,6 +20,7 @@
         <javaxJmsApiVersion>2.0.1</javaxJmsApiVersion>
 
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>extensions_xml_support</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

@@ -16,6 +16,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>deployment</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

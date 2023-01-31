@@ -14,6 +14,7 @@
     <properties>
         <skipExportTests>false</skipExportTests>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>mule_module_launcher</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

@@ -23,6 +23,7 @@
 
     <properties>
         <formatterConfigPath>../../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>tracer_api</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

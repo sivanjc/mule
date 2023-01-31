@@ -15,6 +15,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>extensions_soap_support</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

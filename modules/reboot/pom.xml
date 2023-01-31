@@ -13,6 +13,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>boot</automaticModuleNameSuffix>
     </properties>
 
     <build>

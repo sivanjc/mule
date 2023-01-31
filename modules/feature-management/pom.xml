@@ -17,6 +17,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>feature_management</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

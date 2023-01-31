@@ -16,6 +16,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>artifact_activation</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

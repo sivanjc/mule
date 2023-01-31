@@ -17,6 +17,8 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>extensions_spring_support</automaticModuleNameSuffix>
+
         <jsoup.version>1.15.3</jsoup.version>
     </properties>
 

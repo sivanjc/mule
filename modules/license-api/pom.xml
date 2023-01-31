@@ -17,6 +17,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>license_api</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

@@ -12,6 +12,7 @@
     
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>properties_config</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

@@ -16,9 +16,7 @@
     <properties>
         <skipExportTests>false</skipExportTests>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
-
-        <!-- remove once this artifact is released -->
-        <revapi.skip>true</revapi.skip>
+		<automaticModuleNameSuffix>core_mvel</automaticModuleNameSuffix>
     </properties>
 
     <!--

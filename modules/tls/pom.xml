@@ -13,6 +13,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>tls</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

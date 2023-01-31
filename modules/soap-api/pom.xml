@@ -19,6 +19,7 @@
         <javax.xml.soap-api.version>1.4.0</javax.xml.soap-api.version>
 
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>soap_service</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

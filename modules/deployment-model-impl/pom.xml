@@ -16,6 +16,8 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>deployment_model_impl</automaticModuleNameSuffix>
+
         <maven.compat.version>3.3.9</maven.compat.version>
     </properties>
 

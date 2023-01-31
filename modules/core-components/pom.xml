@@ -16,6 +16,7 @@
     <properties>
         <skipExportTests>false</skipExportTests>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>core_components</automaticModuleNameSuffix>
     </properties>
 
     <!--

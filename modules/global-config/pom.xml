@@ -17,6 +17,7 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>global_config</automaticModuleNameSuffix>
     </properties>
 
     <dependencies>

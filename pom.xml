@@ -152,6 +152,9 @@
         -->
         <jdk8Name>JavaSE-${javaVersion}</jdk8Name>
 
+		<automaticModuleNameSuffix>${project.artifactId}</automaticModuleNameSuffix>
+		<automaticModuleName>${project.groupId}.${automaticModuleNameSuffix}</automaticModuleName>
+		
         <muleBomVersion>4.6.0-SNAPSHOT</muleBomVersion>
 
         <activemqVersion>5.15.12</activemqVersion>
@@ -826,6 +829,8 @@
                             <Git-commit-id>${git.commit.id}</Git-commit-id>
                             <Git-commit-id-describe>${git.commit.id.describe}</Git-commit-id-describe>
                             <Git-commit-time>${git.commit.time}</Git-commit-time>
+
+                            <Automatic-Module-Name>${automaticModuleName}</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
                 </configuration>

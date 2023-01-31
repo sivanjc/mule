@@ -14,8 +14,8 @@
 
     <properties>
         <formatterConfigPath>../../formatter.xml</formatterConfigPath>
+		<automaticModuleNameSuffix>tooling</automaticModuleNameSuffix>
     </properties>
-
 
     <profiles>
         <profile>
