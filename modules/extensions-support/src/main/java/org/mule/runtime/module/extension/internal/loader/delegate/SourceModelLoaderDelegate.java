@@ -10,7 +10,6 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.stream.Collectors.toList;
 import static org.mule.runtime.extension.api.property.BackPressureStrategyModelProperty.getDefault;
 import static org.mule.runtime.module.extension.internal.loader.ModelLoaderDelegateUtils.requiresConfig;
 import static org.mule.runtime.module.extension.internal.loader.parser.java.notification.NotificationModelParserUtils.declareEmittedNotifications;
@@ -24,17 +23,14 @@ import org.mule.runtime.api.meta.model.declaration.fluent.HasSourceDeclarer;
 import org.mule.runtime.api.meta.model.declaration.fluent.ParameterizedDeclarer;
 import org.mule.runtime.api.meta.model.declaration.fluent.SourceCallbackDeclarer;
 import org.mule.runtime.api.meta.model.declaration.fluent.SourceDeclarer;
-import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
 import org.mule.runtime.extension.api.exception.IllegalSourceModelDefinitionException;
 import org.mule.runtime.extension.api.property.MetadataKeyIdModelProperty;
 import org.mule.runtime.module.extension.internal.loader.parser.AttributesResolverModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.OutputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.ParameterGroupModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.SourceModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.SourceModelParser.SourceCallbackModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.java.JavaKeyIdResolverModelParser;
 import org.mule.runtime.module.extension.internal.loader.utils.ModelLoaderUtils;
 
 import java.util.HashMap;
@@ -104,14 +100,9 @@ final class SourceModelLoaderDelegate extends AbstractComponentModelLoaderDelega
 
       Optional<OutputResolverModelParser> outputResolverModelParser = parser.getOutputResolverModelParser();
       Optional<AttributesResolverModelParser> attributesResolverModelParser = parser.getAttributesResolverModelParser();
-      Optional<KeyIdResolverModelParser> keyIdResolverModelParser = getKeyIdResolverModelParser(parser,
-                                                                                                outputResolverModelParser
-                                                                                                    .orElse(null),
-                                                                                                attributesResolverModelParser
-                                                                                                    .orElse(null));
+      Optional<MetadataKeyModelParser> keyIdResolverModelParser = parser.getMetadataKeyModelParser();
 
-      loader.getParameterModelsLoaderDelegate().declare(sourceDeclarer, keyIdResolverModelParser.orElse(null),
-                                                        parser.getParameterGroupModelParsers());
+      loader.getParameterModelsLoaderDelegate().declare(sourceDeclarer, parser.getParameterGroupModelParsers());
 
       parser.getMediaTypeModelProperty().ifPresent(sourceDeclarer::withModelProperty);
       parser.getExceptionHandlerModelProperty().ifPresent(sourceDeclarer::withModelProperty);
@@ -191,7 +182,7 @@ final class SourceModelLoaderDelegate extends AbstractComponentModelLoaderDelega
 
   private void declareMetadataKeyIdModelProperty(SourceDeclarer sourceDeclarer,
                                                  Optional<OutputResolverModelParser> outputResolverModelParser,
-                                                 Optional<KeyIdResolverModelParser> keyIdResolverModelParser) {
+                                                 Optional<MetadataKeyModelParser> keyIdResolverModelParser) {
     if (keyIdResolverModelParser.isPresent()) {
       String parameterName = keyIdResolverModelParser.get().getParameterName();
       MetadataType metadataType = keyIdResolverModelParser.get().getMetadataType();
@@ -202,58 +193,4 @@ final class SourceModelLoaderDelegate extends AbstractComponentModelLoaderDelega
     }
   }
 
-  private Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser(SourceModelParser sourceModelParser,
-                                                                         OutputResolverModelParser outputResolverModelParser,
-                                                                         AttributesResolverModelParser attributesResolverModelParser) {
-    Optional<KeyIdResolverModelParser> keyIdResolverModelParser = empty();
-    if (outputResolverModelParser != null) {
-      String categoryName = getCategoryName(outputResolverModelParser, attributesResolverModelParser);
-
-      keyIdResolverModelParser = sourceModelParser.getParameterGroupModelParsers().stream()
-          .map(parameterGroupModelParser -> parameterGroupModelParser.getKeyIdResolverModelParser(categoryName))
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .findFirst();
-
-      if (!keyIdResolverModelParser.isPresent()) {
-        keyIdResolverModelParser = sourceModelParser.getParameterGroupModelParsers().stream()
-            .map(ParameterGroupModelParser::getParameterParsers)
-            .flatMap(List::stream)
-            .collect(toList())
-            .stream()
-            .map(parameterModelParser -> parameterModelParser.getKeyIdResolverModelParser(categoryName))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst();
-      }
-
-      if (keyIdResolverModelParser.isPresent() && !keyIdResolverModelParser.get().hasKeyIdResolver()) {
-        Optional<KeyIdResolverModelParser> enclosingKeyIdResolverModelParser = sourceModelParser.getKeyIdResolverModelParser();
-        if (enclosingKeyIdResolverModelParser.isPresent()) {
-          keyIdResolverModelParser = of(new JavaKeyIdResolverModelParser(keyIdResolverModelParser.get().getParameterName(),
-                                                                         categoryName,
-                                                                         keyIdResolverModelParser.get().getMetadataType(),
-                                                                         enclosingKeyIdResolverModelParser.get()
-                                                                             .keyIdResolverDeclarationClass()));
-        }
-      }
-    }
-
-    return keyIdResolverModelParser;
-  }
-
-  private String getCategoryName(OutputResolverModelParser outputResolverModelParser,
-                                 AttributesResolverModelParser attributesResolverModelParser) {
-    if (outputResolverModelParser != null) {
-      return outputResolverModelParser.getOutputResolver().getCategoryName();
-    }
-
-    if (attributesResolverModelParser != null) {
-      return attributesResolverModelParser.getAttributesResolver().getCategoryName();
-    }
-
-
-    throw new IllegalModelDefinitionException("Unable to create Keys Resolver. A Keys Resolver is being defined " +
-        "without defining an Output Resolver, Input Resolver nor Attributes Resolver");
-  }
 }

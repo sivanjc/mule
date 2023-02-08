@@ -139,13 +139,13 @@ public class ParameterModelParserDecorator implements ParameterModelParser {
     return decoratee.getInputResolverModelParser();
   }
 
-  @Override
-  public Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser(String categoryName) {
-    return decoratee.getKeyIdResolverModelParser(categoryName);
-  }
 
   @Override
   public Optional<Pair<Integer, Boolean>> getMetadataKeyPart() {
     return decoratee.getMetadataKeyPart();
+  }
+
+  public ParameterModelParser getDecoratee() {
+    return decoratee;
   }
 }

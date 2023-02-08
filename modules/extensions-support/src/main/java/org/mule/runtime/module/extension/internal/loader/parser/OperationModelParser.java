@@ -194,9 +194,9 @@ public interface OperationModelParser extends SemanticTermsParser, AdditionalPro
   List<InputResolverModelParser> getInputResolverModelParsers();
 
   /**
-   * @return an {@link Optional} {@link KeyIdResolverModelParser} that encapsulates the operation's key id resolver if dynamic
+   * @return an {@link Optional} {@link MetadataKeyModelParser} that encapsulates the operation's key id resolver if dynamic
    *         metadata were defined
    */
-  Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser();
+  Optional<MetadataKeyModelParser> getMetadataKeyModelParser();
 
 }

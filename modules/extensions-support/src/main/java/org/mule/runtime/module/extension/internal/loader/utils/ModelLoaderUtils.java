@@ -29,7 +29,7 @@ import org.mule.runtime.module.extension.internal.loader.delegate.ModelLoaderDel
 import org.mule.runtime.module.extension.internal.loader.java.property.MetadataResolverFactoryModelProperty;
 import org.mule.runtime.module.extension.internal.loader.parser.AttributesResolverModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.OutputResolverModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.SemanticTermsParser;
 import org.mule.runtime.module.extension.internal.loader.parser.XmlDslConfiguration;
@@ -118,7 +118,7 @@ public final class ModelLoaderUtils {
                                                                   Optional<OutputResolverModelParser> outputResolverModelParser,
                                                                   Optional<AttributesResolverModelParser> attributesResolverModelParser,
                                                                   List<InputResolverModelParser> inputResolverModelParsers,
-                                                                  Optional<KeyIdResolverModelParser> keyIdResolverModelParser,
+                                                                  Optional<MetadataKeyModelParser> keyIdResolverModelParser,
                                                                   boolean requiresConnection) {
 
     if ((outputResolverModelParser.isPresent() && outputResolverModelParser.get().hasOutputResolver()) ||
@@ -140,7 +140,7 @@ public final class ModelLoaderUtils {
           .orElse(NULL_RESOLVER_NAME);
 
       boolean isPartialKeyResolver = keyIdResolverModelParser
-          .map(KeyIdResolverModelParser::isPartialKeyResolver).orElse(false);
+          .map(MetadataKeyModelParser::isPartialKeyResolver).orElse(false);
 
       String categoryName = getCategoryName(keyIdResolverModelParser.orElse(null), inputResolverModelParsers,
                                             outputResolverModelParser.orElse(null));
@@ -174,7 +174,7 @@ public final class ModelLoaderUtils {
                                                                  Optional<OutputResolverModelParser> outputResolverModelParser,
                                                                  Optional<AttributesResolverModelParser> attributesResolverModelParser,
                                                                  List<InputResolverModelParser> inputResolverModelParsers,
-                                                                 Optional<KeyIdResolverModelParser> keyIdResolverModelParser) {
+                                                                 Optional<MetadataKeyModelParser> keyIdResolverModelParser) {
     MetadataResolverFactory metadataResolverFactory;
     if ((outputResolverModelParser.isPresent() && outputResolverModelParser.get().hasOutputResolver()) ||
         !inputResolverModelParsers.isEmpty()) {
@@ -190,7 +190,7 @@ public final class ModelLoaderUtils {
               .orElse((AttributesTypeResolver) nullMetadataResolver);
       Supplier<AttributesTypeResolver<?>> attributesTypeResolverSupplier = () -> attributesTypeResolver;
 
-      TypeKeysResolver typeKeysResolver = keyIdResolverModelParser.map(KeyIdResolverModelParser::getKeyResolver)
+      TypeKeysResolver typeKeysResolver = keyIdResolverModelParser.map(MetadataKeyModelParser::getKeyResolver)
           .orElse(nullMetadataResolver);
       Supplier<TypeKeysResolver> typeKeysResolverSupplier = () -> typeKeysResolver;
 
@@ -212,17 +212,17 @@ public final class ModelLoaderUtils {
    *
    * @param outputResolverModelParser parser with the output metadata
    * @param inputResolverModelParsers parser with the input metadata
-   * @param keyIdResolverModelParser  parser with the key id metadata
+   * @param metadataKeyModelParser    parser with the key id metadata
    *
    * @return the category name of the resolvers if present, null otherwise
    *
    * @since 4.6.0
    */
-  public static String getCategoryName(KeyIdResolverModelParser keyIdResolverModelParser,
+  public static String getCategoryName(MetadataKeyModelParser metadataKeyModelParser,
                                        List<InputResolverModelParser> inputResolverModelParsers,
                                        OutputResolverModelParser outputResolverModelParser) {
-    if (keyIdResolverModelParser != null && keyIdResolverModelParser.hasKeyIdResolver()) {
-      return keyIdResolverModelParser.getKeyResolver().getCategoryName();
+    if (metadataKeyModelParser != null && metadataKeyModelParser.hasKeyIdResolver()) {
+      return metadataKeyModelParser.getKeyResolver().getCategoryName();
     } else if (!inputResolverModelParsers.isEmpty()) {
       return inputResolverModelParsers.iterator().next().getInputResolver().getCategoryName();
     } else if (outputResolverModelParser != null && outputResolverModelParser.hasOutputResolver()) {

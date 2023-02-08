@@ -20,9 +20,9 @@ import org.mule.runtime.api.util.Pair;
 import org.mule.runtime.extension.api.property.ExcludeFromConnectivitySchemaModelProperty;
 import org.mule.runtime.extension.api.property.MetadataKeyPartModelProperty;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ParameterGroupModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.java.JavaKeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.java.JavaMetadataKeyModelParser;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -42,11 +42,6 @@ public final class ParameterModelsLoaderDelegate {
   }
 
   public List<ParameterDeclarer> declare(HasParametersDeclarer component, List<ParameterGroupModelParser> groupParsers) {
-    return declare(component, null, groupParsers);
-  }
-
-  public List<ParameterDeclarer> declare(HasParametersDeclarer component, KeyIdResolverModelParser parentKeyIdResolverModelParser,
-                                         List<ParameterGroupModelParser> groupParsers) {
     final List<ParameterDeclarer> declarerList = new LinkedList<>();
 
     groupParsers.forEach(group -> {
@@ -76,23 +71,9 @@ public final class ParameterModelsLoaderDelegate {
               .defaultingTo(parameterParser.getDefaultValue());
         }
 
-        Optional<KeyIdResolverModelParser> parameterKeyIdResolverModelParser = parameterParser.getKeyIdResolverModelParser(null);
-        Optional<Pair<Integer, Boolean>> metadataKeyPart = parameterParser.getMetadataKeyPart();
+        parameterParser.getMetadataKeyPart().ifPresent(metadataKeyPart -> parameter
+            .withModelProperty(new MetadataKeyPartModelProperty(metadataKeyPart.getFirst(), metadataKeyPart.getSecond())));
 
-        if (parameterKeyIdResolverModelParser.isPresent() && !parameterKeyIdResolverModelParser.get().hasKeyIdResolver()
-            && parentKeyIdResolverModelParser != null) {
-          parameterKeyIdResolverModelParser = of(new JavaKeyIdResolverModelParser(
-                                                                                  parameterKeyIdResolverModelParser.get()
-                                                                                      .getParameterName(),
-                                                                                  null,
-                                                                                  parameterKeyIdResolverModelParser.get()
-                                                                                      .getMetadataType(),
-                                                                                  parentKeyIdResolverModelParser
-                                                                                      .keyIdResolverDeclarationClass()));
-        }
-
-        declareMetadataKeyPartModelProperty(parameter, parameterKeyIdResolverModelParser.orElse(null),
-                                            metadataKeyPart.orElse(null));
 
         Optional<InputResolverModelParser> inputResolverModelParser = parameterParser.getInputResolverModelParser();
         final MetadataType metadataType = parameterParser.getType();
@@ -147,12 +128,7 @@ public final class ParameterModelsLoaderDelegate {
   }
 
   private void declareMetadataKeyPartModelProperty(ParameterDeclarer parameterDeclarer,
-                                                   KeyIdResolverModelParser keyIdResolverModelParser,
                                                    Pair<Integer, Boolean> metadataKeyPart) {
-    if (keyIdResolverModelParser != null) {
-      parameterDeclarer.withModelProperty(new MetadataKeyPartModelProperty(1, keyIdResolverModelParser.hasKeyIdResolver()));
-    }
-
     if (metadataKeyPart != null) {
       parameterDeclarer
           .withModelProperty(new MetadataKeyPartModelProperty(metadataKeyPart.getFirst(), metadataKeyPart.getSecond()));

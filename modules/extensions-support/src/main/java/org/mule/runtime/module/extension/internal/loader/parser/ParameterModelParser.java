@@ -124,10 +124,6 @@ public interface ParameterModelParser extends SemanticTermsParser, AllowedStereo
    */
   Optional<InputResolverModelParser> getInputResolverModelParser();
 
-  /**
-   * @return the parameter's {@link KeyIdResolverModelParser} if dynamic metadata were defined
-   */
-  Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser(String categoryName);
 
   /**
    * @return the order and the existence of a key resolver if metadata key part were defined on the parameter

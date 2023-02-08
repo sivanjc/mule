@@ -26,6 +26,7 @@ import static org.mule.runtime.module.extension.internal.loader.parser.java.ster
 import static org.mule.runtime.module.extension.internal.loader.parser.java.type.CustomStaticTypeUtils.getSourceAttributesType;
 import static org.mule.runtime.module.extension.internal.loader.parser.java.type.CustomStaticTypeUtils.getSourceOutputType;
 import static org.mule.runtime.module.extension.internal.loader.parser.java.utils.JavaParserUtils.calculateSourceMinMuleVersion;
+import static org.mule.runtime.module.extension.internal.loader.utils.JavaMetadataKeyIdModelParserUtils.getKeyIdResolverModelParser;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaMetadataKeyIdModelParserUtils.parseKeyIdResolverModelParser;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaOutputResolverModelParserUtils.parseAttributesResolverModelParser;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaOutputResolverModelParserUtils.parseOutputResolverModelParser;
@@ -64,7 +65,7 @@ import org.mule.runtime.module.extension.internal.loader.java.type.property.Exte
 import org.mule.runtime.module.extension.internal.loader.parser.AttributesResolverModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.DefaultOutputModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.OutputResolverModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ParameterGroupModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ParameterModelParser;
@@ -139,7 +140,7 @@ public class JavaSourceModelParser extends AbstractJavaExecutableComponentModelP
 
   @Override
   public List<ParameterGroupModelParser> getParameterGroupModelParsers() {
-    return getSourceParameterGroupParsers(sourceElement.getParameters(), forSource(getName()));
+    return getSourceParameterGroupParsers(sourceElement.getParameters(), forSource(getName(), hasKeyResolverAvailable()));
   }
 
   @Override
@@ -339,8 +340,8 @@ public class JavaSourceModelParser extends AbstractJavaExecutableComponentModelP
   }
 
   @Override
-  public Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser() {
-    return parseKeyIdResolverModelParser(extensionElement, sourceElement);
+  public Optional<MetadataKeyModelParser> getMetadataKeyModelParser() {
+    return getKeyIdResolverModelParser(this, sourceElement, extensionElement);
   }
 
   @Override
@@ -389,5 +390,10 @@ public class JavaSourceModelParser extends AbstractJavaExecutableComponentModelP
           .map(Optional::get)
           .collect(toList());
     }
+  }
+
+  private boolean hasKeyResolverAvailable() {
+    return parseKeyIdResolverModelParser(extensionElement, sourceElement, "source", getName(), extensionElement.getName())
+        .map(metadataKey -> metadataKey.hasKeyIdResolver()).orElse(false);
   }
 }

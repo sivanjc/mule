@@ -167,10 +167,10 @@ public interface SourceModelParser extends SemanticTermsParser, StereotypeModelP
   Optional<AttributesResolverModelParser> getAttributesResolverModelParser();
 
   /**
-   * @return an {@link Optional} {@link KeyIdResolverModelParser} that encapsulates the source's key id resolver if dynamic
-   *         metadata were defined
+   * @return an {@link Optional} {@link MetadataKeyModelParser} that encapsulates the source's key id resolver if dynamic metadata
+   *         were defined
    */
-  Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser();
+  Optional<MetadataKeyModelParser> getMetadataKeyModelParser();
 
   /**
    * Parses the syntactic definition of a {@link SourceCallbackModel} so that the semantics reflected in it can be extracted in a

@@ -57,6 +57,7 @@ import org.mule.runtime.api.util.Pair;
 import org.mule.runtime.extension.api.annotation.ConfigReferences;
 import org.mule.runtime.extension.api.annotation.connectivity.oauth.OAuthParameter;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.annotation.param.ConfigOverride;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.NullSafe;
@@ -83,7 +84,7 @@ import org.mule.runtime.module.extension.internal.loader.java.property.Implement
 import org.mule.runtime.module.extension.internal.loader.java.property.NullSafeModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.type.property.ExtensionParameterDescriptorModelProperty;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ParameterGroupModelParser.ExclusiveOptionalDescriptor;
 import org.mule.runtime.module.extension.internal.loader.parser.ParameterModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.StereotypeModelFactory;
@@ -105,7 +106,7 @@ import java.util.Set;
  *
  * @since 4.5.0
  */
-public class JavaParameterModelParser implements ParameterModelParser {
+public class JavaParameterModelParser implements ParameterModelParser, HasExtensionParameter {
 
   private final ExtensionParameter parameter;
   private final MetadataType type;
@@ -347,12 +348,11 @@ public class JavaParameterModelParser implements ParameterModelParser {
   }
 
   @Override
-  public Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser(String categoryName) {
-    return parseKeyIdResolverModelParser(parameter, categoryName, null);
-  }
-
-  @Override
   public Optional<Pair<Integer, Boolean>> getMetadataKeyPart() {
+    Optional<MetadataKeyModelParser> metadataKeyModelParser = parseKeyIdResolverModelParser(parameter, null, null);
+    if (metadataKeyModelParser.isPresent()) {
+      return of(new Pair(1, metadataKeyModelParser.get().hasKeyIdResolver() || context.isKeyResolverAvailable()));
+    }
     return JavaMetadataKeyIdModelParserUtils.getMetadataKeyPart(parameter);
   }
 
@@ -508,4 +508,8 @@ public class JavaParameterModelParser implements ParameterModelParser {
     }
   }
 
+  @Override
+  public ExtensionParameter getExtensionParameter() {
+    return parameter;
+  }
 }

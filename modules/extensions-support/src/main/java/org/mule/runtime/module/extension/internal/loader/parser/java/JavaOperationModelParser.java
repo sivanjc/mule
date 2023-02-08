@@ -29,6 +29,7 @@ import static org.mule.runtime.module.extension.internal.loader.parser.java.type
 import static org.mule.runtime.module.extension.internal.loader.parser.java.utils.JavaParserUtils.calculateOperationMinMuleVersion;
 import static org.mule.runtime.module.extension.internal.loader.parser.java.utils.JavaParserUtils.getContainerAnnotationMinMuleVersion;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaInputResolverModelParserUtils.parseInputResolversModelParser;
+import static org.mule.runtime.module.extension.internal.loader.utils.JavaMetadataKeyIdModelParserUtils.getKeyIdResolverModelParser;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaMetadataKeyIdModelParserUtils.parseKeyIdResolverModelParser;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaModelLoaderUtils.getRoutes;
 import static org.mule.runtime.module.extension.internal.loader.utils.JavaOutputResolverModelParserUtils.parseAttributesResolverModelParser;
@@ -44,6 +45,7 @@ import org.mule.runtime.api.meta.model.display.DisplayModel;
 import org.mule.runtime.api.meta.model.notification.NotificationModel;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.meta.model.stereotype.StereotypeModel;
+import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
 import org.mule.runtime.extension.api.exception.IllegalOperationModelDefinitionException;
 import org.mule.runtime.extension.api.loader.ExtensionLoadingContext;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
@@ -68,7 +70,7 @@ import org.mule.runtime.module.extension.internal.loader.parser.AttributesResolv
 import org.mule.runtime.module.extension.internal.loader.parser.DefaultOutputModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ErrorModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.NestedChainModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.NestedRouteModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.OperationModelParser;
@@ -118,6 +120,8 @@ public class JavaOperationModelParser extends AbstractJavaExecutableComponentMod
   private boolean router = false;
   private boolean autoPaging = false;
   private List<ExtensionParameter> routes = emptyList();
+
+  private Optional<MetadataKeyModelParser> metadataKeyModelParser;
 
   public JavaOperationModelParser(JavaExtensionModelParser extensionModelParser,
                                   ExtensionElement extensionElement,
@@ -350,7 +354,7 @@ public class JavaOperationModelParser extends AbstractJavaExecutableComponentMod
       methodParameters = operationElement.getParameters();
     }
 
-    ParameterDeclarationContext context = forOperation(getName());
+    ParameterDeclarationContext context = forOperation(getName(), hasKeyResolverAvailable());
 
     List<ParameterGroupModelParser> parameterGroupModelParsers = getParameterGroupParsers(methodParameters, context);
     parameterGroupModelParsers.addAll(
@@ -475,8 +479,13 @@ public class JavaOperationModelParser extends AbstractJavaExecutableComponentMod
   }
 
   @Override
-  public Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser() {
-    return parseKeyIdResolverModelParser(operationElement.getEnclosingType());
+  public Optional<MetadataKeyModelParser> getMetadataKeyModelParser() {
+    return getKeyIdResolverModelParser(this, operationElement.getEnclosingType(), extensionElement);
+  }
+
+  private boolean hasKeyResolverAvailable() {
+    return parseKeyIdResolverModelParser(enclosingType, operationElement, "operation", getName(), extensionElement.getName())
+        .map(metadataKey -> metadataKey.hasKeyIdResolver()).orElse(false);
   }
 
   @Override
@@ -561,4 +570,5 @@ public class JavaOperationModelParser extends AbstractJavaExecutableComponentMod
   public int hashCode() {
     return hash(operationElement);
   }
+
 }
