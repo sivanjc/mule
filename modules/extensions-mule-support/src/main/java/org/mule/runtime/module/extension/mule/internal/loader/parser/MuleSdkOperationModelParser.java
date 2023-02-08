@@ -47,7 +47,7 @@ import org.mule.runtime.module.extension.internal.loader.parser.AttributesResolv
 import org.mule.runtime.module.extension.internal.loader.parser.DefaultOutputModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ErrorModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.NestedChainModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.NestedRouteModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.OperationModelParser;
@@ -317,7 +317,7 @@ class MuleSdkOperationModelParser extends BaseMuleSdkExtensionModelParser implem
   }
 
   @Override
-  public Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser() {
+  public Optional<MetadataKeyModelParser> getMetadataKeyModelParser() {
     return empty();
   }
 

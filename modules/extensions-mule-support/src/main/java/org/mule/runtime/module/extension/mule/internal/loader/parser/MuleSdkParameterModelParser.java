@@ -41,7 +41,7 @@ import org.mule.runtime.extension.api.declaration.type.annotation.TypedValueType
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
 import org.mule.runtime.module.extension.internal.loader.java.enricher.MetadataTypeEnricher;
 import org.mule.runtime.module.extension.internal.loader.parser.InputResolverModelParser;
-import org.mule.runtime.module.extension.internal.loader.parser.KeyIdResolverModelParser;
+import org.mule.runtime.module.extension.internal.loader.parser.MetadataKeyModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.ParameterModelParser;
 import org.mule.runtime.module.extension.internal.loader.parser.StereotypeModelFactory;
 
@@ -258,11 +258,6 @@ public class MuleSdkParameterModelParser extends BaseMuleSdkExtensionModelParser
 
   @Override
   public Optional<InputResolverModelParser> getInputResolverModelParser() {
-    return empty();
-  }
-
-  @Override
-  public Optional<KeyIdResolverModelParser> getKeyIdResolverModelParser(String categoryName) {
     return empty();
   }
 

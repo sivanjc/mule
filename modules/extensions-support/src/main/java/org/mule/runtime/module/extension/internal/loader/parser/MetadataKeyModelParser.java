@@ -16,7 +16,7 @@ import org.mule.runtime.extension.api.metadata.NullMetadataResolver;
  * way, regardless of the actual syntax used by the extension developer.
  *
  * @see ExtensionModelParser
- * @since 4.5.0
+ * @since 4.6.0
  */
 public interface KeyIdResolverModelParser {
 
