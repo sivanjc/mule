@@ -141,7 +141,7 @@ public class AllStatistics {
     return payloadStatistics.computeIfAbsent(component.getLocation().getLocation(),
                                              loc -> {
                                                final PayloadStatistics statistics =
-                                                   new PayloadStatistics(loc, component.getIdentifier().toString());
+                                                 new PayloadStatistics(loc, component.getIdentifier().toString());
                                                statistics.setEnabled(isPayloadStatisticsEnabled());
                                                return statistics;
                                              });
@@ -179,6 +179,6 @@ public class AllStatistics {
     FeatureFlaggingRegistry featureFlaggingRegistry = FeatureFlaggingRegistry.getInstance();
     featureFlaggingRegistry.registerFeatureFlag(COMPUTE_CONNECTION_ERRORS_IN_STATS,
                                                 featureContext -> featureContext.getArtifactMinMuleVersion()
-                                                    .filter(muleVersion -> muleVersion.atLeast("4.4.0")).isPresent());
+                                                  .filter(muleVersion -> muleVersion.atLeast("4.4.0")).isPresent());
   }
 }

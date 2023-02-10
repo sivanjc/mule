@@ -9,38 +9,43 @@ package org.mule.runtime.core.internal.management.stats;
 import static java.util.regex.Pattern.compile;
 
 import org.mule.runtime.core.api.management.stats.FlowsSummaryStatistics;
+import org.mule.runtime.metrics.api.MeterProvider;
 
+import javax.inject.Inject;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
- * 
+ *
  * @since 4.5
  */
 public class DefaultFlowsSummaryStatistics implements FlowsSummaryStatistics {
 
   private static final String APIKIT_FLOWNAME_REGEX =
-      // method
-      "(\\w*)" +
+    // method
+    "(\\w*)" +
       // path
-          ":(\\\\[^:]*)" +
-          // content type
-          "(:[^:]*)?" +
-          // config name
-          ":([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
+      ":(\\\\[^:]*)" +
+      // content type
+      "(:[^:]*)?" +
+      // config name
+      ":([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
   private static final String APIKIT_SOAP_FLOWNAME_REGEX =
-      // method
-      "(\\w*)" +
+    // method
+    "(\\w*)" +
       // path
-          ":\\\\" +
-          // config name
-          "([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
+      ":\\\\" +
+      // config name
+      "([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
   private static final Pattern APIKIT_FLOWNAME_PATTERN = compile(APIKIT_FLOWNAME_REGEX);
   private static final Pattern APIKIT_SOAP_FLOWNAME_PATTERN = compile(APIKIT_SOAP_FLOWNAME_REGEX);
 
   private static final long serialVersionUID = 1L;
 
   private final boolean enabled;
+
+  @Inject
+  MeterProvider meterProvider;
 
   private final AtomicInteger declaredPrivateFlows = new AtomicInteger(0);
   private final AtomicInteger activePrivateFlows = new AtomicInteger(0);
@@ -144,13 +149,13 @@ public class DefaultFlowsSummaryStatistics implements FlowsSummaryStatistics {
 
   /**
    * Determines if the name of a flow follows the conventions of ApiKit.
-   * 
+   *
    * @param flowName the name of the flow to check.
    * @return whether the name of the flow corresponds to an ApiKit flow.
    */
   public static boolean isApiKitFlow(String flowName) {
     return APIKIT_FLOWNAME_PATTERN.matcher(flowName).matches()
-        || APIKIT_SOAP_FLOWNAME_PATTERN.matcher(flowName).matches();
+      || APIKIT_SOAP_FLOWNAME_PATTERN.matcher(flowName).matches();
   }
 
 }

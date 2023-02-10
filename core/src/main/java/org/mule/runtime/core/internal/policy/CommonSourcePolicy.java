@@ -32,7 +32,7 @@ class CommonSourcePolicy {
   CommonSourcePolicy(Supplier<FluxSink<CoreEvent>> sinkFactory) {
     this.policySink =
         new TransactionAwareFluxSinkSupplier<>(sinkFactory,
-                                               new RoundRobinFluxSinkSupplier<>(getRuntime().availableProcessors(), sinkFactory));
+                                               new RoundRobinFluxSinkSupplier<>(1, sinkFactory));
   }
 
   public void process(SourcePolicy sourcePolicy, CoreEvent sourceEvent,

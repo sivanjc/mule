@@ -685,7 +685,7 @@ public abstract class ComponentMessageProcessor<T extends ComponentModel> extend
               .onErrorContinue((t, result) -> getOperationExecutionParams(((EventProcessingException) t).getEvent())
                   .getCallback().error(t.getCause()))));
     },
-                                                getRuntime().availableProcessors());
+                                                1);
   }
 
   protected OperationExecutionParams getOperationExecutionParams(final CoreEvent event) {

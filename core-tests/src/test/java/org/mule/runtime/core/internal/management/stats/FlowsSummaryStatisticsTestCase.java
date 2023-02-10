@@ -61,7 +61,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void triggerFlow() throws MuleException {
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow = new TestPipeline("", muleContext,
                                          mock(MessageSource.class),
                                          emptyList(), empty(), empty(),
@@ -85,7 +85,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void apikitFlow() throws MuleException {
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow = new TestPipeline("get:\\reservation:api-config", muleContext,
                                          null,
                                          emptyList(), empty(), empty(),
@@ -109,7 +109,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void apikitWithSourceFlow() throws MuleException {
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow = new TestPipeline("get:\\reservation:api-config", muleContext,
                                          mock(MessageSource.class),
                                          emptyList(), empty(), empty(),
@@ -133,7 +133,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void privateFlow() throws MuleException {
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow = new TestPipeline("", muleContext,
                                          null,
                                          emptyList(), empty(), empty(),
@@ -157,7 +157,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void twoTriggerFlow() throws MuleException {
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow1 = new TestPipeline("", muleContext,
                                           mock(MessageSource.class),
                                           emptyList(), empty(), empty(),
@@ -192,7 +192,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
 
   @Test
   public void triggerFlowRestarted() throws MuleException {
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow = new TestPipeline("", muleContext,
                                          mock(MessageSource.class),
                                          emptyList(), empty(), empty(),
@@ -224,7 +224,7 @@ public class FlowsSummaryStatisticsTestCase extends AbstractMuleContextTestCase 
   public void triggerFlowInitialStateStopped() throws MuleException {
     doReturn(true).when(muleContext).isStarting();
 
-    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowsSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     TestPipeline flow = new TestPipeline("", muleContext,
                                          mock(MessageSource.class),
                                          emptyList(), empty(), empty(),

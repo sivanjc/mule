@@ -69,7 +69,7 @@ public class AbstractPipelineTestCase extends AbstractMuleContextTestCase {
     super.doSetUp();
 
     MessageSource messageSource = mock(MessageSource.class);
-    DefaultFlowsSummaryStatistics flowSummaryStatistics = new DefaultFlowsSummaryStatistics(true);
+    DefaultFlowsSummaryStatistics flowSummaryStatistics = new DefaultFlowsSummaryStatistics(true, null);
     FlowConstructStatistics flowConstructStatistics = mock(FlowConstructStatistics.class);
     ComponentInitialStateManager componentInitialStateManager = mock(ComponentInitialStateManager.class);
     abstractPipeline = new TestPipeline(
