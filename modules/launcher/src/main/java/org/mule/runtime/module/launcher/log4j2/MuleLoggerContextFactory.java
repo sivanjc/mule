@@ -83,32 +83,6 @@ public class MuleLoggerContextFactory {
                                                   .destroyLoggersFor(resolveLoggerContextClassLoader(classLoader)));
     }
 
-    // try {
-    // SdkLoggerProvider sdkLoggerProvider =
-    // SdkLoggerProvider.builder()
-    // .addLogRecordProcessor(SimpleLogRecordProcessor.create(new LogRecordExporter() {
-    //
-    // @Override
-    // public CompletableResultCode export(Collection<LogRecordData> collection) {
-    // return CompletableResultCode.ofSuccess();
-    // }
-    //
-    // @Override
-    // public CompletableResultCode flush() {
-    // return CompletableResultCode.ofSuccess();
-    // }
-    //
-    // @Override
-    // public CompletableResultCode shutdown() {
-    // return CompletableResultCode.ofSuccess();
-    // }
-    // }))
-    // .build();
-    // GlobalLoggerProvider.set(sdkLoggerProvider);
-    // } catch (IllegalStateException e) {
-    // // Nothing to do
-    // }
-
     return loggerContext;
   }
 
