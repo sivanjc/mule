@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
+import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
@@ -115,6 +116,7 @@ final class LoggerContextConfigurer {
     if (forceConsoleLog && !hasAppender(context, ConsoleAppender.class)) {
       forceConsoleAppender(context);
     }
+    doAddAppender(context, OpenTelemetryAppender.builder().setName("TestOpenTelemetryAppender").setConfiguration().build());
   }
 
   public boolean shouldConfigureContext(MuleLoggerContext context) {

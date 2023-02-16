@@ -23,7 +23,7 @@
 
     <properties>
         <formatterConfigPath>../../../formatter.xml</formatterConfigPath>
-        <opentelemetryVersion>1.20.1</opentelemetryVersion>
+        <opentelemetryVersion>1.22.0</opentelemetryVersion>
         <ioGrpcVersion>1.51.0</ioGrpcVersion>
     </properties>
 

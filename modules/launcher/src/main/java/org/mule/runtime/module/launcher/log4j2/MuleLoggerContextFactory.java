@@ -24,7 +24,15 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.selector.ContextSelector;
 
@@ -36,6 +44,14 @@ import org.apache.logging.log4j.core.selector.ContextSelector;
 public class MuleLoggerContextFactory {
 
   static final String LOG4J_CONFIGURATION_FILE_PROPERTY = "log4j.configurationFile";
+
+  static {
+    SdkLoggerProvider sdkLoggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(OtlpGrpcLogRecordExporter.builder().build()))
+            .build();
+    GlobalLoggerProvider.set(sdkLoggerProvider);
+  }
 
   /**
    * Builds a new {@link LoggerContext} for the given {@code classLoader} and {@code selector}
@@ -66,6 +82,32 @@ public class MuleLoggerContextFactory {
                                               () -> ((ArtifactAwareContextSelector) selector)
                                                   .destroyLoggersFor(resolveLoggerContextClassLoader(classLoader)));
     }
+
+    // try {
+    // SdkLoggerProvider sdkLoggerProvider =
+    // SdkLoggerProvider.builder()
+    // .addLogRecordProcessor(SimpleLogRecordProcessor.create(new LogRecordExporter() {
+    //
+    // @Override
+    // public CompletableResultCode export(Collection<LogRecordData> collection) {
+    // return CompletableResultCode.ofSuccess();
+    // }
+    //
+    // @Override
+    // public CompletableResultCode flush() {
+    // return CompletableResultCode.ofSuccess();
+    // }
+    //
+    // @Override
+    // public CompletableResultCode shutdown() {
+    // return CompletableResultCode.ofSuccess();
+    // }
+    // }))
+    // .build();
+    // GlobalLoggerProvider.set(sdkLoggerProvider);
+    // } catch (IllegalStateException e) {
+    // // Nothing to do
+    // }
 
     return loggerContext;
   }
