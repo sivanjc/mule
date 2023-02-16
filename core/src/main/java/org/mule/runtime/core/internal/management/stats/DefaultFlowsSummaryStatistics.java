@@ -9,6 +9,8 @@ package org.mule.runtime.core.internal.management.stats;
 import static java.util.regex.Pattern.compile;
 
 import org.mule.runtime.core.api.management.stats.FlowsSummaryStatistics;
+import org.mule.runtime.core.api.registry.SpiServiceRegistry;
+import org.mule.runtime.metrics.api.LongCounter;
 import org.mule.runtime.metrics.api.MeterProvider;
 
 import javax.inject.Inject;
@@ -22,29 +24,29 @@ import java.util.regex.Pattern;
 public class DefaultFlowsSummaryStatistics implements FlowsSummaryStatistics {
 
   private static final String APIKIT_FLOWNAME_REGEX =
-    // method
-    "(\\w*)" +
+      // method
+      "(\\w*)" +
       // path
-      ":(\\\\[^:]*)" +
-      // content type
-      "(:[^:]*)?" +
-      // config name
-      ":([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
+          ":(\\\\[^:]*)" +
+          // content type
+          "(:[^:]*)?" +
+          // config name
+          ":([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
   private static final String APIKIT_SOAP_FLOWNAME_REGEX =
-    // method
-    "(\\w*)" +
+      // method
+      "(\\w*)" +
       // path
-      ":\\\\" +
-      // config name
-      "([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
+          ":\\\\" +
+          // config name
+          "([^\\/\\\\\\[\\\\\\]\\{\\}#]*)";
   private static final Pattern APIKIT_FLOWNAME_PATTERN = compile(APIKIT_FLOWNAME_REGEX);
   private static final Pattern APIKIT_SOAP_FLOWNAME_PATTERN = compile(APIKIT_SOAP_FLOWNAME_REGEX);
 
   private static final long serialVersionUID = 1L;
 
   private final boolean enabled;
+  private final LongCounter logCounter;
 
-  @Inject
   MeterProvider meterProvider;
 
   private final AtomicInteger declaredPrivateFlows = new AtomicInteger(0);
@@ -56,6 +58,9 @@ public class DefaultFlowsSummaryStatistics implements FlowsSummaryStatistics {
 
   public DefaultFlowsSummaryStatistics(boolean isStatisticsEnabled) {
     this.enabled = isStatisticsEnabled;
+    meterProvider = new SpiServiceRegistry().lookupProvider(MeterProvider.class, MeterProvider.class.getClassLoader());
+    logCounter = meterProvider.getMeter("flowSummaryStats").getLongCounter("activeApikitFlows");
+    logCounter.add(50);
   }
 
   /**
@@ -155,7 +160,7 @@ public class DefaultFlowsSummaryStatistics implements FlowsSummaryStatistics {
    */
   public static boolean isApiKitFlow(String flowName) {
     return APIKIT_FLOWNAME_PATTERN.matcher(flowName).matches()
-      || APIKIT_SOAP_FLOWNAME_PATTERN.matcher(flowName).matches();
+        || APIKIT_SOAP_FLOWNAME_PATTERN.matcher(flowName).matches();
   }
 
 }

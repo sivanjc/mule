@@ -103,7 +103,6 @@ final class LoggerContextConfigurer {
 
     boolean forceConsoleLog = System.getProperty(MULE_FORCE_CONSOLE_LOG) != null;
     if (context.getConfigFile() == null && !forceConsoleLog) {
-      removeAppender(context, containerConsoleAppenderMatcher);
     }
 
     if (context.isArtifactClassloader()) {

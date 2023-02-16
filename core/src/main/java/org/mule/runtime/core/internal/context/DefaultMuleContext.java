@@ -386,7 +386,6 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
         getConfiguration().getDefaultCorrelationIdGenerator()
             .filter(generator -> generator instanceof ExpressionCorrelationIdGenerator)
             .ifPresent(generator -> ((ExpressionCorrelationIdGenerator) generator).initializeGenerator());
-
       } catch (InitialisationException e) {
         dispose();
         throw e;
@@ -396,6 +395,7 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
       }
     }
   }
+
 
   private class DefaultLifecycleStrategy implements LifecycleStrategy {
 
@@ -439,6 +439,7 @@ public class DefaultMuleContext implements MuleContextWithRegistry, PrivilegedMu
       final org.mule.runtime.api.artifact.Registry apiRegistry = getApiRegistry();
       listeners.forEach(l -> l.onStart(this, apiRegistry));
 
+      // this.getInjector().inject(stats);
       startLatch.release();
 
       if (LOGGER.isInfoEnabled()) {

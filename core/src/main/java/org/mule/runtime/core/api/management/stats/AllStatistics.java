@@ -20,7 +20,9 @@ import org.mule.runtime.api.config.MuleRuntimeFeature;
 import org.mule.runtime.core.api.config.FeatureFlaggingRegistry;
 import org.mule.runtime.core.internal.management.stats.ApplicationStatistics;
 import org.mule.runtime.core.internal.management.stats.DefaultFlowsSummaryStatistics;
+import org.mule.runtime.metrics.api.MeterProvider;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +40,9 @@ public class AllStatistics {
   private final FlowsSummaryStatistics flowSummaryStatistics;
   private final Map<String, FlowConstructStatistics> flowConstructStats = new HashMap<>();
   private final Map<String, PayloadStatistics> payloadStatistics = emptyMap();
+
+  @Inject
+  private MeterProvider meterProvider;
 
   /**
    *
@@ -141,7 +146,7 @@ public class AllStatistics {
     return payloadStatistics.computeIfAbsent(component.getLocation().getLocation(),
                                              loc -> {
                                                final PayloadStatistics statistics =
-                                                 new PayloadStatistics(loc, component.getIdentifier().toString());
+                                                   new PayloadStatistics(loc, component.getIdentifier().toString());
                                                statistics.setEnabled(isPayloadStatisticsEnabled());
                                                return statistics;
                                              });
@@ -179,6 +184,6 @@ public class AllStatistics {
     FeatureFlaggingRegistry featureFlaggingRegistry = FeatureFlaggingRegistry.getInstance();
     featureFlaggingRegistry.registerFeatureFlag(COMPUTE_CONNECTION_ERRORS_IN_STATS,
                                                 featureContext -> featureContext.getArtifactMinMuleVersion()
-                                                  .filter(muleVersion -> muleVersion.atLeast("4.4.0")).isPresent());
+                                                    .filter(muleVersion -> muleVersion.atLeast("4.4.0")).isPresent());
   }
 }
