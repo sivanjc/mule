@@ -40,6 +40,11 @@ public interface SpanContext extends SpanAware {
       public SpanContext copy() {
         return this;
       }
+
+      @Override
+      public int getLevel() {
+        return 0;
+      }
     };
   }
 
@@ -62,4 +67,5 @@ public interface SpanContext extends SpanAware {
     getSpan().ifPresent(currentSpan -> currentSpan.addError(error));
   }
 
+  int getLevel();
 }

@@ -10,6 +10,7 @@ package org.mule.runtime.core.api.tracing.customization;
 import static org.mule.runtime.core.api.tracing.customization.SpanInitialInfoUtils.getLocationAsString;
 import static org.mule.runtime.core.api.tracing.customization.SpanInitialInfoUtils.getSpanName;
 import static org.mule.runtime.tracer.api.span.info.InitialExportInfo.DEFAULT_EXPORT_SPAN_CUSTOMIZATION_INFO;
+import static org.mule.runtime.tracer.api.span.info.InitialExportInfo.NO_EXPORTABLE_DEFAULT_EXPORT_SPAN_CUSTOMIZATION_INFO;
 
 import org.mule.runtime.api.component.Component;
 import org.mule.runtime.tracer.api.span.info.InitialExportInfo;
@@ -35,6 +36,7 @@ public class ComponentExecutionInitialSpanInfo implements InitialSpanInfo {
   private final String name;
   private final boolean isPolicySpan;
   private final boolean rootSpan;
+  private InitialExportInfo initialExportInfo = DEFAULT_EXPORT_SPAN_CUSTOMIZATION_INFO;
 
   public ComponentExecutionInitialSpanInfo(Component component,
                                            String spanNameSuffix) {
@@ -66,7 +68,7 @@ public class ComponentExecutionInitialSpanInfo implements InitialSpanInfo {
 
   @Override
   public InitialExportInfo getInitialExportInfo() {
-    return DEFAULT_EXPORT_SPAN_CUSTOMIZATION_INFO;
+    return initialExportInfo;
   }
 
   @Override
@@ -82,5 +84,11 @@ public class ComponentExecutionInitialSpanInfo implements InitialSpanInfo {
 
   private boolean isComponentOfName(Component component, String name) {
     return component.getIdentifier() != null && name.equals(component.getIdentifier().getName());
+  }
+
+  @Override
+  public void tune(boolean forceNoExportable) {
+    // Nothing to do
+    initialExportInfo = NO_EXPORTABLE_DEFAULT_EXPORT_SPAN_CUSTOMIZATION_INFO;
   }
 }

@@ -79,4 +79,9 @@ public class CoreEventEnrichedInitialSpanInfo implements EnrichedInitialSpanInfo
   public InitialSpanInfo getBaseInitialSpanInfo() {
     return baseInitialSpanInfo;
   }
+
+  @Override
+  public void tune(boolean forceNoExportable) {
+
+  }
 }

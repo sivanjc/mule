@@ -34,6 +34,7 @@ import org.mule.runtime.tracer.api.EventTracer;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.api.span.validation.Assertion;
 import org.mule.runtime.tracer.api.span.InternalSpan;
+import org.mule.runtime.tracer.api.tuning.*;
 import org.mule.runtime.tracer.impl.span.command.EventContextAddAttributeCommand;
 import org.mule.runtime.tracer.impl.span.command.EventContextAddAttributesCommand;
 import org.mule.runtime.tracer.impl.span.command.EventContextEndSpanCommand;
@@ -81,6 +82,9 @@ public class CoreEventTracer implements EventTracer<CoreEvent>, Initialisable {
 
   @Inject
   private EventSpanFactory eventSpanFactory;
+
+  @Inject
+  private TracingTuningStrategy tracingTuningStrategy;
 
   private EventContextStartSpanCommand startCommand;
 
@@ -161,7 +165,7 @@ public class CoreEventTracer implements EventTracer<CoreEvent>, Initialisable {
   @Override
   public void initialise() throws InitialisationException {
     startCommand = getEventContextStartSpanCommandFrom(LOGGER, ERROR_ON_EXECUTING_CORE_EVENT_TRACER_START_COMMAND_MESSAGE,
-                                                       propagateTracingExceptions, eventSpanFactory);
+                                                       propagateTracingExceptions, eventSpanFactory, tracingTuningStrategy);
     endCommand = getEventContextEndSpanCommandFrom(LOGGER, ERROR_ON_EXECUTING_CORE_EVENT_TRACER_END_COMMAND_MESSAGE,
                                                    propagateTracingExceptions);
     injectDistributedTraceContextCommand = getEventContextInjectDistributedTraceContextCommand(LOGGER,

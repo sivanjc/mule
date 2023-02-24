@@ -36,6 +36,14 @@ public class EventSpanContext implements SpanContext {
   private final boolean propagateTracingExceptions;
   private InternalSpan currentSpan;
 
+  private int level = 0;
+
+  public EventSpanContext(InternalSpan currentSpan, boolean propagateTracingExceptions, int level) {
+    this.level = level;
+    this.currentSpan = currentSpan;
+    this.propagateTracingExceptions = propagateTracingExceptions;
+  }
+
   public static EventSpanContextBuilder builder() {
     return new EventSpanContextBuilder();
   }
@@ -48,18 +56,24 @@ public class EventSpanContext implements SpanContext {
 
   @Override
   public SpanContext copy() {
-    return new EventSpanContext(currentSpan, propagateTracingExceptions);
+    return new EventSpanContext(currentSpan, propagateTracingExceptions, level);
   }
 
   @Override
   public void endSpan(Assertion assertion) {
     currentSpan.end();
+    level--;
     currentSpan = resolveParentAsInternalSpan();
   }
 
   @Override
   public void recordErrorAtSpan(InternalSpanError error) {
     currentSpan.addError(error);
+  }
+
+  @Override
+  public int getLevel() {
+    return level;
   }
 
   private InternalSpan resolveParentAsInternalSpan() {
@@ -70,6 +84,7 @@ public class EventSpanContext implements SpanContext {
   public void setSpan(InternalSpan span, Assertion assertion) throws AssertionFailedException {
     assertion.assertOnSpan(currentSpan);
     currentSpan.updateChildSpanExporter(span);
+    level++;
     this.currentSpan = span;
   }
 

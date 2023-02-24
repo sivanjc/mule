@@ -4,6 +4,15 @@
       "ignore": [
         {
           "code": "java.method.addedToInterface",
+          "new": "method void org.mule.runtime.tracer.api.tuning.TracingTunable::tune(boolean) @ org.mule.runtime.tracer.api.span.info.InitialSpanInfo",
+          "package": "org.mule.runtime.tracer.api.span.info",
+          "classSimpleName": "InitialSpanInfo",
+          "methodName": "tune",
+          "elementKind": "method",
+          "justification": "Spike"
+        },
+        {
+          "code": "java.method.addedToInterface",
           "new": "method java.lang.String org.mule.runtime.tracer.api.sniffer.CapturedExportedSpan::getStatusAsString()",
           "package": "org.mule.runtime.tracer.api.sniffer",
           "classSimpleName": "CapturedExportedSpan",

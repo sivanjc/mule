@@ -243,6 +243,9 @@ public class MuleProperties {
   public static final String COMPATIBILITY_PLUGIN_INSTALLED = "_compatibilityPluginInstalled";
   public static final String MULE_PROFILING_SERVICE_KEY = "_muleProfilingService";
   public static final String MULE_CORE_EVENT_TRACER_KEY = "_muleCoreEventTracer";
+
+  public static final String MULE_TRACING_TUNING_STRATEGY = "_muleTracingTuningStrategy";
+  public static final String MULE_TRACING_TUNING_CONFIGURATION = "_muleTracingTuningConfiguration";
   public static final String MULE_CORE_SPAN_FACTORY_KEY = "_muleCoreSpanFactory";
   public static final String MULE_SPAN_EXPORTER_CONFIGURATION_KEY = "_muleSpanExporterConfiguration";
   public static final String MULE_CORE_EXPORTER_FACTORY_KEY = "_muleCoreExporterFactory";

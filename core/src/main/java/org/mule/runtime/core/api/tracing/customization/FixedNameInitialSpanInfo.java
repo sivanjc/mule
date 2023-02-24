@@ -40,4 +40,9 @@ public class FixedNameInitialSpanInfo implements InitialSpanInfo {
   public int getInitialAttributesCount() {
     return 0;
   }
+
+  @Override
+  public void tune(boolean forceNoExportable) {
+
+  }
 }

@@ -8,6 +8,7 @@
 package org.mule.runtime.tracer.api.span.info;
 
 import org.mule.runtime.tracer.api.span.InternalSpan;
+import org.mule.runtime.tracer.api.tuning.*;
 
 import static java.util.Collections.emptyMap;
 
@@ -19,7 +20,7 @@ import java.util.function.BiConsumer;
  *
  * @since 4.5.0
  */
-public interface InitialSpanInfo {
+public interface InitialSpanInfo extends TracingTunable {
 
   /**
    * @return the initial name for the span.

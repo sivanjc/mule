@@ -17,6 +17,7 @@ import org.mule.runtime.tracer.api.context.SpanContext;
 import org.mule.runtime.tracer.api.span.InternalSpan;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.api.span.validation.Assertion;
+import org.mule.runtime.tracer.api.tuning.*;
 import org.mule.runtime.tracer.impl.span.factory.EventSpanFactory;
 import org.slf4j.Logger;
 
@@ -38,12 +39,13 @@ public class EventContextStartSpanCommand extends
   public static EventContextStartSpanCommand getEventContextStartSpanCommandFrom(Logger logger,
                                                                                  String errorMessage,
                                                                                  boolean propagateException,
-                                                                                 EventSpanFactory eventSpanFactory) {
-    return new EventContextStartSpanCommand(logger, errorMessage, propagateException, eventSpanFactory);
+                                                                                 EventSpanFactory eventSpanFactory,
+                                                                                 TracingTuningStrategy tracingTuningStrategy) {
+    return new EventContextStartSpanCommand(logger, errorMessage, propagateException, eventSpanFactory, tracingTuningStrategy);
   }
 
   private EventContextStartSpanCommand(Logger logger, String errorMessage, boolean propagateException,
-                                       EventSpanFactory eventSpanFactory) {
+                                       EventSpanFactory eventSpanFactory, TracingTuningStrategy tracingTuningStrategy) {
     super(logger, errorMessage, propagateException, empty());
     this.triFunction = (eventContext, initialSpanInfo, assertion) -> {
       SpanContext spanContext = getSpanContextFromEventContextGetter().get(eventContext);
@@ -51,6 +53,7 @@ public class EventContextStartSpanCommand extends
       InternalSpan newSpan = null;
 
       if (spanContext != null) {
+        tracingTuningStrategy.tune(initialSpanInfo, spanContext.getLevel());
         newSpan = eventSpanFactory.getSpan(spanContext, initialSpanInfo);
         spanContext.setSpan(newSpan, assertion);
       }
