@@ -8,7 +8,7 @@
 package org.mule.runtime.tracer.api.span.info;
 
 import org.mule.runtime.tracer.api.span.InternalSpan;
-import org.mule.runtime.tracer.api.tuning.*;
+import org.mule.runtime.tracer.api.tuning.TracingTunable;
 
 import static java.util.Collections.emptyMap;
 
