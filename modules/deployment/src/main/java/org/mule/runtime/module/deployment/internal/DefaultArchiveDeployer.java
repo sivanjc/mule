@@ -205,10 +205,7 @@ public class DefaultArchiveDeployer<D extends DeployableArtifactDescriptor, T ex
     this.deploymentListener = deploymentListener;
   }
 
-  private T deployExplodedApp(String addedApp, Optional<Properties> deploymentProperties) throws DeploymentException {
-    return deployExplodedApp(addedApp, deploymentProperties, empty());
-  }
-
+  // TODO this is used for domains too, rename
   private T deployExplodedApp(String addedApp, Optional<Properties> deploymentProperties,
                               Optional<Properties> artifactStatusProperties)
       throws DeploymentException {
@@ -227,6 +224,7 @@ public class DefaultArchiveDeployer<D extends DeployableArtifactDescriptor, T ex
       final File artifactDir1 = artifactDir;
       File artifactDir = new File(artifactDir1, addedApp);
 
+      // TODO no need for zombies in single app
       addZombieFile(addedApp, artifactDir);
 
       if (containsType(t, DeploymentStartException.class)) {

@@ -45,6 +45,7 @@ import org.mule.runtime.module.artifact.internal.classloader.DefaultResourceInit
 import org.mule.runtime.module.deployment.api.DeploymentService;
 import org.mule.runtime.module.deployment.impl.internal.MuleArtifactResourcesRegistry;
 import org.mule.runtime.module.deployment.internal.MuleDeploymentService;
+import org.mule.runtime.module.deployment.internal.MuleSingleAppDeploymentService;
 import org.mule.runtime.module.launcher.coreextension.ClasspathMuleCoreExtensionDiscoverer;
 import org.mule.runtime.module.launcher.coreextension.DefaultMuleCoreExtensionManagerServer;
 import org.mule.runtime.module.launcher.coreextension.MuleCoreExtensionManagerServer;
@@ -145,9 +146,15 @@ public class MuleContainer {
 
     this.extensionModelLoaderRepository = artifactResourcesRegistry.getExtensionModelLoaderRepository();
 
-    this.deploymentService = new MuleDeploymentService(artifactResourcesRegistry.getDomainFactory(),
-                                                       artifactResourcesRegistry.getApplicationFactory(),
-                                                       () -> findSchedulerService(serviceManager));
+    if (true) {
+      this.deploymentService = new MuleSingleAppDeploymentService(artifactResourcesRegistry.getDomainFactory(),
+                                                                  artifactResourcesRegistry.getApplicationFactory(),
+                                                                  () -> findSchedulerService(serviceManager));
+    } else {
+      this.deploymentService = new MuleDeploymentService(artifactResourcesRegistry.getDomainFactory(),
+                                                         artifactResourcesRegistry.getApplicationFactory(),
+                                                         () -> findSchedulerService(serviceManager));
+    }
     this.troubleshootingService = new DefaultTroubleshootingService(deploymentService);
     this.repositoryService = new RepositoryServiceFactory().createRepositoryService();
 
