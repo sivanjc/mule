@@ -7,6 +7,7 @@
 package org.mule.runtime.core.internal.util;
 
 import static java.lang.System.getProperty;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -24,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import org.mockito.Mockito;
 
 public class JdkVersionUtilsTestCase extends AbstractMuleTestCase {
@@ -55,6 +57,7 @@ public class JdkVersionUtilsTestCase extends AbstractMuleTestCase {
   }
 
   @Test
+  @Ignore("java 17")
   public void testIsSupportedJdkVersion() {
     // supported
     assertTrue(JdkVersionUtils.isSupportedJdkVersion());

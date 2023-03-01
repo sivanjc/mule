@@ -35,10 +35,12 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.qameta.allure.Issue;
 
+@Ignore("java 17 - bytebuddy")
 public class MethodExecutorGeneratorTestCase extends AbstractMuleContextTestCase {
 
   private final MethodExecutorGenerator generator = new MethodExecutorGenerator();

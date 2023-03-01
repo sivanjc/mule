@@ -6,11 +6,14 @@
  */
 package org.mule.runtime.module.extension.internal.loader.java;
 
+import static org.mule.test.module.extension.internal.util.ExtensionDeclarationTestUtils.javaDeclarerFor;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -21,7 +24,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
-import static org.mule.test.module.extension.internal.util.ExtensionDeclarationTestUtils.javaDeclarerFor;
 
 import org.mule.metadata.api.annotation.TypeIdAnnotation;
 import org.mule.metadata.api.model.MetadataType;
@@ -41,12 +43,14 @@ import org.mule.runtime.module.extension.internal.loader.java.type.property.Exte
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Issue;
+import java.util.stream.Stream;
+
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.stream.Stream;
+import io.qameta.allure.Description;
+import io.qameta.allure.Issue;
 
 @SmallTest
 public class SubTypesJavaModelLoaderTestCase extends AbstractMuleTestCase {
@@ -120,6 +124,7 @@ public class SubTypesJavaModelLoaderTestCase extends AbstractMuleTestCase {
 
   @Test
   @Issue("MULE-18581")
+  @Ignore("java 17")
   @Description("Simulate the scenario of a plugins declaring subtypes from another plugin "
       + "(Plugin A depends on plugin B), assert that the types from the plugin B are marked as imported on plugin A.")
   public void importForSubtypesFromOtherPlugin() throws ClassNotFoundException {

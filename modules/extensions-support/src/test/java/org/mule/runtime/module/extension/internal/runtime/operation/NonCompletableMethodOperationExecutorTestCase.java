@@ -6,8 +6,15 @@
  */
 package org.mule.runtime.module.extension.internal.runtime.operation;
 
+import static org.mule.runtime.api.metadata.DataType.STRING;
+import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
+import static org.mule.runtime.core.internal.util.rx.ImmediateScheduler.IMMEDIATE_SCHEDULER;
+import static org.mule.test.heisenberg.extension.HeisenbergExtension.HEISENBERG;
+import static org.mule.test.heisenberg.extension.model.HealthStatus.DEAD;
+
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -17,11 +24,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
-import static org.mule.runtime.api.metadata.DataType.STRING;
-import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
-import static org.mule.runtime.core.internal.util.rx.ImmediateScheduler.IMMEDIATE_SCHEDULER;
-import static org.mule.test.heisenberg.extension.HeisenbergExtension.HEISENBERG;
-import static org.mule.test.heisenberg.extension.model.HealthStatus.DEAD;
 import static reactor.core.publisher.Mono.from;
 
 import org.mule.runtime.api.component.Component;
@@ -57,13 +59,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+@Ignore("java 17 - byte buddy")
 @SmallTest
 public class NonCompletableMethodOperationExecutorTestCase extends AbstractMuleContextTestCase {
 

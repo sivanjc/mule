@@ -6,16 +6,17 @@
  */
 package org.mule.runtime.module.extension.internal.loader.java.type.runtime;
 
+import static org.mule.runtime.module.extension.api.loader.java.type.PropertyElement.Accessibility.READ_ONLY;
+import static org.mule.runtime.module.extension.api.loader.java.type.PropertyElement.Accessibility.READ_WRITE;
+import static org.mule.runtime.module.extension.api.loader.java.type.PropertyElement.Accessibility.WRITE_ONLY;
+import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getPropertyDescriptors;
+
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
-import static org.mule.runtime.module.extension.api.loader.java.type.PropertyElement.Accessibility.READ_ONLY;
-import static org.mule.runtime.module.extension.api.loader.java.type.PropertyElement.Accessibility.READ_WRITE;
-import static org.mule.runtime.module.extension.api.loader.java.type.PropertyElement.Accessibility.WRITE_ONLY;
-import static org.mule.runtime.module.extension.internal.util.IntrospectionUtils.getPropertyDescriptors;
 
 import org.mule.metadata.api.ClassTypeLoader;
 import org.mule.metadata.api.model.MetadataType;
@@ -58,7 +59,7 @@ public class TypeWrapper implements Type {
   private List<TypeGeneric> generics = emptyList();
   private ResolvableType[] resolvableTypeGenerics = new ResolvableType[] {};
   ClassTypeLoader typeLoader;
-  private LazyValue<Boolean> instantiable;
+  private final LazyValue<Boolean> instantiable;
 
   public TypeWrapper(Class<?> aClass, ClassTypeLoader typeLoader) {
     this.aClass = aClass != null ? aClass : Object.class;
@@ -130,7 +131,11 @@ public class TypeWrapper implements Type {
    */
   @Override
   public List<FieldElement> getFields() {
-    return IntrospectionUtils.getFields(aClass).stream().map((Field field) -> new FieldWrapper(field, typeLoader))
+    return IntrospectionUtils.getFields(aClass)
+        .stream()
+        .filter(field -> !field.getDeclaringClass().getPackage().getName().startsWith("java."))
+        // .filter(field -> !isFinal(field.getModifiers()))
+        .map((Field field) -> new FieldWrapper(field, typeLoader))
         .collect(toList());
   }
 

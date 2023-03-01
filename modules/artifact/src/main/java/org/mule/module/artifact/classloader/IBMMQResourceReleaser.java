@@ -10,12 +10,14 @@ import static org.mule.runtime.core.api.util.ClassUtils.getField;
 import static org.mule.runtime.core.api.util.ClassUtils.getStaticFieldValue;
 import static org.mule.runtime.core.api.util.ClassUtils.loadClass;
 import static org.mule.runtime.core.api.util.ClassUtils.setStaticFieldValue;
+
 import static java.beans.Introspector.flushCaches;
 import static java.lang.Boolean.getBoolean;
 import static java.lang.Thread.getAllStackTraces;
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 
 import org.mule.runtime.module.artifact.api.classloader.ResourceReleaser;
+
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -25,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,7 +162,8 @@ public class IBMMQResourceReleaser implements ResourceReleaser {
     try {
       knownLevelClass = loadClass(JUL_KNOWN_LEVEL_CLASS, driverClassLoader);
     } catch (ClassNotFoundException e) {
-      LOGGER.warn("The {} class was not found. This may be caused by a JVM or driver upgrade.", JUL_KNOWN_LEVEL_CLASS);
+      LOGGER.warn("The {} class was not found. This may be caused by a JVM or driver upgrade. (" + e.getMessage() + ")",
+                  JUL_KNOWN_LEVEL_CLASS);
       return;
     }
 
@@ -166,7 +171,9 @@ public class IBMMQResourceReleaser implements ResourceReleaser {
       levelObjectField = getField(knownLevelClass, "levelObject", false);
       levelObjectField.setAccessible(true);
     } catch (NoSuchFieldException ex) {
-      LOGGER.warn("The level field was not found for the {} class. This may be caused by a JVM or driver upgrade ",
+      LOGGER.warn(
+                  "The level field was not found for the {} class. This may be caused by a JVM or driver upgrade. ("
+                      + ex.getMessage() + ")",
                   JUL_KNOWN_LEVEL_CLASS);
       return;
     }
@@ -248,7 +255,7 @@ public class IBMMQResourceReleaser implements ResourceReleaser {
     try {
       setStaticFieldValue(targetClass, fieldName, null, true);
     } catch (NoSuchFieldException | IllegalAccessException ex) {
-      LOGGER.warn("Could not clear the field {} for class {}. The provided river version may have removed it.", fieldName,
+      LOGGER.warn("Could not clear the field {} for class {}. The provided driver version may have removed it.", fieldName,
                   className, ex);
     }
   }

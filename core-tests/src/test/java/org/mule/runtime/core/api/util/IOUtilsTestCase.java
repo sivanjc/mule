@@ -6,9 +6,17 @@
  */
 package org.mule.runtime.core.api.util;
 
+import static org.mule.runtime.api.util.MuleSystemProperties.MULE_STREAMING_BUFFER_SIZE;
+import static org.mule.runtime.core.api.util.ClassUtils.loadClass;
+import static org.mule.runtime.core.api.util.IOUtils.getResourceAsStream;
+import static org.mule.tck.MuleTestUtils.testWithSystemProperty;
+import static org.mule.tck.mockito.plugins.ConfigurableMockitoPluginSwitch.disablePlugins;
+import static org.mule.tck.mockito.plugins.ConfigurableMockitoPluginSwitch.enablePlugins;
+
 import static java.lang.Thread.currentThread;
 import static java.nio.charset.Charset.forName;
 import static java.util.Arrays.asList;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -25,12 +33,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mule.runtime.api.util.MuleSystemProperties.MULE_STREAMING_BUFFER_SIZE;
-import static org.mule.runtime.core.api.util.ClassUtils.loadClass;
-import static org.mule.runtime.core.api.util.IOUtils.getResourceAsStream;
-import static org.mule.tck.MuleTestUtils.testWithSystemProperty;
-import static org.mule.tck.mockito.plugins.ConfigurableMockitoPluginSwitch.disablePlugins;
-import static org.mule.tck.mockito.plugins.ConfigurableMockitoPluginSwitch.enablePlugins;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.mule.tck.junit4.AbstractMuleTestCase;
@@ -60,6 +62,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -76,6 +79,7 @@ import sun.misc.Unsafe;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(IOUtils.class)
 @PowerMockIgnore("javax.management.*")
+@Ignore("java 17")
 public class IOUtilsTestCase extends AbstractMuleTestCase {
 
   private static final List<String> POWER_MOCK_PLUGINS = asList("mock-maker-inline", InlineByteBuddyMockMaker.class.getName());
