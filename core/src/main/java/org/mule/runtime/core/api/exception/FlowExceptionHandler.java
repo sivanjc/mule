@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+import reactor.util.context.Context;
 
 /**
  * Take some action when an exception has occurred while executing a Flow for an event.
@@ -88,7 +89,7 @@ public interface FlowExceptionHandler extends Function<Exception, Publisher<Core
    *
    * @return the mapping from chains to routers.
    */
-  default Map<Component, Consumer<Exception>> getRouters() {
+  default Map<Context, Consumer<Exception>> getRouters() {
     return emptyMap();
   }
 }

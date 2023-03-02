@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
+import reactor.util.context.Context;
 
 public class GlobalErrorHandler extends ErrorHandler {
 
@@ -36,21 +37,21 @@ public class GlobalErrorHandler extends ErrorHandler {
   private final AtomicBoolean initialised = new AtomicBoolean(false);
   private final AtomicInteger started = new AtomicInteger(0);
 
-  private Map<Component, Consumer<Exception>> routers = new HashMap<>();
+  private Map<Context, Consumer<Exception>> routers = new HashMap<>();
 
   @Override
   public Publisher<CoreEvent> apply(Exception exception) {
     throw new IllegalStateException("GlobalErrorHandlers should be used only as template for local ErrorHandlers");
   }
 
-  public Consumer<Exception> routerForChain(MessageProcessorChain chain, Supplier<Consumer<Exception>> errorRouterSupplier) {
+  public Consumer<Exception> routerForChain(Context context, Supplier<Consumer<Exception>> errorRouterSupplier) {
     if (!reuseGlobalErrorHandler()) {
       return errorRouterSupplier.get();
     }
-    if (!routers.containsKey(chain)) {
-      routers.put(chain, newGlobalRouter(errorRouterSupplier.get()));
+    if (!routers.containsKey(context)) {
+      routers.put(context, newGlobalRouter(errorRouterSupplier.get()));
     }
-    return routers.get(chain);
+    return routers.get(context);
   }
 
   private Consumer<Exception> newGlobalRouter(Consumer<Exception> router) {
@@ -138,11 +139,11 @@ public class GlobalErrorHandler extends ErrorHandler {
     return local;
   }
 
-  public Map<Component, Consumer<Exception>> getRouters() {
+  public Map<Context, Consumer<Exception>> getRouters() {
     return routers;
   }
 
-  public void clearRouterForChain(MessageProcessorChain chain) {
+  public void clearRouterForChain(Context chain) {
     if (reuseGlobalErrorHandler()) {
       routers.remove(chain);
     }

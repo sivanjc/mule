@@ -205,7 +205,8 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
             final Consumer<Exception> errorRouter = getRouter(() -> messagingExceptionHandler
                 .router(pub -> from(pub).subscriberContext(ctx),
                         handled -> errorSwitchSinkSinkRef.next(right(handled)),
-                        rethrown -> errorSwitchSinkSinkRef.next(left((MessagingException) rethrown, CoreEvent.class))));
+                        rethrown -> errorSwitchSinkSinkRef.next(left((MessagingException) rethrown, CoreEvent.class))),
+                                                              ctx);
 
             final Flux<CoreEvent> upstream =
                 from(doApply(publisher, interceptors, (context, throwable) -> {
@@ -225,7 +226,7 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
                                             () -> {
                                               errorSwitchSinkSinkRef.complete();
                                               disposeIfNeeded(errorRouter, LOGGER);
-                                              clearRouterInGlobalErrorHandler(messagingExceptionHandler);
+                                              clearRouterInGlobalErrorHandler(ctx);
                                             },
                                             t -> {
                                               errorSwitchSinkSinkRef.error(t);
@@ -240,20 +241,20 @@ abstract class AbstractMessageProcessorChain extends AbstractExecutableComponent
     }
   }
 
-  private Consumer<Exception> getRouter(Supplier<Consumer<Exception>> errorRouterSupplier) {
+  private Consumer<Exception> getRouter(Supplier<Consumer<Exception>> errorRouterSupplier, Context ctx) {
     final Consumer<Exception> errorRouter;
     if (messagingExceptionHandler instanceof GlobalErrorHandler) {
       errorRouter = ((GlobalErrorHandler) messagingExceptionHandler)
-          .routerForChain(this, errorRouterSupplier);
+          .routerForChain(ctx, errorRouterSupplier);
     } else {
       errorRouter = errorRouterSupplier.get();
     }
     return errorRouter;
   }
 
-  private void clearRouterInGlobalErrorHandler(FlowExceptionHandler messagingExceptionHandler) {
+  private void clearRouterInGlobalErrorHandler(Context context) {
     if (messagingExceptionHandler instanceof GlobalErrorHandler) {
-      ((GlobalErrorHandler) messagingExceptionHandler).clearRouterForChain(this);
+      ((GlobalErrorHandler) messagingExceptionHandler).clearRouterForChain(context);
     }
   }
 
