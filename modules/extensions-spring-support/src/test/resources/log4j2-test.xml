@@ -18,6 +18,7 @@
         <AsyncLogger name="org.springframework.beans.factory" level="WARN"/>
 
         <!-- Mule classes -->
+        <AsyncLogger name="org.mule.metadata.persistence.serializer" level="DEBUG"/>
         <AsyncLogger name="org.mule" level="WARN"/>
         <AsyncLogger name="com.mulesoft" level="WARN"/>
 

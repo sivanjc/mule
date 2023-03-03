@@ -231,7 +231,7 @@
         <oldMuleArtifactVersion>4.5.0-SNAPSHOT</oldMuleArtifactVersion>
         <revapi.failOnUnresolvedArtifacts>true</revapi.failOnUnresolvedArtifacts>
         
-        <surefire.args.base>-XX:+TieredCompilation -Dfile.encoding=UTF-8 --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.base/sun.net.www.protocol.jar=ALL-UNNAMED --add-exports java.base/sun.net.www=ALL-UNNAMED -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/${aspectjVersion}/aspectjweaver-${aspectjVersion}.jar -javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar=destfile='${session.executionRootDirectory}/target/jacoco.exec'</surefire.args.base>
+        <surefire.args.base>-XX:+TieredCompilation -Dfile.encoding=UTF-8 --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-exports java.base/sun.net.www.protocol.jar=ALL-UNNAMED --add-exports java.base/sun.net.www=ALL-UNNAMED -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/${aspectjVersion}/aspectjweaver-${aspectjVersion}.jar -javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar=destfile='${session.executionRootDirectory}/target/jacoco.exec'</surefire.args.base>
         <surefire.args>${surefire.args.base}</surefire.args>
 
         <commonsCollectionsVersion>3.2.2</commonsCollectionsVersion>

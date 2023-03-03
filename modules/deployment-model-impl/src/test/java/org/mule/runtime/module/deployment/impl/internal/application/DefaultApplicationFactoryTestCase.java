@@ -8,9 +8,9 @@
 package org.mule.runtime.module.deployment.impl.internal.application;
 
 import static org.mule.runtime.core.internal.config.RuntimeLockFactoryUtil.getRuntimeLockFactory;
-import static org.mule.runtime.deployment.model.api.domain.DomainDescriptor.MULE_DOMAIN_CLASSIFIER;
 import static org.mule.runtime.module.artifact.activation.internal.deployable.AbstractDeployableProjectModelBuilder.defaultDeployableProjectModelBuilder;
-import static org.mule.runtime.module.artifact.activation.internal.deployable.MuleDeployableProjectModelBuilder.isHeavyPackage;
+import static org.mule.runtime.module.artifact.activation.internal.deployable.AbstractDeployableProjectModelBuilder.isHeavyPackage;
+import static org.mule.runtime.module.artifact.api.descriptor.DomainDescriptor.MULE_DOMAIN_CLASSIFIER;
 import static org.mule.runtime.module.license.api.LicenseValidatorProvider.discoverLicenseValidator;
 import static org.mule.test.allure.AllureConstants.DeployableCreationFeature.APP_CREATION;
 import static org.mule.test.allure.AllureConstants.DeploymentTypeFeature.DeploymentTypeStory.HEAVYWEIGHT;
@@ -70,18 +70,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+
+@Ignore("java 17 - powermock")
 @Feature(APP_CREATION)
 @Story(HEAVYWEIGHT)
 @RunWith(PowerMockRunner.class)

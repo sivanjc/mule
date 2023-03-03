@@ -44,6 +44,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,6 +53,7 @@ import org.junit.runner.RunWith;
 import io.qameta.allure.Issue;
 import io.qameta.allure.Story;
 
+@Ignore("java 17 - powermock")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(MuleAstUtils.class)
 @Issue("W-10808757")

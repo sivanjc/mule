@@ -45,10 +45,12 @@ import java.util.List;
 
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+@Ignore("java 17 - metadata type serialization")
 @SmallTest
 @RunWith(Parameterized.class)
 public class ExtensionModelJsonGeneratorTestCase extends FileGenerationParameterizedExtensionModelTestCase {

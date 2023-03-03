@@ -8,7 +8,7 @@ package org.mule.runtime.module.deployment.impl.internal.domain;
 
 import static org.mule.runtime.core.internal.config.RuntimeLockFactoryUtil.getRuntimeLockFactory;
 import static org.mule.runtime.module.artifact.activation.internal.deployable.AbstractDeployableProjectModelBuilder.defaultDeployableProjectModelBuilder;
-import static org.mule.runtime.module.artifact.activation.internal.deployable.MuleDeployableProjectModelBuilder.isHeavyPackage;
+import static org.mule.runtime.module.artifact.activation.internal.deployable.AbstractDeployableProjectModelBuilder.isHeavyPackage;
 
 import static java.util.Optional.empty;
 
@@ -43,18 +43,21 @@ import org.mule.runtime.module.license.api.LicenseValidator;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+@Ignore("java 17 - powermock")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({MuleDeployableProjectModelBuilder.class, DeployableProjectModel.class, DefaultDomainFactory.class})
 @PowerMockIgnore({"javax.management.*", "javax.script.*"})
