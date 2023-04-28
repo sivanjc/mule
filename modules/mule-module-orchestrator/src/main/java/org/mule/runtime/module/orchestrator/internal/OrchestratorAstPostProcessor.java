@@ -51,9 +51,9 @@ public class OrchestratorAstPostProcessor implements ApplicationModelAstPostProc
     Optional<ConfigurationModel> configurationModel = componentAst.getModel(ConfigurationModel.class);
     Optional<OperationModel> operationModel = componentAst.getModel(OperationModel.class);
     if (configurationModel.isPresent()) {
-      transformConfiguration(componentAst);
+      return transformConfiguration(componentAst);
     } else if (operationModel.isPresent()) {
-      transformOperation(componentAst);
+      return transformOperation(componentAst);
     }
     return componentAst;
   }
