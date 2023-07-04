@@ -3,6 +3,8 @@
  */
 package org.mule.runtime.tracer.impl.span;
 
+import static org.mule.runtime.api.profiling.tracing.SpanIdentifier.INVALID_SPAN_IDENTIFIER;
+
 import static java.util.Collections.emptyMap;
 
 import org.mule.runtime.api.profiling.tracing.Span;
@@ -18,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class RootInternalSpan implements InternalSpan {
+public abstract class RootInternalSpan implements InternalSpan {
 
   protected boolean managedChildSpan;
 
@@ -37,7 +39,7 @@ public class RootInternalSpan implements InternalSpan {
 
   @Override
   public SpanIdentifier getIdentifier() {
-    return SpanIdentifier.INVALID_SPAN_IDENTIFIER;
+    return INVALID_SPAN_IDENTIFIER;
   }
 
   @Override
@@ -80,6 +82,7 @@ public class RootInternalSpan implements InternalSpan {
   @Override
   public void updateName(String name) {
     this.name = name;
+    getTraceContext().setNameSetBySource(name);
   }
 
   @Override
@@ -90,27 +93,6 @@ public class RootInternalSpan implements InternalSpan {
   @Override
   public Map<String, String> serializeAsMap() {
     return emptyMap();
-  }
-
-  @Override
-  public InternalSpan onChild(InternalSpan child) {
-    if (!ROOT_SPAN.equals(name)) {
-      child.updateRootName(name);
-      attributes.forEach(child::setRootAttribute);
-    }
-    if (managedChildSpan && child instanceof ExportOnEndExecutionSpan) {
-      if (managedSpan == null) {
-        // The RootInternalSpan was still waiting for the managed span, then it wraps the child span to defer its end.
-        ((ExportOnEndExecutionSpan) child).getSpanExporter().updateParentSpanFrom(serializeAsMap());
-        managedSpan = new DeferredEndSpanWrapper(child);
-        return managedSpan;
-      } else {
-        // The RootInternalSpan already has its managed span, then it delegates the call to it.
-        return managedSpan.onChild(child);
-      }
-    } else {
-      return child;
-    }
   }
 
   @Override

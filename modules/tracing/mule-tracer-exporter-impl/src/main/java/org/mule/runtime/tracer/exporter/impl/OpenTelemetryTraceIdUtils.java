@@ -3,14 +3,6 @@
  */
 package org.mule.runtime.tracer.exporter.impl;
 
-import static org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState.TRACE_STATE_KEY;
-
-import static java.util.Collections.emptyMap;
-
-import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
-
-import org.mule.runtime.tracer.api.span.InternalSpan;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,6 +17,11 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import org.mule.runtime.tracer.exporter.impl.optel.sdk.MuleReadableSpan;
+
+import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
+import static java.util.Collections.emptyMap;
+import static org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState.TRACE_STATE_KEY;
 
 /**
  * Utils for generating Open Telemetry Trace Ids
@@ -53,7 +50,7 @@ public class OpenTelemetryTraceIdUtils {
 
   private static final char[] ENCODING = buildEncodingArray();
 
-  static final String TRACE_PARENT = "traceparent";
+  public static final String TRACE_PARENT = "traceparent";
 
   private static final int HEX_LENGTH_SPAN_ID = 16;
   private static final String VERSION = "00";
@@ -139,18 +136,14 @@ public class OpenTelemetryTraceIdUtils {
     return fromLong(id);
   }
 
-  public static String generateTraceId(InternalSpan parentSpan) {
-    if (parentSpan != null && parentSpan.getIdentifier().isValid()) {
-      return parentSpan.getIdentifier().getTraceId();
-    } else {
-      Random random = randomSupplier.get();
-      long idHi = random.nextLong();
-      long idLo;
-      do {
-        idLo = random.nextLong();
-      } while (idLo == INVALID_ID);
-      return fromLongs(idHi, idLo);
-    }
+  public static String generateTraceId() {
+    Random random = randomSupplier.get();
+    long idHi = random.nextLong();
+    long idLo;
+    do {
+      idLo = random.nextLong();
+    } while (idLo == INVALID_ID);
+    return fromLongs(idHi, idLo);
   }
 
   /**
@@ -161,10 +154,12 @@ public class OpenTelemetryTraceIdUtils {
    *
    * @return the map with that represents the distributed trace context.
    */
-  public static Map<String, String> getDistributedTraceContext(OpenTelemetrySpanExporter openTelemetrySpanExporter,
-                                                               boolean isAddMuleAncestorSpanId) {
+  public static Map<String, String> getDistributedTraceContext(MuleReadableSpan muleReadableSpan) {
     Map<String, String> context = new HashMap<>();
-    if (openTelemetrySpanExporter.getSpanId().equals(INVALID)) {
+    String spanId = muleReadableSpan.getSpanContext().getSpanId();
+    String traceId = muleReadableSpan.getSpanContext().getTraceId();
+    boolean isAddMuleAncestorSpanId = muleReadableSpan.isEnableMuleAncestorIdManagement();
+    if (spanId.equals(INVALID)) {
       return emptyMap();
     }
 
@@ -173,12 +168,10 @@ public class OpenTelemetryTraceIdUtils {
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
 
-    String traceId = openTelemetrySpanExporter.getTraceId();
     traceId.getChars(0, traceId.length(), chars, TRACE_ID_OFFSET);
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
-    String spanId = openTelemetrySpanExporter.getSpanId();
     spanId.getChars(0, spanId.length(), chars, SPAN_ID_OFFSET);
 
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
@@ -187,14 +180,15 @@ public class OpenTelemetryTraceIdUtils {
     context.put(TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
     if (isAddMuleAncestorSpanId) {
       context.put(TRACE_STATE_KEY,
-                  encodeTraceState(openTelemetrySpanExporter.getTraceState()
-                      .withAncestor(openTelemetrySpanExporter.getSpanId())));
+                  encodeTraceState(((MutableMuleTraceState) muleReadableSpan.getSpanContext().getTraceState())
+                      .withAncestor(spanId)));
     } else {
       context.put(TRACE_STATE_KEY,
-                  encodeTraceState(openTelemetrySpanExporter.getTraceState()));
+                  encodeTraceState(muleReadableSpan.getSpanContext().getTraceState()));
     }
 
     return context;
+
   }
 
   public static SpanContext extractContextFromTraceParent(String traceparent) {

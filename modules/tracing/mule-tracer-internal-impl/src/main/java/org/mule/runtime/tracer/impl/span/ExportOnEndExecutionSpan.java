@@ -14,6 +14,7 @@ import org.mule.runtime.api.profiling.tracing.SpanDuration;
 import org.mule.runtime.api.profiling.tracing.SpanError;
 import org.mule.runtime.api.profiling.tracing.SpanIdentifier;
 import org.mule.runtime.tracer.api.span.InternalSpan;
+import org.mule.runtime.tracer.api.span.TraceContext;
 import org.mule.runtime.tracer.api.span.error.InternalSpanError;
 import org.mule.runtime.tracer.api.span.exporter.SpanExporter;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
@@ -31,49 +32,61 @@ import java.util.function.BiConsumer;
  */
 public class ExportOnEndExecutionSpan implements InternalSpan {
 
-  public static final String SPAN_KIND = "span.kind.override";
-  public static final String STATUS = "status.override";
-  private final InitialSpanInfo initialSpanInfo;
+  public static final String THREAD_END_NAME = "thread.end.name";
+  private ExportableInitialSpanInfo initialSpanInfo;
   private final SpanExporter spanExporter;
   private SpanError lastError;
   private final InternalSpan parent;
   private final Long startTime;
   private Long endTime;
   private final Map<String, String> additionalAttributes = new HashMap<>();
+  private TraceContext traceContext;
+  private String name;
 
   private ExportOnEndExecutionSpan(SpanExporterFactory spanExporterFactory, InitialSpanInfo initialSpanInfo, Long startTime,
                                    InternalSpan parent) {
-    this.initialSpanInfo = initialSpanInfo;
     this.startTime = startTime;
     this.parent = parent;
-    this.spanExporter = spanExporterFactory.getSpanExporter(this, initialSpanInfo);
+    this.traceContext = PropagatedTraceContext.from(parent.getTraceContext());
+    this.name = initialSpanInfo.getName();
+    String exportableName;
+    if (initialSpanInfo.isRootSpan()) {
+      exportableName = traceContext.getNameSetBySource().orElse(initialSpanInfo.getName());
+      this.additionalAttributes.putAll(traceContext.getAttributesSetBySource());
+      this.traceContext.setNameSetBySource(null);
+      this.traceContext.clearAttributesSetBySource();
+    } else {
+      exportableName = initialSpanInfo.getName();
+    }
+    this.initialSpanInfo = new ExportableInitialSpanInfo(initialSpanInfo, exportableName);
+    this.spanExporter = spanExporterFactory.getSpanExporter(this, this.initialSpanInfo);
   }
 
   public static InternalSpan createExportOnEndExecutionSpan(SpanExporterFactory spanExporterFactory, InternalSpan parentSpan,
                                                             InitialSpanInfo initialSpanInfo) {
     requireNonNull(spanExporterFactory);
     requireNonNull(initialSpanInfo);
-    ExportOnEndExecutionSpan exportOnEndExecutionSpan = new ExportOnEndExecutionSpan(spanExporterFactory, initialSpanInfo,
-                                                                                     getDefault().now(),
-                                                                                     parentSpan);
-    return parentSpan.onChild(exportOnEndExecutionSpan);
-  }
-
-  public SpanExporter getSpanExporter() {
-    return spanExporter;
+    return new ExportOnEndExecutionSpan(spanExporterFactory, initialSpanInfo,
+                                        getDefault().now(),
+                                        parentSpan);
   }
 
   @Override
-  public InternalSpan onChild(InternalSpan child) {
-    if (child instanceof ExportOnEndExecutionSpan) {
-      spanExporter.updateChildSpanExporter(((ExportOnEndExecutionSpan) child).getSpanExporter());
-    }
-    return child;
+  public TraceContext getTraceContext() {
+    return traceContext;
+  }
+
+  @Override
+  public void setTraceContext(TraceContext traceContext) {
+    this.traceContext = traceContext;
   }
 
   @Override
   public void updateRootName(String name) {
-    spanExporter.setRootName(name);
+    InternalSpan lastSpan = traceContext.getLastUpdatableByExtensionSpan();
+    if (lastSpan != null) {
+      lastSpan.updateRootName(name);
+    }
   }
 
   @Override
@@ -84,18 +97,25 @@ public class ExportOnEndExecutionSpan implements InternalSpan {
   @Override
   public void end(long endTime) {
     this.endTime = endTime;
+    additionalAttributes.put(THREAD_END_NAME, Thread.currentThread().getName());
     this.spanExporter.export();
   }
 
   @Override
   public void addError(InternalSpanError error) {
     this.lastError = error;
-    spanExporter.onError(error);
   }
 
   @Override
   public void updateName(String name) {
-    this.spanExporter.updateNameForExport(name);
+    InternalSpan lastSpan = traceContext.getLastUpdatableByExtensionSpan();
+    if (lastSpan != null) {
+      if (lastSpan != this) {
+        lastSpan.updateName(name);
+      } else {
+        initialSpanInfo.updateName(name);
+      }
+    }
   }
 
   @Override
@@ -108,6 +128,13 @@ public class ExportOnEndExecutionSpan implements InternalSpan {
 
   @Override
   public Map<String, String> serializeAsMap() {
+    InternalSpan lastSpan = traceContext.getLastExporableSpan();
+    if (lastSpan != null) {
+      if (lastSpan != this) {
+        return lastSpan.serializeAsMap();
+      }
+
+    }
     return spanExporter.exportedSpanAsMap();
   }
 
@@ -123,12 +150,12 @@ public class ExportOnEndExecutionSpan implements InternalSpan {
 
   @Override
   public SpanIdentifier getIdentifier() {
-    return getSpanExporter().getSpanIdentifier();
+    return null;
   }
 
   @Override
   public String getName() {
-    return initialSpanInfo.getName();
+    return name;
   }
 
   @Override
@@ -152,7 +179,10 @@ public class ExportOnEndExecutionSpan implements InternalSpan {
 
   @Override
   public void setRootAttribute(String rootAttributeKey, String rootAttributeValue) {
-    spanExporter.setRootAttribute(rootAttributeKey, rootAttributeValue);
+    InternalSpan lastSpan = traceContext.getLastUpdatableByExtensionSpan();
+    if (lastSpan != null) {
+      lastSpan.setRootAttribute(rootAttributeKey, rootAttributeValue);
+    }
   }
 
   /**
@@ -181,10 +211,15 @@ public class ExportOnEndExecutionSpan implements InternalSpan {
 
   @Override
   public void addAttribute(String key, String value) {
-    if (!key.equals(SPAN_KIND) && !key.equals(STATUS) && !initialSpanInfo.isPolicySpan()) {
-      additionalAttributes.put(key, value);
+    InternalSpan lastSpan = traceContext.getLastUpdatableByExtensionSpan();
+    if (lastSpan != null) {
+      if (lastSpan != this) {
+        lastSpan.addAttribute(key, value);
+      } else {
+        additionalAttributes.put(key, value);
+      }
     }
-    spanExporter.onAdditionalAttribute(key, value);
+
   }
 
 }

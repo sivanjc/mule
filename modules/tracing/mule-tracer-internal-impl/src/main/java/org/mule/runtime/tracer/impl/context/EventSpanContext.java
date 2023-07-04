@@ -6,7 +6,7 @@ package org.mule.runtime.tracer.impl.context;
 import static java.util.Optional.ofNullable;
 
 import static org.mule.runtime.tracer.api.span.InternalSpan.getAsInternalSpan;
-import static org.mule.runtime.tracer.impl.span.DeserializedSpan.getDeserializedRootSpan;
+import static org.mule.runtime.tracer.impl.span.DeserializedSpan.createDeserializedRootSpan;
 
 import java.util.Optional;
 
@@ -101,7 +101,7 @@ public class EventSpanContext implements SpanContext {
     }
 
     public EventSpanContext build() {
-      return new EventSpanContext(getDeserializedRootSpan(distributedTraceContextMapGetter, managedChildSpan),
+      return new EventSpanContext(createDeserializedRootSpan(distributedTraceContextMapGetter, managedChildSpan),
                                   propagateTracingExceptions);
     }
 

@@ -6,6 +6,7 @@ package org.mule.runtime.tracer.impl.span;
 
 import org.mule.runtime.tracer.api.context.getter.DistributedTraceContextGetter;
 import org.mule.runtime.tracer.api.span.InternalSpan;
+import org.mule.runtime.tracer.api.span.TraceContext;
 import org.mule.runtime.tracer.impl.context.extractor.RuntimeEventTraceExtractors;
 import org.mule.runtime.tracer.impl.context.extractor.TraceContextFieldExtractor;
 
@@ -20,9 +21,10 @@ public class DeserializedSpan extends RootInternalSpan {
       RuntimeEventTraceExtractors.getDefaultTraceContextFieldsExtractor();
   private static final TraceContextFieldExtractor BAGGAGE_ITEMS_EXTRACTOR =
       RuntimeEventTraceExtractors.getDefaultBaggageExtractor();
+  private TraceContext traceContext;
 
-  public static InternalSpan getDeserializedRootSpan(DistributedTraceContextGetter distributedTraceContextGetter,
-                                                     boolean managedChildSpan) {
+  public static InternalSpan createDeserializedRootSpan(DistributedTraceContextGetter distributedTraceContextGetter,
+                                                        boolean managedChildSpan) {
     Map<String, String> mapSerialization = new HashMap<>();
     mapSerialization.putAll(TRACING_FIELD_EXTRACTOR.extract(distributedTraceContextGetter));
     mapSerialization.putAll(BAGGAGE_ITEMS_EXTRACTOR.extract(distributedTraceContextGetter));
@@ -35,10 +37,21 @@ public class DeserializedSpan extends RootInternalSpan {
   private DeserializedSpan(Map<String, String> mapSerialization, boolean managedChildSpan) {
     this.mapSerialization = mapSerialization;
     this.managedChildSpan = managedChildSpan;
+    this.traceContext = RootTraceContext.from(mapSerialization);
   }
 
   @Override
   public Map<String, String> serializeAsMap() {
     return mapSerialization;
+  }
+
+  @Override
+  public TraceContext getTraceContext() {
+    return traceContext;
+  }
+
+  @Override
+  public void setTraceContext(TraceContext traceContext) {
+    throw new UnsupportedOperationException();
   }
 }

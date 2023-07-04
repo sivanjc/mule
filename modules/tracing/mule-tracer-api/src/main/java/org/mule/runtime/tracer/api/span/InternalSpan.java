@@ -4,6 +4,7 @@
 package org.mule.runtime.tracer.api.span;
 
 import static java.util.Collections.emptyMap;
+import static org.mule.runtime.tracer.api.span.TraceContext.EMPTY;
 
 import org.mule.runtime.api.profiling.tracing.Span;
 import org.mule.runtime.api.profiling.tracing.SpanDuration;
@@ -113,13 +114,9 @@ public interface InternalSpan extends Span {
    */
   int getAttributesCount();
 
-  /**
-   * Allows customization (for example, data propagation) on the child {@link InternalSpan} by its parent {@link InternalSpan}.
-   * 
-   * @param child The child {@link InternalSpan} to be customized.
-   * @return Customized {@link InternalSpan}.
-   */
-  InternalSpan onChild(InternalSpan child);
+  TraceContext getTraceContext();
+
+  void setTraceContext(TraceContext traceContext);
 
   /**
    * A wrapper as InternalSpan for other type of {@link Span}
@@ -198,8 +195,13 @@ public interface InternalSpan extends Span {
     }
 
     @Override
-    public InternalSpan onChild(InternalSpan child) {
-      return child;
+    public TraceContext getTraceContext() {
+      return EMPTY;
+    }
+
+    @Override
+    public void setTraceContext(TraceContext traceContext) {
+      // Nothing to do.
     }
   }
 }
