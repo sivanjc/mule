@@ -3,6 +3,7 @@
  */
 package org.mule.runtime.module.service.api.artifact;
 
+import static org.mule.runtime.api.util.MuleSystemProperties.CLASSLOADER_CONTAINER_JPMS_MODULE_LAYER;
 import static org.mule.runtime.api.util.MuleSystemProperties.CLASSLOADER_SERVICE_JPMS_MODULE_LAYER;
 
 import static java.lang.Boolean.parseBoolean;
@@ -44,6 +45,7 @@ public class ServiceClassLoaderFactoryProvider {
   }
 
   private static boolean useModuleLayer() {
-    return parseBoolean(getProperty(CLASSLOADER_SERVICE_JPMS_MODULE_LAYER, "" + isJavaVersionAtLeast(JAVA_17)));
+    return parseBoolean(getProperty(CLASSLOADER_SERVICE_JPMS_MODULE_LAYER, "" + isJavaVersionAtLeast(JAVA_17)))
+        || parseBoolean(getProperty(CLASSLOADER_CONTAINER_JPMS_MODULE_LAYER, "" + isJavaVersionAtLeast(JAVA_17)));
   }
 }

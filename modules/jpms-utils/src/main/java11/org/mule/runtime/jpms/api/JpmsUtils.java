@@ -4,14 +4,34 @@
 package org.mule.runtime.jpms.api;
 
 import static java.lang.Boolean.getBoolean;
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.Integer.parseInt;
 import static java.lang.ModuleLayer.boot;
+import static java.lang.ModuleLayer.defineModulesWithOneLoader;
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
+import static java.lang.System.getProperty;
+import static java.lang.module.ModuleFinder.ofSystem;
+import static java.nio.file.Paths.get;
+import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 
+import java.lang.ModuleLayer.Controller;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.lang.module.Configuration;
+import java.lang.module.ModuleDescriptor;
+import java.lang.module.ModuleFinder;
+import java.lang.module.ModuleReference;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Utilities related to how Mule uses the Java Module system.
@@ -23,6 +43,10 @@ public final class JpmsUtils {
   private JpmsUtils() {
     // Nothing to do
   }
+
+  private static final int JAVA_MAJOR_VERSION = parseInt(getProperty("java.version").split("\\.")[0]);
+  // this is copied from MuleSystemProperties so we don't have to add the mule-api dependency on the bootstrap.
+  private static final String CLASSLOADER_CONTAINER_JPMS_MODULE_LAYER = "mule.classloader.container.jpmsModuleLayer";
 
   public static final String MULE_SKIP_MODULE_TWEAKING_VALIDATION = "mule.module.tweaking.validation.skip";
 
@@ -97,13 +121,93 @@ public final class JpmsUtils {
 
           // Original intention is to only expose standard java modules...
           return moduleName.startsWith("java.")
-              // ... but because we need to keep compatibility with Java 8, older verion of some libraries use internal jdk
+              // ... but because we need to keep compatibility with Java 8, older versions of some libraries use internal JDK
               // modules packages:
               // * caffeine 2.x still uses sun.misc.Unsafe. Ref: https://github.com/ben-manes/caffeine/issues/273
               // * obgenesis SunReflectionFactoryHelper, used by Mockito
               || moduleName.startsWith("jdk.");
         })
         .forEach(module -> packages.addAll(module.getPackages()));
+  }
+
+  /**
+   * Creates a {@link ModuleLayer} for the given {@code modulePathEntries} and with the given {@code parent}, and returns a
+   * classLoader from which its modules can be read.
+   * 
+   * @param modulePathEntries the URLs from which to find the modules
+   * @param parent            the parent class loader for delegation
+   * @return a new classLoader.
+   */
+  public static ClassLoader createModuleLayerClassLoader(URL[] modulePathEntries, ClassLoader parent) {
+    if (!useModuleLayer()) {
+      return new URLClassLoader(modulePathEntries, parent);
+    }
+
+    final ModuleLayer layer = createModuleLayer(modulePathEntries, parent, empty());
+    return layer.findLoader(layer.modules().iterator().next().getName());
+  }
+
+  /**
+   * Creates two {@link ModuleLayer}s for the given {@code modulePathEntriesParent} and {@code modulePathEntriesChild} and with
+   * the given {@code parent}, and returns a classLoader from which the child modules can be read.
+   * 
+   * @param modulePathEntriesParent the URLs from which to find the modules of the parent
+   * @param modulePathEntriesChild  the URLs from which to find the modules of the child
+   * @param parent                  the parent class loader for delegation
+   * @return a new classLoader.
+   */
+  public static ClassLoader createModuleLayerClassLoader(URL[] modulePathEntriesParent, URL[] modulePathEntriesChild,
+                                                         ClassLoader parent) {
+    if (!useModuleLayer()) {
+      return new URLClassLoader(modulePathEntriesChild, new URLClassLoader(modulePathEntriesParent, parent));
+    }
+
+    final ModuleLayer parentLayer = createModuleLayer(modulePathEntriesParent, parent, empty());
+    final ModuleLayer childLayer = createModuleLayer(modulePathEntriesChild, parent, of(parentLayer));
+    return childLayer.findLoader(childLayer.modules().iterator().next().getName());
+  }
+
+  /**
+   * Creates a {@link ModuleLayer} for the given {@code modulePathEntries} and with the given {@code parent}.
+   * 
+   * @param modulePathEntries the URLs from which to find the modules
+   * @param parent            the parent class loader for delegation
+   * @param parentLayer       a layer of modules that will be visible from the newly created {@link ModuleLayer}.
+   * @return a new {@link ModuleLayer}.
+   */
+  public static ModuleLayer createModuleLayer(URL[] modulePathEntries, ClassLoader parent, Optional<ModuleLayer> parentLayer) {
+    Path[] paths = Stream.of(modulePathEntries)
+        .map(url -> {
+          try {
+            return get(url.toURI());
+          } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+          }
+        })
+        .toArray(size -> new Path[size]);
+
+    ModuleFinder serviceModulesFinder = ModuleFinder.of(paths);
+    List<String> modules = serviceModulesFinder
+        .findAll()
+        .stream()
+        .map(ModuleReference::descriptor)
+        .map(ModuleDescriptor::name)
+        .collect(toList());
+
+    ModuleLayer containerLayer = parentLayer.orElse(boot());
+
+    Configuration configuration = containerLayer.configuration()
+        .resolve(serviceModulesFinder, ofSystem(), modules);
+    Controller defineModulesWithOneLoader = defineModulesWithOneLoader(configuration,
+                                                                       singletonList(containerLayer),
+                                                                       parentLayer.map(layer -> layer.findLoader(layer.modules()
+                                                                           .iterator().next().getName())).orElse(parent));
+
+    return defineModulesWithOneLoader.layer();
+  }
+
+  private static boolean useModuleLayer() {
+    return parseBoolean(getProperty(CLASSLOADER_CONTAINER_JPMS_MODULE_LAYER, "" + (JAVA_MAJOR_VERSION >= 17)));
   }
 
   /**
