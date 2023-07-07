@@ -5,6 +5,7 @@ package org.mule.test.runner.classloader.container;
 
 import static org.mule.runtime.container.internal.ContainerClassLoaderCreatorUtils.getLookupPolicy;
 import static org.mule.runtime.core.api.util.ClassUtils.withContextClassLoader;
+import static org.mule.runtime.jpms.api.JpmsUtils.createModuleLayerClassLoader;
 
 import static java.util.Collections.emptyMap;
 
@@ -64,10 +65,9 @@ public class TestPreFilteredContainerClassLoaderCreator implements PreFilteredCo
   @Override
   public ArtifactClassLoader getPreFilteredContainerClassLoader(ArtifactDescriptor artifactDescriptor,
                                                                 ClassLoader parentClassLoader) {
-    ClassLoader containerOptClassLoader = new URLClassLoader(optUrls, parentClassLoader);
     containerClassLoader = new MuleArtifactClassLoader(artifactDescriptor.getName(), artifactDescriptor,
-                                                       muleUrls,
-                                                       containerOptClassLoader,
+                                                       new URL[0],
+                                                       createModuleLayerClassLoader(optUrls, muleUrls, parentClassLoader),
                                                        new MuleClassLoaderLookupPolicy(emptyMap(), getBootPackages()));
     return containerClassLoader;
   }
