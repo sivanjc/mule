@@ -8,6 +8,7 @@ import static org.mule.runtime.jpms.api.JpmsUtils.openToModule;
 
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 
 import org.mule.runtime.container.api.MuleContainerClassLoaderWrapper;
 import org.mule.runtime.module.artifact.api.classloader.ArtifactClassLoader;
@@ -16,6 +17,7 @@ import org.mule.runtime.module.artifact.api.classloader.MuleArtifactClassLoader;
 import org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor;
 
 import java.net.URL;
+import java.util.Optional;
 
 /**
  * Creates {@link ArtifactClassLoader} for service descriptors.
@@ -24,6 +26,8 @@ class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
 
   private static final String SERVICE_MODULE_NAME_PREFIX = "org.mule.service.";
   private static final String SCHEDULER_SERVICE_MODULE_NAME = "org.mule.service.scheduler";
+
+  private Optional<ModuleLayer> parentLayer = ofNullable(ServiceModuleLayerFactory.class.getModule().getLayer());
 
   private static final class MuleServiceClassLoader extends MuleArtifactClassLoader {
 
@@ -49,7 +53,7 @@ class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
     }
 
     ModuleLayer artifactLayer = createModuleLayer(descriptor.getClassLoaderConfiguration().getUrls(), parent,
-                                                  of(ServiceModuleLayerFactory.class.getModule().getLayer()));
+                                                  parentLayer);
 
     String serviceModuleName = artifactLayer.modules()
         .stream()
@@ -84,4 +88,10 @@ class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
                   containerClassLoader.getContainerClassLoader().getClassLoader(),
                   containerClassLoader.getContainerClassLoaderLookupPolicy());
   }
+
+  @Override
+  public void setParentLayerFrom(Class clazz) {
+    parentLayer = of(clazz.getModule().getLayer());
+  }
+
 }

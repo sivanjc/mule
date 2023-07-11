@@ -24,4 +24,7 @@ public interface ContainerDependantArtifactClassLoaderFactory<T extends Artifact
    * @return a new class loader for described artifact.
    */
   ArtifactClassLoader create(String artifactId, T descriptor, MuleContainerClassLoaderWrapper containerClassLoader);
+
+  void setParentLayerFrom(Class clazz);
+
 }

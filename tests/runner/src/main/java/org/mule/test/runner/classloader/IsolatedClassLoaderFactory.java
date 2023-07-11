@@ -45,6 +45,7 @@ import org.mule.runtime.module.artifact.internal.classloader.MulePluginClassLoad
 import org.mule.runtime.module.artifact.internal.util.FileJarExplorer;
 import org.mule.runtime.module.artifact.internal.util.JarExplorer;
 import org.mule.runtime.module.artifact.internal.util.JarInfo;
+import org.mule.runtime.module.service.api.artifact.ServiceClassLoaderFactory;
 import org.mule.runtime.module.service.api.artifact.ServiceDescriptor;
 import org.mule.test.runner.api.ArtifactClassLoaderHolder;
 import org.mule.test.runner.api.ArtifactsUrlClassification;
@@ -134,6 +135,8 @@ public class IsolatedClassLoaderFactory {
 
       containerClassLoaderWrapper = testContainerClassLoaderAssembler.createContainerClassLoader();
 
+      serviceClassLoaderFactory.setParentLayerFrom(containerClassLoaderWrapper.getContainerClassLoader().getClassLoader()
+          .loadClass(ServiceClassLoaderFactory.class.getName()));
       serviceArtifactClassLoaders =
           createServiceClassLoaders(containerClassLoaderWrapper, artifactsUrlClassification);
 

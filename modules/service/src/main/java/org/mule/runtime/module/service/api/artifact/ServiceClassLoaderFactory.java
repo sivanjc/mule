@@ -49,4 +49,10 @@ public class ServiceClassLoaderFactory
                                        containerClassLoader.getContainerClassLoader().getClassLoader(),
                                        containerClassLoader.getContainerClassLoaderLookupPolicy());
   }
+
+  @Override
+  public void setParentLayerFrom(Class clazz) {
+    // Nothing to do
+  }
+
 }
