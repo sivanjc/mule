@@ -193,13 +193,15 @@ public final class JpmsUtils {
         .map(ModuleReference::descriptor)
         .map(ModuleDescriptor::name)
         .collect(toList());
+    System.out.println(" >> Found modules: " + modules);
+    ModuleLayer resolvedParentLayer = parentLayer.orElse(boot());
+    System.out
+        .println(" >> Resolved parent ModuleLayer " + (parentLayer.isEmpty() ? "(boot)" : "") + ": '" + resolvedParentLayer);
 
-    ModuleLayer containerLayer = parentLayer.orElse(boot());
-
-    Configuration configuration = containerLayer.configuration()
+    Configuration configuration = resolvedParentLayer.configuration()
         .resolve(serviceModulesFinder, ofSystem(), modules);
     Controller defineModulesWithOneLoader = defineModulesWithOneLoader(configuration,
-                                                                       singletonList(containerLayer),
+                                                                       singletonList(resolvedParentLayer),
                                                                        parentLayer.map(layer -> layer.findLoader(layer.modules()
                                                                            .iterator().next().getName())).orElse(parent));
 

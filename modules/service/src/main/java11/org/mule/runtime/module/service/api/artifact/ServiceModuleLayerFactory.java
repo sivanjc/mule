@@ -52,6 +52,7 @@ class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
                                          lookupPolicy);
     }
 
+    System.out.println(" >> Creating ModuleLayer for service: '" + artifactId + "'...");
     ModuleLayer artifactLayer = createModuleLayer(descriptor.getClassLoaderConfiguration().getUrls(), parent,
                                                   parentLayer);
 
