@@ -34,8 +34,10 @@ public class MuleSpanData implements SpanData {
   private final OpenTelemetrySpanExporter openTelemetrySpanExporter;
   private final Resource resource;
   private final MuleAttributes attributes;
+  private String name;
 
   public MuleSpanData(MuleReadableSpan readableSpan, Resource resource, String artifactId, String artifactType) {
+    this.name = readableSpan.getName();
     this.readableSpan = readableSpan;
     this.openTelemetrySpanExporter = readableSpan.getOpenTelemetrySpanExporter();
     this.attributes = new MuleAttributes(openTelemetrySpanExporter, artifactId, artifactType);
@@ -44,7 +46,7 @@ public class MuleSpanData implements SpanData {
 
   @Override
   public String getName() {
-    return readableSpan.getName();
+    return name;
   }
 
   @Override
@@ -103,10 +105,10 @@ public class MuleSpanData implements SpanData {
     // implementation we only have one error. So we inform this to the open
     // telemetry sdk.
     if (openTelemetrySpanExporter.getInternalSpan().hasErrors()) {
-      return 0;
+      return 1;
     }
 
-    return 1;
+    return 0;
   }
 
   @Override
@@ -132,5 +134,13 @@ public class MuleSpanData implements SpanData {
   @Override
   public Resource getResource() {
     return resource;
+  }
+
+  public void updateName(String name) {
+    this.name = name;
+  }
+
+  public void addAttribute(String key, String value) {
+    attributes.addAttribute(key, value);
   }
 }
