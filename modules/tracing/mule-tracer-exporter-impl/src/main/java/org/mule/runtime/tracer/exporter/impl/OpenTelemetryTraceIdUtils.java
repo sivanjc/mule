@@ -143,9 +143,9 @@ public class OpenTelemetryTraceIdUtils {
     return fromLong(id);
   }
 
-  public static String generateTraceId(InternalSpan parentSpan) {
-    if (parentSpan != null && parentSpan.getIdentifier().isValid()) {
-      return parentSpan.getIdentifier().getTraceId();
+  public static String generateTraceId(SpanContext parentSpanContext) {
+    if (parentSpanContext.isValid()) {
+      return parentSpanContext.getTraceId();
     } else {
       Random random = randomSupplier.get();
       long idHi = random.nextLong();

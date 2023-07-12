@@ -37,6 +37,8 @@ public class MuleAttributes implements Attributes {
   private final String artifactId;
   private final String artifactType;
 
+  private Map<String, String> additionalAttributes = new HashMap<>();
+
   public MuleAttributes(OpenTelemetrySpanExporter openTelemetrySpanExporter,
                         String artifactId,
                         String artifactType) {
@@ -60,7 +62,7 @@ public class MuleAttributes implements Attributes {
 
   @Override
   public int size() {
-    return EXPORTER_ATTRIBUTES_BASE_SIZE + internalSpan.getAttributesCount();
+    return EXPORTER_ATTRIBUTES_BASE_SIZE + internalSpan.getAttributesCount() + additionalAttributes.size();
   }
 
   @Override
@@ -78,5 +80,9 @@ public class MuleAttributes implements Attributes {
   @Override
   public AttributesBuilder toBuilder() {
     throw new UnsupportedOperationException();
+  }
+
+  public void addAttribute(String key, String value) {
+    additionalAttributes.put(key, value);
   }
 }
