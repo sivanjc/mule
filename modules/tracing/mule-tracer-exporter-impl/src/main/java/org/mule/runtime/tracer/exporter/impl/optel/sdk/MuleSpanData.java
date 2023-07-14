@@ -6,11 +6,12 @@
  */
 package org.mule.runtime.tracer.exporter.impl.optel.sdk;
 
+import static org.mule.runtime.tracer.exporter.impl.optel.sdk.OpenTelemetryInstrumentationConstants.INSTRUMENTATION_LIBRARY_INFO;
+import static org.mule.runtime.tracer.exporter.impl.optel.sdk.OpenTelemetryInstrumentationConstants.INSTRUMENTATION_SCOPE_INFO;
+
 import static java.util.Collections.emptyList;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporter;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * An implementation of OTEL sdk {@link SpanData}.
@@ -30,48 +32,67 @@ import java.util.List;
  */
 public class MuleSpanData implements SpanData {
 
-  private final MuleReadableSpan readableSpan;
-  private final OpenTelemetrySpanExporter openTelemetrySpanExporter;
   private final Resource resource;
   private final MuleAttributes attributes;
-  private String name;
+  private final Supplier<String> nameSupplier;
+  private final Supplier<SpanKind> kindSupplier;
+  private final SpanContext spanContext;
+  private final SpanContext parentSpanContext;
+  private final Supplier<StatusData> statusDataSupplier;
+  private final Supplier<List<EventData>> eventsSupplier;
+  private final Supplier<Long> endEpochNanosSupplier;
+  private final Supplier<Long> startEpochNanosSupplier;
 
-  public MuleSpanData(MuleReadableSpan readableSpan, Resource resource, String artifactId, String artifactType) {
-    this.name = readableSpan.getName();
-    this.readableSpan = readableSpan;
-    this.openTelemetrySpanExporter = readableSpan.getOpenTelemetrySpanExporter();
-    this.attributes = new MuleAttributes(openTelemetrySpanExporter, artifactId, artifactType);
+  public MuleSpanData(Supplier<String> nameSupplier,
+                      Supplier<SpanKind> kindSupplier,
+                      Supplier<StatusData> statusDataSupplier,
+                      Supplier<Long> endEpochNanosSupplier,
+                      Supplier<Long> startEpochNanosSupplier,
+                      MuleAttributes attributes,
+                      SpanContext spanContext,
+                      SpanContext parentSpanContext,
+                      Supplier<List<EventData>> eventsSupplier,
+                      Resource resource) {
+    this.nameSupplier = nameSupplier;
+    this.kindSupplier = kindSupplier;
+    this.statusDataSupplier = statusDataSupplier;
+    this.endEpochNanosSupplier = endEpochNanosSupplier;
+    this.startEpochNanosSupplier = startEpochNanosSupplier;
+    this.eventsSupplier = eventsSupplier;
+    this.attributes = attributes;
+    this.spanContext = spanContext;
+    this.parentSpanContext = parentSpanContext;
     this.resource = resource;
   }
 
   @Override
   public String getName() {
-    return name;
+    return nameSupplier.get();
   }
 
   @Override
   public SpanKind getKind() {
-    return readableSpan.getKind();
+    return kindSupplier.get();
   }
 
   @Override
   public SpanContext getSpanContext() {
-    return readableSpan.getSpanContext();
+    return spanContext;
   }
 
   @Override
   public SpanContext getParentSpanContext() {
-    return readableSpan.getParentSpanContext();
+    return parentSpanContext;
   }
 
   @Override
   public StatusData getStatus() {
-    return openTelemetrySpanExporter.getStatus();
+    return statusDataSupplier.get();
   }
 
   @Override
   public long getStartEpochNanos() {
-    return openTelemetrySpanExporter.getInternalSpan().getDuration().getStart();
+    return startEpochNanosSupplier.get();
   }
 
   @Override
@@ -81,7 +102,7 @@ public class MuleSpanData implements SpanData {
 
   @Override
   public List<EventData> getEvents() {
-    return openTelemetrySpanExporter.getEvents();
+    return eventsSupplier.get();
   }
 
   @Override
@@ -91,24 +112,17 @@ public class MuleSpanData implements SpanData {
 
   @Override
   public long getEndEpochNanos() {
-    return openTelemetrySpanExporter.getInternalSpan().getDuration().getEnd();
+    return endEpochNanosSupplier.get();
   }
 
   @Override
   public boolean hasEnded() {
-    return readableSpan.hasEnded();
+    return true;
   }
 
   @Override
   public int getTotalRecordedEvents() {
-    // This is for performance purposes. We know that in the current
-    // implementation we only have one error. So we inform this to the open
-    // telemetry sdk.
-    if (openTelemetrySpanExporter.getInternalSpan().hasErrors()) {
-      return 1;
-    }
-
-    return 0;
+    return getEvents().size();
   }
 
   @Override
@@ -123,24 +137,16 @@ public class MuleSpanData implements SpanData {
 
   @Override
   public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return readableSpan.getInstrumentationLibraryInfo();
+    return INSTRUMENTATION_LIBRARY_INFO;
   }
 
   @Override
   public InstrumentationScopeInfo getInstrumentationScopeInfo() {
-    return readableSpan.getInstrumentationScopeInfo();
+    return INSTRUMENTATION_SCOPE_INFO;
   }
 
   @Override
   public Resource getResource() {
     return resource;
-  }
-
-  public void updateName(String name) {
-    this.name = name;
-  }
-
-  public void addAttribute(String key, String value) {
-    attributes.addAttribute(key, value);
   }
 }

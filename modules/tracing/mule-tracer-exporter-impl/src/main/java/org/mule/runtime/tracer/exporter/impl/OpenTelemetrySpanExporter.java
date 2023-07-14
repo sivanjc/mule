@@ -8,7 +8,6 @@
 package org.mule.runtime.tracer.exporter.impl;
 
 import static org.mule.runtime.tracer.api.span.error.InternalSpanError.getInternalSpanError;
-import static org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState.getMutableMuleTraceStateFrom;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.EXCEPTIONS_HAVE_BEEN_RECORDED;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.EXCEPTION_ESCAPED_KEY;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.EXCEPTION_EVENT_NAME;
@@ -16,40 +15,33 @@ import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUti
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.EXCEPTION_STACK_TRACE_KEY;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.EXCEPTION_TYPE_KEY;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.SPAN_KIND;
-import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.STATUS;
-import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.extractContextFromTraceParent;
-import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.getDistributedTraceContext;
-import static org.mule.runtime.tracer.exporter.impl.optel.sdk.MuleReadableSpan.muleReadableSpanBuilderFor;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 
 import static io.opentelemetry.api.common.Attributes.of;
-import static io.opentelemetry.api.trace.SpanContext.getInvalid;
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
 import static io.opentelemetry.api.trace.StatusCode.ERROR;
-import static io.opentelemetry.sdk.trace.data.StatusData.unset;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.STATUS;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.getDistributedTraceContext;
 
-import org.mule.runtime.api.profiling.tracing.SpanIdentifier;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.StatusData;
+import org.mule.runtime.api.profiling.tracing.SpanError;
 import org.mule.runtime.tracer.api.span.InternalSpan;
-import org.mule.runtime.tracer.api.span.error.InternalSpanError;
 import org.mule.runtime.tracer.api.span.exporter.SpanExporter;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.exporter.impl.optel.sdk.MuleReadableSpan;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.data.EventData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 
 /**
  * A {@link SpanExporter} that exports the spans as Open Telemetry Spans.
@@ -58,175 +50,180 @@ import io.opentelemetry.sdk.trace.data.StatusData;
  */
 public class OpenTelemetrySpanExporter implements SpanExporter {
 
-  public static final String TRACE_PARENT_KEY = "traceparent";
-  private final boolean isRootSpan;
-  private final boolean isPolicySpan;
-  private final InternalSpan internalSpan;
+  private final MuleReadableSpan readableSpan;
+
   private final SpanProcessor spanProcessor;
-  private final boolean enableMuleAncestorIdManagement;
-  private SpanKind spanKind = INTERNAL;
-  private StatusData statusData = unset();
-  private List<EventData> errorEvents = emptyList();
-  private OpenTelemetrySpanExporter rootSpanExporter = this;
-  private String endThreadNameValue;
-  private MuleReadableSpan readableSpan;
 
-  private OpenTelemetryExportTraceContext openTelemetryExportTraceContextInformation;
-
-  public OpenTelemetrySpanExporter(InternalSpan internalSpan,
-                                   InitialSpanInfo initialSpanInfo,
-                                   String artifactId,
-                                   String artifactType,
-                                   SpanProcessor spanProcessor,
-                                   boolean enableMuleAncestorIdManagement,
-                                   Resource resource) {
-    requireNonNull(internalSpan);
-    requireNonNull(initialSpanInfo);
-    requireNonNull(artifactId);
-    requireNonNull(artifactType);
-    requireNonNull(spanProcessor);
-    requireNonNull(resource);
-    this.internalSpan = internalSpan;
-    this.isRootSpan = initialSpanInfo.isRootSpan();
-    this.isPolicySpan = initialSpanInfo.isPolicySpan();
+  public OpenTelemetrySpanExporter(SpanProcessor spanProcessor,
+                                   MuleReadableSpan readableSpan) {
+    this.readableSpan = readableSpan;
     this.spanProcessor = spanProcessor;
-    this.enableMuleAncestorIdManagement = enableMuleAncestorIdManagement;
-    this.openTelemetryExportTraceContextInformation = new OpenTelemetryExportTraceContext(enableMuleAncestorIdManagement);
-    this.readableSpan = muleReadableSpanBuilderFor(this)
-        .withResource(resource)
-        .withArtifactId(artifactId)
-        .withArtifactType(artifactType)
-        .enableMuleAncestorIdManagement(enableMuleAncestorIdManagement)
-        .withInitialExportInfo(initialSpanInfo.getInitialExportInfo())
-        .build();
-    this.openTelemetryExportTraceContextInformation.setSpanContext(readableSpan.getSpanContext());
+  }
+
+  public static OpenTelemetrySpanExporterBuilder builder(InternalSpan internalSpan) {
+    return new OpenTelemetrySpanExporterBuilder(internalSpan);
   }
 
   @Override
   public void export() {
-    endThreadNameValue = Thread.currentThread().getName();
     spanProcessor.onEnd(readableSpan);
   }
 
   @Override
-  public void updateNameForExport(String newName) {
-    openTelemetryExportTraceContextInformation.getParentExportableReadableSpan().ifPresent(rs -> rs.updateName(newName));
-  }
-
-  @Override
   public Map<String, String> exportedSpanAsMap() {
-    return getDistributedTraceContext(this, enableMuleAncestorIdManagement);
+    return getDistributedTraceContext(readableSpan);
   }
 
-  @Override
-  public void setRootName(String rootName) {
-    openTelemetryExportTraceContextInformation.setRootName(rootName);
-  }
+  public static class OpenTelemetrySpanExporterBuilder {
 
-  @Override
-  public void setRootAttribute(String rootAttributeKey, String rootAttributeValue) {
-    openTelemetryExportTraceContextInformation.addRootAttribute(rootAttributeKey, rootAttributeValue);
-  }
+    private final InternalSpan internalSpan;
+    private InitialSpanInfo initialSpanInfo;
+    private String artifactId;
+    private String artifactType;
+    private Resource resource;
+    private boolean addMuleAncestorSpanId;
+    private SpanProcessor spanProcesor;
 
-  @Override
-  public void updateParentSpanFrom(Map<String, String> serializeAsMap) {
-    openTelemetryExportTraceContextInformation
-        .setTraceState(getMutableMuleTraceStateFrom(serializeAsMap, enableMuleAncestorIdManagement));
-    readableSpan.setParentSpanContext(extractContextFromTraceParent(serializeAsMap.get(TRACE_PARENT_KEY)));
-  }
+    private OpenTelemetrySpanExporterBuilder(InternalSpan internalSpan) {
+      this.internalSpan = internalSpan;
+    }
 
-  @Override
-  public SpanIdentifier getSpanIdentifier() {
-    return new OpentelemetrySpanIdentifier(readableSpan.getSpanContext().getSpanId(), readableSpan.getSpanContext().getTraceId());
-  }
+    public OpenTelemetrySpanExporterBuilder using(InitialSpanInfo initialSpanInfo) {
+      this.initialSpanInfo = initialSpanInfo;
+      return this;
+    }
 
-  @Override
-  public void updateChildSpanExporter(SpanExporter childSpanExporter) {
-    if (childSpanExporter instanceof OpenTelemetrySpanExporter) {
-      OpenTelemetrySpanExporter childOpenTelemetrySpanExporter = (OpenTelemetrySpanExporter) childSpanExporter;
+    public OpenTelemetrySpanExporterBuilder withArtifactId(String artifactId) {
+      this.artifactId = artifactId;
+      return this;
+    }
 
-      childOpenTelemetrySpanExporter.readableSpan
-          .setParentSpanContext(openTelemetryExportTraceContextInformation.getSpanContext());
+    public OpenTelemetrySpanExporterBuilder withArtifactType(String artifactType) {
+      this.artifactType = artifactType;
+      return this;
+    }
 
-      openTelemetryExportTraceContextInformation.getTraceState()
-          .propagateRemoteContext(childOpenTelemetrySpanExporter.openTelemetryExportTraceContextInformation.getTraceState());
+    public OpenTelemetrySpanExporterBuilder withResource(Resource resource) {
+      this.resource = resource;
+      return this;
+    }
 
-      if (childOpenTelemetrySpanExporter.isRootSpan) {
-        openTelemetryExportTraceContextInformation.getRootName().ifPresent(readableSpan::updateName);
-        openTelemetryExportTraceContextInformation.getRootAttributes().forEach(readableSpan::addAttribute);
-      } else {
-        childOpenTelemetrySpanExporter.openTelemetryExportTraceContextInformation
-            .setRootName(openTelemetryExportTraceContextInformation.getRootName().orElse(null));
-        childOpenTelemetrySpanExporter.openTelemetryExportTraceContextInformation.getRootAttributes()
-            .forEach(openTelemetryExportTraceContextInformation::addRootAttribute);
+    public OpenTelemetrySpanExporterBuilder withAddMuleAncestorSpanId(boolean addMuleAncestorSpanId) {
+      this.addMuleAncestorSpanId = addMuleAncestorSpanId;
+      return this;
+    }
+
+    public OpenTelemetrySpanExporterBuilder withSpanProcessor(SpanProcessor spanProcessor) {
+      this.spanProcesor = spanProcessor;
+      return this;
+    }
+
+    public SpanExporter build() {
+      requireNonNull(internalSpan);
+      requireNonNull(artifactId);
+      requireNonNull(artifactType);
+      requireNonNull(initialSpanInfo);
+      requireNonNull(resource);
+
+      internalSpan.getTraceContext().getInitialExportInfo()
+          .ifPresent(parentInitialExportInfo -> initialSpanInfo.getInitialExportInfo()
+              .propagateInitialExportInfo(parentInitialExportInfo));
+      internalSpan.getTraceContext().setInitialExportInfo(initialSpanInfo.getInitialExportInfo());
+
+      if (!initialSpanInfo.isPolicySpan()) {
+        internalSpan.getTraceContext().setLastUpdatableByExtensionSpan(internalSpan);
       }
 
-      // If it isn't exportable propagate the traceId and spanId
-      if (!childOpenTelemetrySpanExporter.readableSpan.isExportable()) {
-        childOpenTelemetrySpanExporter.openTelemetryExportTraceContextInformation = openTelemetryExportTraceContextInformation;
+      // If the span is not exportable or the parent indicates that this should not be exported.
+      // we propagate the context with the corresponding export until.
+      if (!initialSpanInfo.getInitialExportInfo().isExportable()) {
+        return NOOP_EXPORTER;
       }
+
+      internalSpan.getTraceContext().setLastExportableSpan(internalSpan);
+
+      MuleReadableSpan muleReadableSpan = MuleReadableSpan.builder()
+          .withResource(resource)
+          .withArtifactId(artifactId)
+          .withArtifactType(artifactType)
+          .enableMuleAncestorIdManagement(addMuleAncestorSpanId)
+          .withInitialExportInfo(initialSpanInfo.getInitialExportInfo())
+          .withNameSupplier(initialSpanInfo::getName)
+          .withAttributesSize(() -> getExportableAttributesSize(internalSpan))
+          .withForEachOperation(internalSpan::forEachAttribute)
+          .withStartEpochNanosSupplier(() -> internalSpan.getDuration().getStart())
+          .withEndEpochNanosSupplier(() -> internalSpan.getDuration().getEnd())
+          .withKindSupplier(() -> getSpanKind(internalSpan))
+          .withEventsSupplier(() -> getErrors(internalSpan))
+          .withStatusDataSupplier(() -> getStatusSupplier(internalSpan))
+          .withTraceContext(internalSpan.getTraceContext())
+          .build();
+
+      return new OpenTelemetrySpanExporter(spanProcesor, muleReadableSpan);
+    }
+
+    private Integer getExportableAttributesSize(InternalSpan internalSpan) {
+      return internalSpan.getAttributesCount() - minusAttribues(internalSpan);
+    }
+
+    private int minusAttribues(InternalSpan internalSpan) {
+      final Integer[] count = new Integer[1];
+      count[0] = 0;
+      internalSpan.forEachAttribute((key, value) -> {
+        if (key.equals(STATUS) || key.equals(SPAN_KIND)) {
+          count[0] = count[0] + 1;
+        }
+      });
+
+      return count[0];
+    }
+
+    private StatusData getStatusSupplier(InternalSpan internalSpan) {
+      StatusData[] statusData = new StatusData[1];
+
+      statusData[0] = StatusData.unset();
+
+      if (internalSpan.hasErrors()) {
+        statusData[0] = StatusData.create(ERROR, EXCEPTIONS_HAVE_BEEN_RECORDED);
+      }
+
+      internalSpan.forEachAttribute((key, value) -> {
+        if (key.equals(STATUS)) {
+          StatusCode statusCode = StatusCode.valueOf(value);
+          statusData[0] = StatusData.create(statusCode, null);;
+        }
+      });
+
+
+      return statusData[0];
+    }
+
+    private List<EventData> getErrors(InternalSpan internalSpan) {
+      List<SpanError> spanErrors = internalSpan.getErrors();
+      if (!spanErrors.isEmpty()) {
+        SpanError spanError = spanErrors.get(0);
+        Attributes errorAttributes = of(EXCEPTION_TYPE_KEY, spanError.getError().getErrorType().toString(),
+                                        EXCEPTION_MESSAGE_KEY, spanError.getError().getDescription(),
+                                        EXCEPTION_STACK_TRACE_KEY,
+                                        getInternalSpanError(spanError).getErrorStacktrace().toString(),
+                                        EXCEPTION_ESCAPED_KEY, spanError.isEscapingSpan());
+
+        return singletonList(EventData.create(System.currentTimeMillis(), EXCEPTION_EVENT_NAME, errorAttributes));
+      }
+
+      return emptyList();
+    }
+
+    private SpanKind getSpanKind(InternalSpan internalSpan) {
+      SpanKind[] spanKind = new SpanKind[1];
+      spanKind[0] = INTERNAL;
+      internalSpan.forEachAttribute((key, value) -> {
+        if (key.equals(SPAN_KIND)) {
+          spanKind[0] = SpanKind.valueOf(value);
+        }
+      });
+
+      return spanKind[0];
     }
   }
-
-  @Override
-  public InternalSpan getInternalSpan() {
-    return internalSpan;
-  }
-
-  public String getName() {
-    return internalSpan.getName();
-  }
-
-  @Override
-  public void onAdditionalAttribute(String key, String value) {
-    if (key.equals(SPAN_KIND)) {
-      rootSpanExporter.spanKind = SpanKind.valueOf(value);
-    } else if (key.equals(STATUS)) {
-      StatusCode statusCode = StatusCode.valueOf(value);
-      rootSpanExporter.statusData = StatusData.create(statusCode, null);
-    } else if (isPolicySpan && !rootSpanExporter.equals(this)) {
-      rootSpanExporter.internalSpan.addAttribute(key, value);
-    }
-  }
-
-  public StatusData getStatus() {
-    return statusData;
-  }
-
-  public List<EventData> getEvents() {
-    return errorEvents;
-  }
-
-  @Override
-  public void onError(InternalSpanError spanError) {
-    statusData = StatusData.create(ERROR, EXCEPTIONS_HAVE_BEEN_RECORDED);
-    Attributes errorAttributes = of(EXCEPTION_TYPE_KEY, spanError.getError().getErrorType().toString(),
-                                    EXCEPTION_MESSAGE_KEY, spanError.getError().getDescription(),
-                                    EXCEPTION_STACK_TRACE_KEY,
-                                    getInternalSpanError(spanError).getErrorStacktrace().toString(),
-                                    EXCEPTION_ESCAPED_KEY, spanError.isEscapingSpan());
-
-    errorEvents = singletonList(EventData.create(System.currentTimeMillis(), EXCEPTION_EVENT_NAME, errorAttributes));
-  }
-
-  public MutableMuleTraceState getTraceState() {
-    return openTelemetryExportTraceContextInformation.getTraceState();
-  }
-
-  public SpanKind getKind() {
-    return spanKind;
-  }
-
-  public String getThreadEndName() {
-    return endThreadNameValue;
-  }
-
-  public String getSpanId() {
-    return readableSpan.getSpanContext().getSpanId();
-  }
-
-  public String getTraceId() {
-    return readableSpan.getSpanContext().getTraceId();
-  }
-
 }

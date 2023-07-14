@@ -6,30 +6,44 @@
  */
 package org.mule.runtime.tracer.exporter.impl.optel.sdk;
 
+import static io.opentelemetry.api.trace.SpanContext.getInvalid;
+import static org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState.ANCESTOR_MULE_SPAN_ID;
+import static org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState.TRACE_STATE_KEY;
 import static org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState.getMutableMuleTraceStateFrom;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.TRACE_PARENT;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.extractContextFromTraceParent;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.generateSpanId;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils.generateTraceId;
 import static org.mule.runtime.tracer.exporter.impl.optel.sdk.OpenTelemetryInstrumentationConstants.INSTRUMENTATION_LIBRARY_INFO;
 import static org.mule.runtime.tracer.exporter.impl.optel.sdk.OpenTelemetryInstrumentationConstants.INSTRUMENTATION_SCOPE_INFO;
 
-import static java.util.Collections.emptyMap;
+import static io.opentelemetry.api.trace.SpanContext.create;
+import static io.opentelemetry.api.trace.TraceFlags.getSampled;
+import static io.opentelemetry.api.trace.TraceState.getDefault;
 
-import static io.opentelemetry.api.trace.SpanContext.getInvalid;
-
-import org.mule.runtime.api.util.LazyValue;
+import io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding;
+import org.mule.runtime.core.api.util.StringUtils;
+import org.mule.runtime.tracer.api.span.TraceContext;
 import org.mule.runtime.tracer.api.span.info.InitialExportInfo;
-import org.mule.runtime.tracer.exporter.impl.MutableMuleTraceState;
-import org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporter;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.api.trace.TraceFlags;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * An implementation of OTEL sdk {@link ReadableSpan}.
@@ -38,43 +52,34 @@ import org.mule.runtime.tracer.exporter.impl.OpenTelemetryTraceIdUtils;
  */
 public class MuleReadableSpan implements ReadableSpan {
 
-  public static MuleReadableSpanBuilder muleReadableSpanBuilderFor(OpenTelemetrySpanExporter openTelemetrySpanExporter) {
-    return new MuleReadableSpanBuilder(openTelemetrySpanExporter);
+  public static MuleReadableSpanBuilder builder() {
+    return new MuleReadableSpanBuilder();
   }
 
-  private final boolean exportable;
-  private SpanContext parentSpanContext = getInvalid();
+  private final boolean enableMuleAncestorIdManagement;
 
-  private MutableMuleTraceState muleTraceState;
-
-  private LazyValue<SpanContext> spanContext = new LazyValue<>(this::createSpanContext);
-
-  private final OpenTelemetrySpanExporter openTelemetrySpanExporter;
   private final MuleSpanData spanData;
 
 
-  public MuleReadableSpan(OpenTelemetrySpanExporter openTelemetrySpanExporter, Resource resource, String artifactId,
-                          String artifactType, InitialExportInfo initialExportInfo,
+  public MuleReadableSpan(MuleSpanData spanData,
                           boolean enableMuleAncestorIdManagement) {
-    this.openTelemetrySpanExporter = openTelemetrySpanExporter;
-    this.spanData = new MuleSpanData(this, resource, artifactId, artifactType);
-    this.exportable = initialExportInfo.isExportable();
-    this.muleTraceState = getMutableMuleTraceStateFrom(emptyMap(), enableMuleAncestorIdManagement);
+    this.spanData = spanData;
+    this.enableMuleAncestorIdManagement = enableMuleAncestorIdManagement;
   }
 
   @Override
   public SpanContext getSpanContext() {
-    return spanContext.get();
+    return spanData.getSpanContext();
   }
 
   @Override
   public SpanContext getParentSpanContext() {
-    return parentSpanContext;
+    return spanData.getParentSpanContext();
   }
 
   @Override
   public String getName() {
-    return openTelemetrySpanExporter.getName();
+    return spanData.getName();
   }
 
   @Override
@@ -104,54 +109,36 @@ public class MuleReadableSpan implements ReadableSpan {
 
   @Override
   public SpanKind getKind() {
-    return openTelemetrySpanExporter.getKind();
+    return spanData.getKind();
   }
 
   @Override
   public <T> T getAttribute(AttributeKey<T> key) {
-    throw new UnsupportedOperationException();
+    return spanData.getAttributes().get(key);
   }
 
-  public OpenTelemetrySpanExporter getOpenTelemetrySpanExporter() {
-    return openTelemetrySpanExporter;
-  }
-
-  private SpanContext createSpanContext() {
-    // Generates the span id so that the OpenTelemetry spans can be lazily initialised if it is exportable
-    if (exportable) {
-      String spanId = OpenTelemetryTraceIdUtils.generateSpanId();
-      String traceId = OpenTelemetryTraceIdUtils.generateTraceId(parentSpanContext);
-      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), muleTraceState);
-    } else {
-      return SpanContext.getInvalid();
-    }
-  }
-
-  public void updateName(String name) {
-    spanData.updateName(name);
-  }
-
-  public void addAttribute(String entry, String key) {
-    spanData.addAttribute(entry, key);
-  }
-
-  public void setParentSpanContext(SpanContext parentSpanContext) {
-    this.parentSpanContext = parentSpanContext;
+  public boolean isEnableMuleAncestorIdManagement() {
+    return enableMuleAncestorIdManagement;
   }
 
   public static class MuleReadableSpanBuilder {
 
-    private final OpenTelemetrySpanExporter openTelemetrySpanExporter;
     private String artifactId;
     private String artifactType;
     private Resource resource;
-    private boolean export;
     private boolean enableMuleAncestorIdManagement;
     private InitialExportInfo initialExportInfo;
+    private Supplier<String> nameSupplier;
+    private Supplier<SpanKind> kindSupplier;
+    private Supplier<StatusData> statusDataSupplier;
+    private Supplier<Long> endEpochNanosSupplier;
+    private Supplier<Long> startEpochNanosSupplier;
+    private Consumer<BiConsumer<String, String>> forEachOperation;
+    private Supplier<Integer> attributesSize;
+    private TraceContext traceContext;
+    private Supplier<List<EventData>> eventsSupplier;
 
-    public MuleReadableSpanBuilder(OpenTelemetrySpanExporter openTelemetrySpanExporter) {
-      this.openTelemetrySpanExporter = openTelemetrySpanExporter;
-    }
+    public MuleReadableSpanBuilder() {}
 
     public MuleReadableSpanBuilder withArtifactId(String artifactId) {
       this.artifactId = artifactId;
@@ -168,11 +155,6 @@ public class MuleReadableSpan implements ReadableSpan {
       return this;
     }
 
-    public MuleReadableSpanBuilder export(boolean export) {
-      this.export = export;
-      return this;
-    }
-
     public MuleReadableSpanBuilder enableMuleAncestorIdManagement(boolean enableMuleAncestorIdManagement) {
       this.enableMuleAncestorIdManagement = enableMuleAncestorIdManagement;
       return this;
@@ -183,14 +165,112 @@ public class MuleReadableSpan implements ReadableSpan {
       return this;
     }
 
-    public MuleReadableSpan build() {
-      return new MuleReadableSpan(openTelemetrySpanExporter, resource, artifactId, artifactType, initialExportInfo,
-                                  enableMuleAncestorIdManagement);
+    public MuleReadableSpanBuilder withNameSupplier(Supplier<String> nameSupplier) {
+      this.nameSupplier = nameSupplier;
+      return this;
     }
 
-  }
+    public MuleReadableSpanBuilder withKindSupplier(Supplier<SpanKind> kindSupplier) {
+      this.kindSupplier = kindSupplier;
+      return this;
+    }
 
-  public boolean isExportable() {
-    return exportable;
+    public MuleReadableSpanBuilder withStatusDataSupplier(Supplier<StatusData> statusDataSupplier) {
+      this.statusDataSupplier = statusDataSupplier;
+      return this;
+    }
+
+    public MuleReadableSpanBuilder withForEachOperation(Consumer<BiConsumer<String, String>> forEachOperation) {
+      this.forEachOperation = forEachOperation;
+      return this;
+    }
+
+    public MuleReadableSpanBuilder withEndEpochNanosSupplier(Supplier<Long> endEpochNanosSupplier) {
+      this.endEpochNanosSupplier = endEpochNanosSupplier;
+      return this;
+    }
+
+    public MuleReadableSpanBuilder withStartEpochNanosSupplier(Supplier<Long> startEpochNanosSupplier) {
+      this.startEpochNanosSupplier = startEpochNanosSupplier;
+      return this;
+    }
+
+    public MuleReadableSpanBuilder withAttributesSize(Supplier<Integer> attributesSize) {
+      this.attributesSize = attributesSize;
+      return this;
+    }
+
+    public MuleReadableSpanBuilder withEventsSupplier(Supplier<List<EventData>> eventsSupplier) {
+      this.eventsSupplier = eventsSupplier;
+      return this;
+    }
+
+    public MuleReadableSpanBuilder withTraceContext(TraceContext traceContext) {
+      this.traceContext = traceContext;
+      return this;
+    }
+
+    public MuleReadableSpan build() {
+      MuleAttributes attributes = new MuleAttributes(forEachOperation, artifactId, artifactType, attributesSize);
+
+      String newSpanId = generateSpanId();
+      SpanContext parentSpanContext = resolveParentSpanContext(traceContext);
+      String traceId = parentSpanContext.getTraceId();
+
+      if (traceId.equals(getInvalid().getTraceId())) {
+        traceId = generateTraceId();
+      }
+
+      Map<String, String> traceStateAsMap = getMutableTraceStateAsMap(traceContext);
+
+      MuleSpanData muleSpanData = new MuleSpanData(nameSupplier,
+                                                   kindSupplier,
+                                                   statusDataSupplier,
+                                                   endEpochNanosSupplier,
+                                                   startEpochNanosSupplier,
+                                                   attributes,
+                                                   create(traceId, newSpanId, getSampled(),
+                                                          getMutableMuleTraceStateFrom(getMutableTraceStateAsMap(traceContext),
+                                                                                       enableMuleAncestorIdManagement)),
+                                                   create(parentSpanContext.getTraceId(), parentSpanContext.getSpanId(),
+                                                          getSampled(),
+                                                          getDefault()),
+                                                   eventsSupplier,
+                                                   resource);
+      traceContext.setTraceId(traceId);
+      traceContext.setSpanId(newSpanId);
+
+      if (enableMuleAncestorIdManagement) {
+        traceStateAsMap.remove(ANCESTOR_MULE_SPAN_ID);
+      }
+      traceContext.setTraceState(traceStateAsMap);
+
+      return new MuleReadableSpan(muleSpanData, enableMuleAncestorIdManagement);
+    }
+
+    private Map<String, String> getMutableTraceStateAsMap(TraceContext traceContext) {
+      Map<String, String> traceState = traceContext.getTraceState();
+      if (traceContext.getTraceState() != null) {
+        return traceState;
+      }
+
+      String traceHeader = traceContext.getRemoteTraceSerialization().get(TRACE_STATE_KEY);
+      if (!StringUtils.isEmpty(traceHeader)) {
+        traceState = new HashMap<>(W3CTraceContextEncoding.decodeTraceState(traceHeader).asMap());
+      } else {
+        traceState = Collections.emptyMap();
+      }
+
+      return traceState;
+    }
+
+    private SpanContext resolveParentSpanContext(TraceContext traceContext) {
+      if (traceContext.getSpanId() != null && traceContext.getTraceId() != null) {
+        return SpanContext.create(traceContext.getTraceId(), traceContext.getSpanId(), getSampled(), getDefault());
+      }
+
+      String traceHeaderInRemote = traceContext.getRemoteTraceSerialization().get(TRACE_PARENT);
+      return extractContextFromTraceParent(traceHeaderInRemote);
+    }
   }
 }

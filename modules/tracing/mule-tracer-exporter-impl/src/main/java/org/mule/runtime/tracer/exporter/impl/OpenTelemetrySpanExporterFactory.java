@@ -86,8 +86,14 @@ public class OpenTelemetrySpanExporterFactory implements SpanExporterFactory, Di
   }
 
   public SpanExporter getSpanExporter(InternalSpan internalSpan, InitialSpanInfo initialSpanInfo) {
-    return new OpenTelemetrySpanExporter(internalSpan, initialSpanInfo, artifactId, artifactType, spanProcessor,
-                                         addMuleAncestorSpanId, resource);
+    return OpenTelemetrySpanExporter.builder(internalSpan)
+        .using(initialSpanInfo)
+        .withArtifactId(artifactId)
+        .withArtifactType(artifactType)
+        .withResource(resource)
+        .withAddMuleAncestorSpanId(addMuleAncestorSpanId)
+        .withSpanProcessor(spanProcessor)
+        .build();
   }
 
   protected SpanProcessor resolveOpenTelemetrySpanProcessor() {
