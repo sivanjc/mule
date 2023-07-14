@@ -29,6 +29,7 @@ public class MutableMuleTraceState implements TraceState {
 
   private Map<String, String> remoteState;
 
+
   /**
    * Returns a {@link MutableMuleTraceState} from the representation as a serialized map.
    *
@@ -38,19 +39,13 @@ public class MutableMuleTraceState implements TraceState {
    */
   public static MutableMuleTraceState getMutableMuleTraceStateFrom(Map<String, String> serializeAsMap,
                                                                    boolean enableMuleAncestorIdManagement) {
-    TraceState remoteTraceState = TraceState.getDefault();
-    String traceState = serializeAsMap.get(TRACE_STATE_KEY);
-    if (!StringUtils.isEmpty(traceState)) {
-      remoteTraceState = W3CTraceContextEncoding.decodeTraceState(traceState);
-    }
-
     // If enableMuleAncestorIdManagement is false, we will set in the trace state all the key/value's from the remote trace
     // context,
     // including the ancestor mule span id if exists.
     // If enableMuleAncestorIdManagement is true, we will use all the key/value's from the remote trace context except
     // the ancestor mule span id and when there there is a current span id to set as ancestor mule span id, we will
     // also include it in the state.
-    return new MutableMuleTraceState(remoteTraceState.asMap(), remoteTraceState.get(ANCESTOR_MULE_SPAN_ID),
+    return new MutableMuleTraceState(serializeAsMap, serializeAsMap.get(ANCESTOR_MULE_SPAN_ID),
                                      !enableMuleAncestorIdManagement, enableMuleAncestorIdManagement);
   }
 

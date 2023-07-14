@@ -8,6 +8,8 @@ package org.mule.runtime.tracer.exporter.impl.optel.sdk;
 
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.ARTIFACT_ID;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.ARTIFACT_TYPE;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.SPAN_KIND;
+import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.STATUS;
 import static org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporterUtils.THREAD_END_NAME_KEY;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -18,6 +20,8 @@ import org.mule.runtime.tracer.exporter.impl.OpenTelemetrySpanExporter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -30,22 +34,20 @@ import io.opentelemetry.api.common.AttributesBuilder;
  */
 public class MuleAttributes implements Attributes {
 
-  public static final int EXPORTER_ATTRIBUTES_BASE_SIZE = 3;
-
-  private final OpenTelemetrySpanExporter openTelemetrySpanExporter;
-  private final InternalSpan internalSpan;
+  public static final int EXPORTER_ATTRIBUTES_BASE_SIZE = 2;
   private final String artifactId;
   private final String artifactType;
+  private final Consumer<BiConsumer<String, String>> forEachOperation;
+  private final Supplier<Integer> sizeSupplier;
 
-  private Map<String, String> additionalAttributes = new HashMap<>();
-
-  public MuleAttributes(OpenTelemetrySpanExporter openTelemetrySpanExporter,
+  public MuleAttributes(Consumer<BiConsumer<String, String>> forEachOperation,
                         String artifactId,
-                        String artifactType) {
-    this.openTelemetrySpanExporter = openTelemetrySpanExporter;
-    this.internalSpan = openTelemetrySpanExporter.getInternalSpan();
+                        String artifactType,
+                        Supplier<Integer> sizeSupplier) {
+    this.forEachOperation = forEachOperation;
     this.artifactId = artifactId;
     this.artifactType = artifactType;
+    this.sizeSupplier = sizeSupplier;
   }
 
   @Override
@@ -56,13 +58,16 @@ public class MuleAttributes implements Attributes {
   public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> biConsumer) {
     biConsumer.accept(ARTIFACT_ID, artifactId);
     biConsumer.accept(ARTIFACT_TYPE, artifactType);
-    biConsumer.accept(THREAD_END_NAME_KEY, openTelemetrySpanExporter.getThreadEndName());
-    internalSpan.forEachAttribute((key, value) -> biConsumer.accept(stringKey(key), value));
+    forEachOperation.accept((key, value) -> {
+      if (!key.equals(STATUS) && !key.equals(SPAN_KIND)) {
+        biConsumer.accept(stringKey(key), value);
+      }
+    });
   }
 
   @Override
   public int size() {
-    return EXPORTER_ATTRIBUTES_BASE_SIZE + internalSpan.getAttributesCount() + additionalAttributes.size();
+    return sizeSupplier.get() + EXPORTER_ATTRIBUTES_BASE_SIZE;
   }
 
   @Override
@@ -80,9 +85,5 @@ public class MuleAttributes implements Attributes {
   @Override
   public AttributesBuilder toBuilder() {
     throw new UnsupportedOperationException();
-  }
-
-  public void addAttribute(String key, String value) {
-    additionalAttributes.put(key, value);
   }
 }
