@@ -37,11 +37,11 @@ public class TracingLevelExportInfo implements InitialExportInfo {
   public static TracingLevelExportInfo createTracingLevelExportInfo(Component component, String spanName,
                                                                     TracingLevelConfiguration tracingLevelConfiguration) {
     return new TracingLevelExportInfo(tracingLevelConfiguration
-        .getTracingLevel(SpanInitialInfoUtils.getLocationAsString(component.getLocation())), spanName);
+        .getTracingLevelOverride(SpanInitialInfoUtils.getLocationAsString(component.getLocation())), spanName);
   }
 
   private static InitialExportInfoProvider resolveInitialExportInfoProvider(TracingLevel tracingLevel) {
-    switch (tracingLevel.getTracingLevelId()) {
+    switch (tracingLevel) {
       case OVERVIEW:
         return new OverviewInitialExportInfoProvider();
       case DEBUG:
@@ -85,13 +85,8 @@ public class TracingLevelExportInfo implements InitialExportInfo {
   }
 
   @Override
-  public void propagateInitialExportInfo(InitialExportInfo initialExportInfo) {
-    // Tenemos que remover este class cast
-    if (!tracingLevel.isOverride()) {
-      this.tracingLevel =
-          ((TracingLevelExportInfo) initialExportInfo).getTracingLevel();
-    }
-    this.propagatedNoExportUntil = initialExportInfo.noExportUntil();
+  public void propagateInitialExportInfo(InitialExportInfo parentInitialExportInfo) {
+
   }
 
 }

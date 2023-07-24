@@ -4,13 +4,13 @@
 package org.mule.runtime.tracer.customization.impl.provider;
 
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.POLICY;
-import static org.mule.runtime.tracer.customization.impl.export.TracingLevelExportInfo.createTracingLevelExportInfo;
 
 import org.mule.runtime.api.component.Component;
 import org.mule.runtime.api.component.ConfigurationProperties;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.customization.api.InitialSpanInfoProvider;
+import org.mule.runtime.tracer.customization.impl.export.TracingLevelExportInfo;
 import org.mule.runtime.tracer.customization.impl.info.ExecutionInitialSpanInfo;
 import org.mule.runtime.tracing.level.api.config.TracingLevelConfiguration;
 
@@ -40,6 +40,8 @@ public class DefaultInitialSpanInfoProvider implements InitialSpanInfoProvider {
 
   private String apiId;
   private boolean initialisedAttributes;
+  private String overriddenName;
+  private String suffix;
 
   @Override
   public InitialSpanInfo getInitialSpanInfo(Component component) {
@@ -78,17 +80,11 @@ public class DefaultInitialSpanInfoProvider implements InitialSpanInfoProvider {
   }
 
   private ExecutionInitialSpanInfo createExecutionInitialSpanInfo(Component component, String overriddenName, String suffix) {
+    this.overriddenName = overriddenName;
+    this.suffix = suffix;
     ExecutionInitialSpanInfo executionInitialSpanInfo =
         new ExecutionInitialSpanInfo(component, apiId, overriddenName, suffix, tracingLevelConfiguration);
-    registerConfigurationUpdate(component, executionInitialSpanInfo);
     return executionInitialSpanInfo;
-  }
-
-  private void registerConfigurationUpdate(Component component, ExecutionInitialSpanInfo executionInitialSpanInfo) {
-    tracingLevelConfiguration
-        .onConfigurationChange(tracingLevelConfiguration -> executionInitialSpanInfo
-            .setInitialExportInfo(createTracingLevelExportInfo(component, executionInitialSpanInfo.getName(),
-                                                               tracingLevelConfiguration)));
   }
 
   public void initialiseAttributes() {

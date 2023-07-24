@@ -4,6 +4,7 @@
 package org.mule.runtime.tracer.customization.impl.info;
 
 import static org.mule.runtime.tracer.customization.api.InternalSpanNames.OPERATION_EXECUTION_SPAN_NAME;
+import static org.mule.runtime.tracer.customization.impl.export.TracingLevelExportInfo.createTracingLevelExportInfo;
 import static org.mule.runtime.tracer.customization.impl.info.SpanInitialInfoUtils.getLocationAsString;
 import static org.mule.runtime.tracer.customization.impl.info.SpanInitialInfoUtils.getSpanName;
 
@@ -58,7 +59,8 @@ public class ExecutionInitialSpanInfo implements InitialSpanInfo {
     if (apiId != null) {
       this.initialAttributesCount = INITIAL_ATTRIBUTES_BASE_COUNT + 1;
     }
-    this.initialExportInfo = TracingLevelExportInfo.createTracingLevelExportInfo(component, name, tracingLevelConfiguration);
+
+    initialExportInfo = createTracingLevelExportInfo(component, name, tracingLevelConfiguration);
   }
 
   @Override
@@ -96,9 +98,5 @@ public class ExecutionInitialSpanInfo implements InitialSpanInfo {
 
   private boolean isComponentOfName(Component component, String name) {
     return component.getIdentifier() != null && name.equals(component.getIdentifier().getName());
-  }
-
-  public void setInitialExportInfo(InitialExportInfo tracingLevelExportInfo) {
-    this.initialExportInfo = tracingLevelExportInfo;
   }
 }

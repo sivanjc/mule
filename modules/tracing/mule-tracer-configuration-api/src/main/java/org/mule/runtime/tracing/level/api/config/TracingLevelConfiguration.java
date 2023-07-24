@@ -15,7 +15,7 @@ public interface TracingLevelConfiguration {
   /**
    * @return the default tracing level, MONITORING, if no other tracing level is specified from a configuration.
    */
-  TracingLevel getDefaultTracingLevel();
+  TracingLevel getTracingLevel();
 
   /**
    * If the specified location and tracing level exist, returns an override of a tracing level corresponding to a location.
@@ -24,7 +24,7 @@ public interface TracingLevelConfiguration {
    * @param location corresponds to the location of a component in a configuration.
    * @return a tracing level.
    */
-  TracingLevel getTracingLevel(String location);
+  TracingLevel getTracingLevelOverride(String location);
 
   /**
    * Consumer to be invoked when a {@link TracingLevelConfiguration} is changed.
