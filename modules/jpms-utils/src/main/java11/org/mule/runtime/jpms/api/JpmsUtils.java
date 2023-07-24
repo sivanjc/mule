@@ -14,11 +14,13 @@ import static java.lang.module.Configuration.resolve;
 import static java.lang.module.ModuleFinder.ofSystem;
 import static java.nio.file.Paths.get;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.lang.ModuleLayer.Controller;
 import java.lang.management.ManagementFactory;
@@ -147,7 +149,7 @@ public final class JpmsUtils {
       return new URLClassLoader(modulePathEntries, parent);
     }
 
-    final ModuleLayer layer = createModuleLayer(modulePathEntries, parent, empty(), false);
+    final ModuleLayer layer = createModuleLayer(modulePathEntries, parent, empty(), false, true);
     return layer.findLoader(layer.modules().iterator().next().getName());
   }
 
@@ -166,8 +168,8 @@ public final class JpmsUtils {
       return new URLClassLoader(modulePathEntriesChild, new URLClassLoader(modulePathEntriesParent, parent));
     }
 
-    final ModuleLayer parentLayer = createModuleLayer(modulePathEntriesParent, parent, empty(), false);
-    final ModuleLayer childLayer = createModuleLayer(modulePathEntriesChild, parent, of(parentLayer), false);
+    final ModuleLayer parentLayer = createModuleLayer(modulePathEntriesParent, parent, empty(), false, true);
+    final ModuleLayer childLayer = createModuleLayer(modulePathEntriesChild, parent, of(parentLayer), false, true);
     return childLayer.findLoader(childLayer.modules().iterator().next().getName());
   }
 
@@ -186,7 +188,17 @@ public final class JpmsUtils {
    * @return a new {@link ModuleLayer}.
    */
   public static ModuleLayer createModuleLayer(URL[] modulePathEntries, ClassLoader parent, Optional<ModuleLayer> parentLayer,
-                                              boolean automaticModulesInTheirOwnLayer) {
+                                              boolean automaticModulesInTheirOwnLayer,
+                                              boolean filterBootModules) {
+    final Set<String> bootModules;
+    if (filterBootModules) {
+      bootModules = boot().modules().stream()
+          .map(m -> m.getName())
+          .collect(toSet());
+    } else {
+      bootModules = emptySet();
+    }
+
     Path[] paths = Stream.of(modulePathEntries)
         .map(url -> {
           try {
@@ -202,18 +214,18 @@ public final class JpmsUtils {
     Map<Boolean, List<ModuleReference>> modulesByAutomatic = modulesFinder
         .findAll()
         .stream()
+        .filter(moduleRef -> !bootModules.contains(moduleRef.descriptor().name()))
         .collect(partitioningBy(moduleRef -> moduleRef.descriptor().isAutomatic()));
     System.out.println(" >> Found modules: " + modulesByAutomatic);
 
     ModuleLayer resolvedParentLayer = parentLayer.orElse(boot());
     System.out
-        .println(" >> Resolved parent ModuleLayer " + (parentLayer.isEmpty() ? "(boot)" : "") + ": '" + resolvedParentLayer);
+        .println(" >> Resolved parent ModuleLayer " + (parentLayer.isEmpty() ? "(boot)" : "") + ": '" + resolvedParentLayer
+            + "'");
 
     Controller controller;
     if (automaticModulesInTheirOwnLayer) {
-
-      // >>
-
+      // put all automatic modules in their own layer, having only boot layer as parent...
       Path[] automaticModulesPaths = modulesByAutomatic.get(true)
           .stream()
           .map(ModuleReference::location)
@@ -222,19 +234,6 @@ public final class JpmsUtils {
           .map(uri -> get(uri))
           .toArray(size -> new Path[size]);
       ModuleFinder automaticModulesFinder = ModuleFinder.of(automaticModulesPaths);
-      Path[] notAutomaticModulesPaths = modulesByAutomatic.get(false)
-          .stream()
-          .map(ModuleReference::location)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .map(uri -> get(uri))
-          .toArray(size -> new Path[size]);
-      ModuleFinder notAutomaticModulesFinder = ModuleFinder.of(notAutomaticModulesPaths);
-
-      // <<
-
-
-      // put all automatic modules in their own layer, having only boot layer as parent...
       Configuration automaticModulesConfiguration = boot().configuration()
           .resolve(automaticModulesFinder, ofSystem(), modulesByAutomatic.get(true)
               .stream()
@@ -246,6 +245,14 @@ public final class JpmsUtils {
                                                                              .iterator().next().getName())).orElse(parent));
 
       // ... the put the rest of the modules on a new layer with the automatic modules one as parent.
+      Path[] notAutomaticModulesPaths = modulesByAutomatic.get(false)
+          .stream()
+          .map(ModuleReference::location)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(uri -> get(uri))
+          .toArray(size -> new Path[size]);
+      ModuleFinder notAutomaticModulesFinder = ModuleFinder.of(notAutomaticModulesPaths);
       Configuration configuration = resolve(notAutomaticModulesFinder,
                                             asList(automaticModulesController.layer().configuration(),
                                                    resolvedParentLayer.configuration()),
@@ -259,13 +266,20 @@ public final class JpmsUtils {
                                                   .iterator().next().getName())).orElse(parent));
 
     } else {
-      List<String> modules = modulesByAutomatic.values().stream()
+      Path[] filteredModulesPaths = modulesByAutomatic.values().stream()
           .flatMap(Collection::stream)
-          .map(moduleRef -> moduleRef.descriptor().name())
-          .collect(toList());
+          .map(ModuleReference::location)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(uri -> get(uri))
+          .toArray(size -> new Path[size]);
+      ModuleFinder filteredModulesFinder = ModuleFinder.of(filteredModulesPaths);
 
       Configuration configuration = resolvedParentLayer.configuration()
-          .resolve(modulesFinder, ofSystem(), modules);
+          .resolve(filteredModulesFinder, ofSystem(), modulesByAutomatic.values().stream()
+              .flatMap(Collection::stream)
+              .map(modueRef -> modueRef.descriptor().name())
+              .collect(toList()));
       controller = defineModulesWithOneLoader(configuration,
                                               singletonList(resolvedParentLayer),
                                               parentLayer.map(layer -> layer.findLoader(layer.modules()
