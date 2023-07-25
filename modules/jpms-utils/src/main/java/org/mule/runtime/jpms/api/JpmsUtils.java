@@ -6,6 +6,7 @@ package org.mule.runtime.jpms.api;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 /**
  * No-op implementation of JpmsUtils to use when running on JVM 8.
@@ -35,12 +36,14 @@ public final class JpmsUtils {
    * 
    * @param modulePathEntriesParent the URLs from which to find the modules of the parent
    * @param modulePathEntriesChild  the URLs from which to find the modules of the child
+   * @param childClassLoaderFactory how the classLoader for the child is created
    * @param parent                  the parent class loader for delegation
    * @return a new classLoader.
    */
   public static ClassLoader createModuleLayerClassLoader(URL[] modulePathEntriesParent, URL[] modulePathEntriesChild,
+                                                         BiFunction<URL[], ClassLoader, ClassLoader> childClassLoaderFactory,
                                                          ClassLoader parent) {
-    return new URLClassLoader(modulePathEntriesChild, new URLClassLoader(modulePathEntriesParent, parent));
+    return childClassLoaderFactory.apply(modulePathEntriesChild, new URLClassLoader(modulePathEntriesParent, parent));
   }
 
   public static void exploreJdkModules(Set<String> packages) {

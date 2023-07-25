@@ -16,6 +16,7 @@ import org.mule.runtime.container.internal.MuleClassLoaderLookupPolicy;
 import org.mule.runtime.container.internal.PreFilteredContainerClassLoaderCreator;
 import org.mule.runtime.module.artifact.api.classloader.ArtifactClassLoader;
 import org.mule.runtime.module.artifact.api.classloader.ClassLoaderLookupPolicy;
+import org.mule.runtime.module.artifact.api.classloader.FineGrainedControlClassLoader;
 import org.mule.runtime.module.artifact.api.classloader.MuleArtifactClassLoader;
 import org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor;
 
@@ -65,10 +66,18 @@ public class TestPreFilteredContainerClassLoaderCreator implements PreFilteredCo
   @Override
   public ArtifactClassLoader getPreFilteredContainerClassLoader(ArtifactDescriptor artifactDescriptor,
                                                                 ClassLoader parentClassLoader) {
+    final MuleClassLoaderLookupPolicy containerLookupPolicy =
+        new MuleClassLoaderLookupPolicy(emptyMap(), getBootPackages());
+
     containerClassLoader = new MuleArtifactClassLoader(artifactDescriptor.getName(), artifactDescriptor,
                                                        new URL[0],
-                                                       createModuleLayerClassLoader(optUrls, muleUrls, parentClassLoader),
-                                                       new MuleClassLoaderLookupPolicy(emptyMap(), getBootPackages()));
+                                                       createModuleLayerClassLoader(optUrls, muleUrls,
+                                                                                    (urls,
+                                                                                     parent) -> new FineGrainedControlClassLoader(urls,
+                                                                                                                                  parent,
+                                                                                                                                  containerLookupPolicy),
+                                                                                    parentClassLoader),
+                                                       containerLookupPolicy);
     return containerClassLoader;
   }
 
