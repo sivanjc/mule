@@ -54,7 +54,7 @@ class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
 
     System.out.println(" >> Creating ModuleLayer for service: '" + artifactId + "'...");
     ModuleLayer artifactLayer = createModuleLayer(descriptor.getClassLoaderConfiguration().getUrls(), parent,
-                                                  parentLayer, !artifactId.equals("service/SOAP service"), true);
+                                                  parentLayer, true, true);
 
     String serviceModuleName = artifactLayer.modules()
         .stream()
