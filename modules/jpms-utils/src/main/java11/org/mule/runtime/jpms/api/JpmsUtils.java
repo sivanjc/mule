@@ -218,7 +218,7 @@ public final class JpmsUtils {
         .findAll()
         .stream()
         .filter(moduleRef -> !bootModules.contains(moduleRef.descriptor().name()))
-        .collect(partitioningBy(moduleRef -> moduleRef.descriptor().isAutomatic()));
+        .collect(partitioningBy(moduleRef -> isAutomaticModule(moduleRef, parentLayer)));
     System.out.println(" >> Found modules: " + modulesByAutomatic);
 
     ModuleLayer resolvedParentLayer = parentLayer.orElse(boot());
@@ -291,6 +291,29 @@ public final class JpmsUtils {
 
 
     return controller.layer();
+  }
+
+  /**
+   * 
+   * @param moduleRef
+   * @param containerLayer
+   * @return {@code true} the the referenced module is automatic or does not read any module from the container.
+   */
+  private static boolean isAutomaticModule(ModuleReference moduleRef, Optional<ModuleLayer> containerLayer) {
+    if (moduleRef.descriptor().isAutomatic()) {
+      return true;
+    }
+
+    final Set<String> containerModuleNames = containerLayer
+        .map(layer -> layer.modules().stream()
+            .map(Module::getName)
+            .collect(toSet()))
+        .orElse(emptySet());
+
+    return containerLayer
+        .map(layer -> moduleRef.descriptor().requires().stream()
+            .noneMatch(req -> containerModuleNames.contains(req.name())))
+        .orElse(false);
   }
 
   private static boolean useModuleLayer() {
