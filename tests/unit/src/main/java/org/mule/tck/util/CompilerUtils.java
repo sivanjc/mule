@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.tools.JavaCompiler;
@@ -124,7 +125,28 @@ public class CompilerUtils {
           .map(javaPackage -> targetFolder.toPath().resolve(javaPackage).toFile()).orElse(targetFolder);
       targetPackage.mkdirs();
       CompilerTask compilerTask = new CompilerTaskBuilder().compiling(sources)
-          .dependingOn(requiredJars).toTarget(targetPackage)
+          .dependingOn(requiredJars)
+          .toTarget(targetPackage)
+          .build();
+      compilerTask.compile();
+    }
+
+    /**
+     * Compiles all the Java sources defined on the compiler.
+     *
+     * @param targetFolder          folder where the compilation result will be written. Non null.
+     * @param systemClassPathFilter a filter to apply on the system classpath to shorten the path given to the compiler
+     */
+    protected void compileJavaSources(File targetFolder, Predicate<String> systemClassPathFilter) {
+      checkArgument(targetFolder != null, "targetFolder cannot be null");
+
+      File targetPackage = Optional.ofNullable(javaPackage)
+          .map(javaPackage -> targetFolder.toPath().resolve(javaPackage).toFile()).orElse(targetFolder);
+      targetPackage.mkdirs();
+      CompilerTask compilerTask = new CompilerTaskBuilder().compiling(sources)
+          .dependingOn(requiredJars)
+          .systemClassPathFilter(systemClassPathFilter)
+          .toTarget(targetPackage)
           .build();
       compilerTask.compile();
     }
@@ -302,6 +324,21 @@ public class CompilerUtils {
       return compressGeneratedFiles(targetFolder, jarName);
     }
 
+    /**
+     * Compiles all the provided sources generating a JAR file.
+     *
+     * @param jarName               name of the JAR file to create. Non empty.
+     * @param systemClassPathFilter a filter to apply on the system classpath to shorten the path given to the compiler
+     * @return the created file.
+     */
+    public File compile(String jarName, Predicate<String> systemClassPathFilter) {
+      File targetFolder = createTargetFolder();
+
+      compileJavaSources(targetFolder, systemClassPathFilter);
+
+      return compressGeneratedFiles(targetFolder, jarName);
+    }
+
 
     @Override
     protected JarCompiler getThis() {
@@ -371,6 +408,7 @@ public class CompilerUtils {
     private File target;
     private File[] sources = {};
     private File[] jarFiles = {};
+    private Predicate<String> systemClassPathFilter = file -> true;
     private String annotationProcessorClassName;
     private String processorPath;
     private final List<String> processProperties = new ArrayList<>();
@@ -383,6 +421,12 @@ public class CompilerUtils {
 
     public CompilerTaskBuilder dependingOn(File... jarFiles) {
       this.jarFiles = jarFiles;
+
+      return this;
+    }
+
+    public CompilerTaskBuilder systemClassPathFilter(Predicate<String> systemClassPathFilter) {
+      this.systemClassPathFilter = systemClassPathFilter;
 
       return this;
     }
@@ -457,23 +501,28 @@ public class CompilerUtils {
       String fullClassPath;
       if (jarFiles.length > 0) {
         // Adds extra jars files required to compile the source classes
-        fullClassPath = concat(CLASS_PATH_ENTRIES.stream(), Stream.of(jarFiles).map(File::getAbsolutePath))
-            .collect(joining(PATH_SEPARATOR));
+        fullClassPath = concat(CLASS_PATH_ENTRIES.stream()
+            .filter(systemClassPathFilter),
+                               Stream.of(jarFiles).map(File::getAbsolutePath))
+                                   .collect(joining(PATH_SEPARATOR));
       } else {
         fullClassPath = CLASS_PATH_ENTRIES.stream()
+            .filter(systemClassPathFilter)
             .collect(joining(PATH_SEPARATOR));
       }
 
-      options.addAll(asList("-classpath", fullClassPath));
+      // options.addAll(asList("-classpath", fullClassPath));
+      options.addAll(asList("--module-path", fullClassPath));
 
       options.addAll(processProperties);
 
 
-      if (!System.getProperty("java.version").startsWith("1.")) {
-        // This is necessary to avoid compiling issues with java 9 features. It doesn't lower coverage because we are testing what
-        // happens when deploying.
-        options.addAll(asList("--release", "8"));
-      }
+      // if (!System.getProperty("java.version").startsWith("1.")) {
+      // // This is necessary to avoid compiling issues with java 9 features. It doesn't lower coverage because we are testing
+      // what
+      // // happens when deploying.
+      // options.addAll(asList("--release", "8"));
+      // }
 
       return options;
     }
@@ -495,6 +544,8 @@ public class CompilerUtils {
       try {
 
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(sources);
+
+        System.out.println("Compiler options: " + options);
 
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, options, null, compilationUnits);
 
