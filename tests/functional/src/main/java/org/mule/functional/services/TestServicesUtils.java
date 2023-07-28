@@ -4,7 +4,6 @@
 package org.mule.functional.services;
 
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
-
 import org.mule.runtime.api.el.DefaultExpressionLanguageFactoryService;
 import org.mule.runtime.api.exception.MuleRuntimeException;
 import org.mule.runtime.api.metadata.ExpressionLanguageMetadataService;
@@ -22,10 +21,10 @@ public class TestServicesUtils {
     // Nothing to do
   }
 
-  private static File getResourceFile(String containerFolder, String resource, File tempFolder) {
+  private static File getResourceFile(String resource, File tempFolder) {
     final File targetFile = new File(tempFolder, resource);
     try {
-      copyInputStreamToFile(TestServicesUtils.class.getResourceAsStream(containerFolder + resource), targetFile);
+      copyInputStreamToFile(TestServicesUtils.class.getResourceAsStream(resource), targetFile);
     } catch (IOException e) {
       throw new MuleRuntimeException(e);
     }
@@ -41,16 +40,10 @@ public class TestServicesUtils {
    */
   public static File buildSchedulerServiceFile(File tempFolder) {
     final File defaulServiceSchedulerJarFile = new CompilerUtils.JarCompiler()
-        .compiling(getResourceFile("/scheduler", "/org/mule/service/scheduler/MockScheduler.java", tempFolder),
-                   getResourceFile("/scheduler", "/org/mule/service/scheduler/MockSchedulerView.java", tempFolder),
-                   getResourceFile("/scheduler", "/org/mule/service/scheduler/MockSchedulerService.java", tempFolder),
-                   getResourceFile("/scheduler", "/org/mule/service/scheduler/MockSchedulerServiceProvider.java", tempFolder),
-                   getResourceFile("/scheduler", "/module-info.java", tempFolder))
-        .compile("mule-module-service-mock-scheduler-1.0-SNAPSHOT.jar",
-                 file -> new File(file).getName().startsWith("mule-core-")
-                     || new File(file).getName().startsWith("mule-api-")
-                     || new File(file).getName().startsWith("api-annotations")
-                     || new File(file).getName().startsWith("slf4j-api-"));
+        .compiling(getResourceFile("/org/mule/service/scheduler/MockScheduler.java", tempFolder),
+                   getResourceFile("/org/mule/service/scheduler/MockSchedulerService.java", tempFolder),
+                   getResourceFile("/org/mule/service/scheduler/MockSchedulerServiceProvider.java", tempFolder))
+        .compile("mule-module-service-mock-scheduler-1.0-SNAPSHOT.jar");
 
     return new ServiceFileBuilder("schedulerService")
         .withServiceProviderClass("org.mule.service.scheduler.MockSchedulerServiceProvider")
@@ -68,13 +61,10 @@ public class TestServicesUtils {
    */
   public static File buildExpressionLanguageServiceFile(File tempFolder) {
     final File defaulServiceSchedulerJarFile = new CompilerUtils.JarCompiler()
-        .compiling(getResourceFile("/el", "/org/mule/service/el/MockExpressionLanguage.java", tempFolder),
-                   getResourceFile("/el", "/org/mule/service/el/MockExpressionLanguageFactoryService.java", tempFolder),
-                   getResourceFile("/el", "/org/mule/service/el/MockExpressionLanguageFactoryServiceProvider.java", tempFolder))
-        .compile("mule-module-service-mock-expression-language-1.0-SNAPSHOT.jar",
-                 file -> new File(file).getName().startsWith("mule-api-")
-                     || new File(file).getName().startsWith("api-annotations")
-                     || new File(file).getName().startsWith("slf4j-api-"));
+        .compiling(getResourceFile("/org/mule/service/el/MockExpressionLanguage.java", tempFolder),
+                   getResourceFile("/org/mule/service/el/MockExpressionLanguageFactoryService.java", tempFolder),
+                   getResourceFile("/org/mule/service/el/MockExpressionLanguageFactoryServiceProvider.java", tempFolder))
+        .compile("mule-module-service-mock-expression-language-1.0-SNAPSHOT.jar");
 
     return new ServiceFileBuilder("expressionLanguageService")
         .withServiceProviderClass("org.mule.service.el.MockExpressionLanguageFactoryServiceProvider")
@@ -93,13 +83,10 @@ public class TestServicesUtils {
    */
   public static File buildExpressionLanguageMetadataServiceFile(File tempFolder) {
     final File defaultServiceJarFile = new CompilerUtils.JarCompiler()
-        .compiling(getResourceFile("/el", "/org/mule/service/el/metadata/MockExpressionLanguageMetadataService.java", tempFolder),
-                   getResourceFile("/el", "/org/mule/service/el/metadata/MockExpressionLanguageMetadataServiceProvider.java",
+        .compiling(getResourceFile("/org/mule/service/el/metadata/MockExpressionLanguageMetadataService.java", tempFolder),
+                   getResourceFile("/org/mule/service/el/metadata/MockExpressionLanguageMetadataServiceProvider.java",
                                    tempFolder))
-        .compile("mule-module-service-mock-expression-language-metadata-1.0-SNAPSHOT.jar",
-                 file -> new File(file).getName().startsWith("mule-api-")
-                     || new File(file).getName().startsWith("api-annotations")
-                     || new File(file).getName().startsWith("slf4j-api-"));
+        .compile("mule-module-service-mock-expression-language-metadata-1.0-SNAPSHOT.jar");
 
     return new ServiceFileBuilder("expressionLanguageMetadataService")
         .withServiceProviderClass("org.mule.service.el.metadata.MockExpressionLanguageMetadataServiceProvider")
@@ -117,13 +104,9 @@ public class TestServicesUtils {
    */
   public static File buildHttpServiceFile(File tempFolder) {
     final File defaulServiceSchedulerJarFile = new CompilerUtils.JarCompiler()
-        .compiling(getResourceFile("/http", "/org/mule/service/http/MockHttpService.java", tempFolder),
-                   getResourceFile("/http", "/org/mule/service/http/MockHttpServiceProvider.java", tempFolder))
-        .compile("mule-module-service-mock-http-1.0-SNAPSHOT.jar",
-                 file -> new File(file).getName().startsWith("mule-api-")
-                     || new File(file).getName().startsWith("mule-service-http-api-")
-                     || new File(file).getName().startsWith("api-annotations")
-                     || new File(file).getName().startsWith("slf4j-api-"));
+        .compiling(getResourceFile("/org/mule/service/http/MockHttpService.java", tempFolder),
+                   getResourceFile("/org/mule/service/http/MockHttpServiceProvider.java", tempFolder))
+        .compile("mule-module-service-mock-http-1.0-SNAPSHOT.jar");
 
     return new ServiceFileBuilder("http-service")
         .withServiceProviderClass("org.mule.service.http.MockHttpServiceProvider")
