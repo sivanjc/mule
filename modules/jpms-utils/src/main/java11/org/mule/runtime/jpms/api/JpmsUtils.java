@@ -173,7 +173,7 @@ public final class JpmsUtils {
 
     final ModuleLayer parentLayer = createModuleLayer(modulePathEntriesParent, parent, empty(), false, true);
     final ModuleLayer childLayer = createModuleLayer(modulePathEntriesChild, parent, of(parentLayer), false, true);
-    openToModule(childLayer, "kryo.shaded", "java.base", singletonList("java.lang"));
+    openToModule(childLayer, "kryo.shaded", "java.base", asList("java.lang", "java.security.cert"));
 
     return childLayer.findLoader(childLayer.modules().iterator().next().getName());
   }
