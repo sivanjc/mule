@@ -6,6 +6,7 @@ package org.mule.runtime.module.service.api.artifact;
 import static org.mule.runtime.jpms.api.JpmsUtils.createModuleLayer;
 import static org.mule.runtime.jpms.api.JpmsUtils.openToModule;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -17,14 +18,17 @@ import org.mule.runtime.module.artifact.api.classloader.MuleArtifactClassLoader;
 import org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor;
 
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Creates {@link ArtifactClassLoader} for service descriptors.
  */
 class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
 
-  private static final String SERVICE_MODULE_NAME_PREFIX = "org.mule.service.";
+  private static final Set<String> SERVICE_MODULE_NAME_PREFIXES =
+      new HashSet<>(asList("org.mule.service.", "com.mulesoft.mule.service."));
   private static final String SCHEDULER_SERVICE_MODULE_NAME = "org.mule.service.scheduler";
 
   private Optional<ModuleLayer> parentLayer = ofNullable(ServiceModuleLayerFactory.class.getModule().getLayer());
@@ -58,7 +62,7 @@ class ServiceModuleLayerFactory extends ServiceClassLoaderFactory {
 
     String serviceModuleName = artifactLayer.modules()
         .stream()
-        .filter(module -> module.getName().startsWith(SERVICE_MODULE_NAME_PREFIX))
+        .filter(module -> SERVICE_MODULE_NAME_PREFIXES.stream().anyMatch(module.getName()::startsWith))
         .findAny()
         // TODO TD-0144818 TD-0144819 TD-0144821 TD-0144822 TD-0144823 temporarily until all services are properly modularized,
         // This should fail if services do not have the proper module name

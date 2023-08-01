@@ -173,6 +173,8 @@ public final class JpmsUtils {
 
     final ModuleLayer parentLayer = createModuleLayer(modulePathEntriesParent, parent, empty(), false, true);
     final ModuleLayer childLayer = createModuleLayer(modulePathEntriesChild, parent, of(parentLayer), false, true);
+    openToModule(childLayer, "kryo.shaded", "java.base", singletonList("java.lang"));
+
     return childLayer.findLoader(childLayer.modules().iterator().next().getName());
   }
 
@@ -329,8 +331,9 @@ public final class JpmsUtils {
    */
   public static void openToModule(ModuleLayer layer, String moduleName, String bootModuleName, List<String> packages) {
     // Make sure only allowed users within the Mule Runtime use this
-    if (!StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass().getName()
-        .equals("org.mule.runtime.module.service.api.artifact.ServiceModuleLayerFactory")) {
+    final String callerClassName = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass().getName();
+    if (!(callerClassName.equals("org.mule.runtime.module.service.api.artifact.ServiceModuleLayerFactory")
+        || callerClassName.equals("org.mule.runtime.jpms.api.JpmsUtils"))) {
       throw new UnsupportedOperationException("This is for internal use only.");
     }
 
