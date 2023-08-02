@@ -4,13 +4,13 @@
 package org.mule.runtime.tracer.customization.impl.provider;
 
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.POLICY;
+import static org.mule.runtime.tracer.customization.impl.info.SpanInitialInfoUtils.getLocationAsString;
 
 import org.mule.runtime.api.component.Component;
 import org.mule.runtime.api.component.ConfigurationProperties;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
 import org.mule.runtime.tracer.customization.api.InitialSpanInfoProvider;
-import org.mule.runtime.tracer.customization.impl.export.TracingLevelExportInfo;
 import org.mule.runtime.tracer.customization.impl.info.ExecutionInitialSpanInfo;
 import org.mule.runtime.tracing.level.api.config.TracingLevelConfiguration;
 
@@ -26,64 +26,56 @@ import javax.inject.Inject;
  */
 public class DefaultInitialSpanInfoProvider implements InitialSpanInfoProvider {
 
-  private final Map<InitialSpanInfoIdentifier, ExecutionInitialSpanInfo> initialSpanInfos = new ConcurrentHashMap<>();
+  private final Map<InitialSpanInfoIdentifier, ExecutionInitialSpanInfo> componentInitialSpanInfos = new ConcurrentHashMap<>();
   public static final String API_ID_CONFIGURATION_PROPERTIES_KEY = "apiId";
 
-  @Inject
   MuleContext muleContext;
 
-  @Inject
   ConfigurationProperties configurationProperties;
 
-  @Inject
   TracingLevelConfiguration tracingLevelConfiguration;
 
   private String apiId;
   private boolean initialisedAttributes;
-  private String overriddenName;
-  private String suffix;
 
   @Override
   public InitialSpanInfo getInitialSpanInfo(Component component) {
+    return new LazyInitialSpanInfo(() -> doGetInitialSpanInfo(component, null, null));
+  }
+
+  @Override
+  public InitialSpanInfo getInitialSpanInfo(Component component, String suffix) {
+    return new LazyInitialSpanInfo(() -> doGetInitialSpanInfo(component, suffix, null));
+  }
+
+
+  @Override
+  public InitialSpanInfo getInitialSpanInfo(Component component, String overriddenName, String suffix) {
+    return new LazyInitialSpanInfo(() -> doGetInitialSpanInfo(component, suffix, overriddenName));
+  }
+
+  private InitialSpanInfo doGetInitialSpanInfo(Component component, String suffix, String overriddenName) {
     // TODO: Verify initialisation order in mule context (W-12761329)
     if (!initialisedAttributes) {
       initialiseAttributes();
       initialisedAttributes = true;
     }
-    // Mover esta logica a TracingLevelExportInfo.createTracingLevelExportInfo
-    return initialSpanInfos.computeIfAbsent(getInitialSpanInfoIdentifier(component, "", ""),
-                                            identifier -> createExecutionInitialSpanInfo(component, "", ""));
-  }
 
-  @Override
-  public InitialSpanInfo getInitialSpanInfo(Component component, String suffix) {
-    // TODO: Verify initialisation order in mule context (W-12761329). General registry problem
-    if (!initialisedAttributes) {
-      initialiseAttributes();
-      initialisedAttributes = true;
+    // TODO: when to change the tracing level from other criteria than location is required, we will probably have to see this.
+    if (component.getLocation() == null) {
+      return new ExecutionInitialSpanInfo(component, apiId, overriddenName, suffix,
+                                          tracingLevelConfiguration);
     }
-    // Mover esta logica a TracingLevelExportInfo.createTracingLevelExportInfo
-    return initialSpanInfos.computeIfAbsent(getInitialSpanInfoIdentifier(component, suffix, ""),
-                                            identifier -> createExecutionInitialSpanInfo(component, "", suffix));
-  }
 
-  @Override
-  public InitialSpanInfo getInitialSpanInfo(Component component, String overriddenName, String suffix) {
-    // TODO: Verify initialisation order in mule context (W-12761329). General registry problem
-    if (!initialisedAttributes) {
-      initialiseAttributes();
-      initialisedAttributes = true;
-    }
-    // Mover esta logica a TracingLevelExportInfo.createTracingLevelExportInfo
-    return initialSpanInfos.computeIfAbsent(getInitialSpanInfoIdentifier(component, suffix, overriddenName),
-                                            identifier -> createExecutionInitialSpanInfo(component, overriddenName, suffix));
-  }
-
-  private ExecutionInitialSpanInfo createExecutionInitialSpanInfo(Component component, String overriddenName, String suffix) {
-    this.overriddenName = overriddenName;
-    this.suffix = suffix;
     ExecutionInitialSpanInfo executionInitialSpanInfo =
-        new ExecutionInitialSpanInfo(component, apiId, overriddenName, suffix, tracingLevelConfiguration);
+        componentInitialSpanInfos
+            .computeIfAbsent(new InitialSpanInfoIdentifier(getLocationAsString(component.getLocation()), suffix, overriddenName),
+                             identifier -> new ExecutionInitialSpanInfo(component, apiId, overriddenName,
+                                                                        suffix,
+                                                                        tracingLevelConfiguration));
+
+    tracingLevelConfiguration.onConfigurationChange(executionInitialSpanInfo::reconfigureInitialSpanInfo);
+
     return executionInitialSpanInfo;
   }
 
@@ -93,7 +85,27 @@ public class DefaultInitialSpanInfoProvider implements InitialSpanInfoProvider {
     }
   }
 
-  private InitialSpanInfoIdentifier getInitialSpanInfoIdentifier(Component location, String suffix, String overriddenName) {
-    return new InitialSpanInfoIdentifier(location, suffix, overriddenName);
+  @Inject
+  public void setMuleContext(MuleContext muleContext) {
+    this.muleContext = muleContext;
+  }
+
+  @Inject
+  public void setConfigurationProperties(ConfigurationProperties configurationProperties) {
+    this.configurationProperties = configurationProperties;
+  }
+
+  @Inject
+  public void seTracingLevelConfiguration(TracingLevelConfiguration tracingLevelConfiguration) {
+    this.tracingLevelConfiguration = tracingLevelConfiguration;
+  }
+
+  /**
+   * @param initialSpanInfo the {@link InitialSpanInfo} to verify if it is cached.
+   *
+   * @return whether it is cached.
+   */
+  public boolean isCached(InitialSpanInfo initialSpanInfo) {
+    return componentInitialSpanInfos.containsValue(initialSpanInfo);
   }
 }

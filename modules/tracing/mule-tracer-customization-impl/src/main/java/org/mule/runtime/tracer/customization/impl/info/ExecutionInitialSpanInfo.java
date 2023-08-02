@@ -8,11 +8,13 @@ import static org.mule.runtime.tracer.customization.impl.export.TracingLevelExpo
 import static org.mule.runtime.tracer.customization.impl.info.SpanInitialInfoUtils.getLocationAsString;
 import static org.mule.runtime.tracer.customization.impl.info.SpanInitialInfoUtils.getSpanName;
 
+import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import org.mule.runtime.api.component.Component;
 import org.mule.runtime.core.api.policy.PolicyChain;
 import org.mule.runtime.tracer.api.span.info.InitialExportInfo;
 import org.mule.runtime.tracer.api.span.info.InitialSpanInfo;
-import org.mule.runtime.tracer.customization.impl.export.TracingLevelExportInfo;
 import org.mule.runtime.tracing.level.api.config.TracingLevelConfiguration;
 
 import java.util.function.BiConsumer;
@@ -46,8 +48,8 @@ public class ExecutionInitialSpanInfo implements InitialSpanInfo {
 
     // Ver si este name tambien se puede usar para mover la logica del noExportUntil al lugar correcto pasandolo por parametro al
     // constructor de ExecutionInitialExportInfo.
-    if (overriddenName.isEmpty()) {
-      name = getSpanName(component.getIdentifier()) + spanNameSuffix;
+    if (isEmpty(overriddenName)) {
+      name = getSpanName(component.getIdentifier()) + defaultString(spanNameSuffix);
     } else {
       name = overriddenName;
     }
@@ -98,5 +100,9 @@ public class ExecutionInitialSpanInfo implements InitialSpanInfo {
 
   private boolean isComponentOfName(Component component, String name) {
     return component.getIdentifier() != null && name.equals(component.getIdentifier().getName());
+  }
+
+  public void reconfigureInitialSpanInfo(TracingLevelConfiguration tracingLevelConfiguration) {
+    // Nothing to do.
   }
 }
