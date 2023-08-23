@@ -17,6 +17,7 @@ import org.mule.runtime.module.artifact.api.classloader.FilteringArtifactClassLo
 import org.mule.runtime.module.artifact.api.descriptor.ArtifactDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -111,7 +112,7 @@ public class ContainerClassLoaderFactory {
     return new FilteringContainerClassLoader(parentClassLoader, containerClassLoader,
                                              new ContainerClassLoaderFilterFactory()
                                                  .create(preFilteredContainerClassLoaderCreator.getBootPackages(), muleModules),
-                                             getExportedServices(muleModules));
+                                             Collections.emptyList());
   }
 
   private List<ExportedService> getExportedServices(List<MuleModule> muleModules) {
