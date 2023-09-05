@@ -45,6 +45,8 @@ import org.slf4j.Logger;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.util.annotation.Nullable;
 
 /**
@@ -89,6 +91,12 @@ public class RxUtils {
     return subscribeFluxOnPublisherSubscription(triggeringSubscriber, deferredSubscriber, null, null, null);
   }
 
+  public static <T, U> Flux<T> subscribeFluxOnPublisherSubscription(Flux<T> triggeringSubscriber,
+                                                                    Flux<U> deferredSubscriber,
+                                                                    Scheduler scheduler) {
+    return subscribeFluxOnPublisherSubscription(triggeringSubscriber, deferredSubscriber, null, null, null, scheduler);
+  }
+
   /**
    * Defers the subscription of the <it>deferredSubscriber</it> until <it>triggeringSubscriber</it> subscribes. Once that occurs
    * the latter subscription will take place on the same context. For an example of this, look at
@@ -125,6 +133,21 @@ public class RxUtils {
             .flatMapMany(ctx -> eventPub.doOnSubscribe(s -> deferredSubscriber
                 .subscriberContext(ctx)
                 .subscribe(consumer, errorConsumer, completeConsumer))));
+  }
+
+  public static <T, U> Flux<T> subscribeFluxOnPublisherSubscription(Flux<T> triggeringSubscriber,
+                                                                    Flux<U> deferredSubscriber,
+                                                                    @Nullable Consumer<? super U> consumer,
+                                                                    @Nullable Consumer<? super Throwable> errorConsumer,
+                                                                    @Nullable Runnable completeConsumer,
+                                                                    Scheduler scheduler) {
+    return triggeringSubscriber
+        .compose(eventPub -> subscriberContext()
+            .flatMapMany(ctx -> eventPub.doOnSubscribe(s -> {
+              Mono.just(ctx).publishOn(scheduler).doOnNext(context -> deferredSubscriber
+                  .subscriberContext(context)
+                  .subscribe(consumer, errorConsumer, completeConsumer)).block();
+            })));
   }
 
   /**

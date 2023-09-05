@@ -20,6 +20,8 @@ import java.util.List;
 import org.reactivestreams.Publisher;
 
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * Router that generates executable routes for each one configured and handles the logic of deciding which one will be executed
@@ -55,7 +57,7 @@ abstract class AbstractSinkRouter {
       routePublishers.add(nextRoute.getPublisher());
     }
 
-    routePublishers.add(subscribeFluxOnPublisherSubscription(phantomRoute.getPublisher(), router));
+    routePublishers.add(subscribeFluxOnPublisherSubscription(phantomRoute.getPublisher(), router, Schedulers.elastic()));
 
     return routePublishers;
   }
