@@ -44,6 +44,7 @@ import org.mule.runtime.core.privileged.event.BaseEventContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -233,10 +234,13 @@ public class StreamEmitterProcessingStrategyFactory extends AbstractStreamProces
         Latch completionLatch = new Latch();
         EmitterProcessor<CoreEvent> processor = EmitterProcessor.create(bufferQueueSize);
         AtomicReference<Throwable> failedSubscriptionCause = new AtomicReference<>();
+        Phaser phaser = new Phaser(1);
         processor.transform(function)
+            .contextWrite(ctx -> ctx.put("phaser", phaser))
             .subscribe(null, getThrowableConsumer(flowConstruct, completionLatch, failedSubscriptionCause),
                        () -> completionLatch.release());
 
+        phaser.arriveAndAwaitAdvance();
         if (!processor.hasDownstreams()) {
           throw resolveSubscriptionErrorCause(failedSubscriptionCause);
         }

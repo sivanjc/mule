@@ -17,6 +17,7 @@ import static java.util.function.UnaryOperator.identity;
 
 import static org.slf4j.LoggerFactory.getLogger;
 import static reactor.core.publisher.Mono.from;
+import static reactor.core.scheduler.Schedulers.elastic;
 import static reactor.core.scheduler.Schedulers.fromExecutorService;
 
 import org.mule.runtime.api.component.Component;
@@ -32,6 +33,7 @@ import org.mule.runtime.core.internal.exception.MessagingException;
 import org.mule.runtime.core.internal.rx.FluxSinkRecorder;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,6 +48,8 @@ import org.slf4j.Logger;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.annotation.Nullable;
 
 /**
@@ -123,9 +127,17 @@ public class RxUtils {
                                                                     @Nullable Runnable completeConsumer) {
     return triggeringSubscriber
         .transformDeferredContextual((eventPub, ctx) -> eventPub
-            .doOnSubscribe(s -> deferredSubscriber
-                .contextWrite(ctx)
-                .subscribe(consumer, errorConsumer, completeConsumer)));
+            .doOnSubscribe(s -> {
+              Phaser phaser = ctx.get("phaser");
+              phaser.register();
+              Mono.just(ctx)
+                  .publishOn(elastic())
+                  .doOnNext(c -> deferredSubscriber
+                      .contextWrite(ctx)
+                      .subscribe(consumer, errorConsumer, completeConsumer))
+                  .doOnNext(c -> phaser.arriveAndDeregister())
+                  .subscribe();
+            }));
   }
 
   /**
