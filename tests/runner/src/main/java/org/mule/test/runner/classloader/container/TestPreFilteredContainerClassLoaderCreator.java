@@ -81,6 +81,13 @@ public class TestPreFilteredContainerClassLoaderCreator implements PreFilteredCo
   // classloader), while the code in the Discoverer classes has to run within the Mule Container classloader.
   private static ReflectionAdapterModuleDiscoverer createContainerModuleDiscoverer(ClassLoader containerSystemClassloader) {
     try {
+      final Class<?> clsContainerDiscovererHelper =
+          containerSystemClassloader
+              .loadClass(org.mule.runtime.container.api.discoverer.ContainerDiscovererHelper.class.getName());
+      clsContainerDiscovererHelper.getDeclaredMethod("ooo", Class.class)
+          .invoke(null, new Object[] {null});
+
+
       final Class<?> clsContainerModuleDiscoverer =
           containerSystemClassloader.loadClass(ContainerModuleDiscoverer.class.getName());
 
