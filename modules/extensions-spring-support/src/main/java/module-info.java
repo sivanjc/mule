@@ -28,6 +28,7 @@ module org.mule.runtime.extensions.spring.support {
   requires org.mule.runtime.artifact.activation;
   requires org.mule.runtime.deployment.model;
   requires org.mule.runtime.spring.config;
+  requires org.mule.runtime.http.api;
 
   requires java.compiler;
   requires java.inject;
@@ -36,6 +37,7 @@ module org.mule.runtime.extensions.spring.support {
 
   requires com.google.common;
   requires org.jsoup;
+  requires crac;
   requires dom4j;
 
   provides org.mule.runtime.dsl.api.component.ComponentBuildingDefinitionProvider with

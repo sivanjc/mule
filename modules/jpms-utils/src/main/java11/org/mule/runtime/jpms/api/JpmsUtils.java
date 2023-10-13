@@ -57,7 +57,14 @@ public final class JpmsUtils {
     // Nothing to do
   }
 
-  private static final int JAVA_MAJOR_VERSION = parseInt(getProperty("java.version").split("\\.")[0]);
+  private static int parseJavaMajorVersion() {
+    String major = getProperty("java.version").split("\\.")[0];
+    major = major.split("-")[0];
+
+    return Integer.parseInt(major);
+  }
+
+  private static final int JAVA_MAJOR_VERSION = parseJavaMajorVersion();
   // this is copied from MuleSystemProperties so we don't have to add the mule-api dependency on the bootstrap.
   private static final String CLASSLOADER_CONTAINER_JPMS_MODULE_LAYER = "mule.classloader.container.jpmsModuleLayer";
 
