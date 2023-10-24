@@ -25,11 +25,8 @@ import org.mule.runtime.http.api.server.RequestHandlerManager;
 import org.mule.runtime.http.api.server.async.HttpResponseReadyCallback;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-
-import org.crac.Core;
 
 public class CracHandler implements Startable, Stoppable {
 
@@ -46,6 +43,7 @@ public class CracHandler implements Startable, Stoppable {
   @Override
   public void start() throws MuleException {
     httpServer = httpService.getServerFactory().create(new HttpServerConfiguration.Builder()
+        .setName("cracHandler")
         .setHost("localhost")
         .setPort(8080)
         .build());
