@@ -102,6 +102,13 @@ public final class DelegateConnectionManagerAdapter implements ConnectionManager
     return connectionManagerAdapterStrategy.testConnectivity(configurationInstance);
   }
 
+  public ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance)
+      throws IllegalArgumentException {
+    return delegate.testConnectivity(configurationInstance);
+  }
+
+
+
   @Override
   public void initialise() throws InitialisationException {
     connectionManagerAdapterStrategy.initialise();
@@ -181,6 +188,14 @@ public final class DelegateConnectionManagerAdapter implements ConnectionManager
     }
 
     @Override
+    public ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance)
+        throws IllegalArgumentException {
+      return delegate.testConnectivity(configurationInstance);
+    }
+
+
+
+    @Override
     public void initialise() throws InitialisationException {
       initialiseIfNeeded(delegate, true, muleContext);
     }
@@ -239,6 +254,12 @@ public final class DelegateConnectionManagerAdapter implements ConnectionManager
     public ConnectionValidationResult testConnectivity(ConfigurationInstance configurationInstance)
         throws IllegalArgumentException {
       return ConnectionValidationResult.success();
+    }
+
+    @Override
+    public ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance)
+        throws IllegalArgumentException {
+      return delegate.testConnectivity(configurationInstance);
     }
 
     @Override

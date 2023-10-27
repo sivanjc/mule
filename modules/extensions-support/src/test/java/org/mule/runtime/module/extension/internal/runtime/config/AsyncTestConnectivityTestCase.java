@@ -196,6 +196,12 @@ public class AsyncTestConnectivityTestCase extends AbstractMuleContextTestCase {
     }
 
     @Override
+    public ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance)
+            throws IllegalArgumentException {
+      return success();
+    }
+
+    @Override
     public void initialise() throws InitialisationException {}
 
     @Override

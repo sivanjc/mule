@@ -103,6 +103,17 @@ public class CompositeConnectionManager implements ConnectionManager, Connection
     return childConnectionManager.testConnectivity(connectionProvider);
   }
 
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance)
+      throws IllegalArgumentException {
+    return this.testConnectivity(configurationInstance);
+  }
+
   /**
    * {@inheritDoc}
    */

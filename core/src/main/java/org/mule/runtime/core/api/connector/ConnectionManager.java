@@ -119,4 +119,19 @@ public interface ConnectionManager {
    * @throws IllegalArgumentException if the {@code configurationInstance} doesn't have an associated {@link ConnectionProvider}
    */
   ConnectionValidationResult testConnectivity(ConfigurationInstance configurationInstance) throws IllegalArgumentException;
+
+
+  /**
+   * Tests connectivity for the given {@code configurationInstance}.
+   * <p>
+   * The {@code connectionProvider} is expected to be fully initialised and functional. It is not required for the config wrapped
+   * by the {@code configurationInstance} to have been registered through the {@link #bind(Object, ConnectionProvider)} method.
+   * However, if it has been, then the test will be performed using the resources allocated by such registration.
+   *
+   * @param configurationInstance a {@link ConfigurationInstance}
+   * @return a {@link ConnectionValidationResult}
+   * @throws IllegalArgumentException if the {@code configurationInstance} doesn't have an associated {@link ConnectionProvider}
+   */
+  ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance) throws IllegalArgumentException;
+
 }

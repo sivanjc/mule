@@ -154,12 +154,23 @@ public final class DefaultConnectionManager implements ConnectionManagerAdapter 
    * {@inheritDoc}
    */
   @Override
+  public ConnectionValidationResult testConnectivityNonLazy(ConfigurationInstance configurationInstance)
+      throws IllegalArgumentException {
+    return testConnectivity(configurationInstance);
+  };
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public ConnectionValidationResult testConnectivity(ConfigurationInstance configurationInstance)
       throws IllegalArgumentException {
 
     if (!configurationInstance.getConnectionProvider().isPresent()) {
       throw new IllegalArgumentException("The component does not support connectivity testing");
     }
+
+
 
     return doTestConnectivity(() -> {
       ConnectionProvider<Object> connectionProvider = configurationInstance.getConnectionProvider().get();
