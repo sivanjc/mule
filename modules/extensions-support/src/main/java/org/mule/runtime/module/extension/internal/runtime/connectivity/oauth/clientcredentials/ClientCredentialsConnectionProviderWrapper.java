@@ -54,8 +54,7 @@ public class ClientCredentialsConnectionProviderWrapper<C> extends BaseOAuthConn
     super(delegate, reconnectionConfig, callbackValues);
     this.oauthConfig = oauthConfig;
     this.oauthHandler = oauthHandler;
-    oauthStateSetter =
-        getOAuthStateSetter(getDelegateForInjection(), CLIENT_CREDENTIALS_STATE_INTERFACES, oauthConfig.getGrantType());
+    oauthStateSetter = resolveOauthStateSetter(oauthConfig);
     dance = Once.of(this::updateOAuthState);
   }
 
@@ -111,4 +110,9 @@ public class ClientCredentialsConnectionProviderWrapper<C> extends BaseOAuthConn
     }
     super.stop();
   }
+
+  protected FieldSetter<Object, Object> resolveOauthStateSetter(ClientCredentialsConfig oauthConfig) {
+    return getOAuthStateSetter(getDelegateForInjection(), CLIENT_CREDENTIALS_STATE_INTERFACES, oauthConfig.getGrantType());
+  }
+
 }
