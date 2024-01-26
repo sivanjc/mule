@@ -418,7 +418,8 @@ public abstract class AbstractSpringRegistry extends AbstractRegistry implements
     @Override
     public void registerObject(String key, Object value) throws RegistrationException {
       try {
-        getMuleContext().withLifecycleLock((CheckedRunnable) () -> doRegisterObject(key, value));
+        // getMuleContext().withLifecycleLock((CheckedRunnable) () -> doRegisterObject(key, value));
+        doRegisterObject(key, value);
       } catch (RuntimeException e) {
         Throwable cause = e.getCause();
         if (cause instanceof RegistrationException) {

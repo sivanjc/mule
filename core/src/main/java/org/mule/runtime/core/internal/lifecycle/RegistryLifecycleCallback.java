@@ -53,12 +53,13 @@ public class RegistryLifecycleCallback<T> implements LifecycleCallback<T>, HasLi
   @Override
   public void onTransition(String phaseName, T object) throws MuleException {
     try {
-      final CheckedRunnable transitionCommand = (CheckedRunnable) () -> doOnTransition(phaseName, object);
+      // final CheckedRunnable transitionCommand = (CheckedRunnable) () -> doOnTransition(phaseName, object);
 
-      registryLifecycleManager.getMuleContext()
-          .map(muleContext -> (CheckedRunnable) () -> muleContext.withLifecycleLock(transitionCommand))
-          .orElse(transitionCommand)
-          .run();
+      // registryLifecycleManager.getMuleContext()
+      // .map(muleContext -> (CheckedRunnable) () -> muleContext.withLifecycleLock(transitionCommand))
+      // .orElse(transitionCommand)
+      // .run();
+      doOnTransition(phaseName, object);
     } catch (RuntimeException e) {
       MuleException muleException = extractOfType(e, MuleException.class).orElse(null);
       if (muleException != null) {
