@@ -6,14 +6,13 @@
  */
 package org.mule.runtime.config.utils;
 
+import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_MULE_CONTEXT;
+
 import org.mule.runtime.api.service.Service;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.internal.config.preferred.Preferred;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_MULE_CONTEXT;
 
 public class Utils {
 
@@ -107,11 +106,6 @@ public class Utils {
   }
 
   public static class MyBean {
-
-  }
-
-  @Preferred
-  public static class MyPreferredBean extends MyBean {
 
   }
 

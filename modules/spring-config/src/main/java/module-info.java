@@ -70,6 +70,7 @@ module org.mule.runtime.spring.config {
   requires org.apache.commons.lang3;
   requires com.google.common;
 
+  requires com.github.benmanes.caffeine;
   requires org.jgrapht.core;
   requires net.bytebuddy;
 

@@ -55,6 +55,7 @@ import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.core.api.Injector;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.MuleConfiguration;
+import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.el.ExtendedExpressionManager;
 import org.mule.runtime.core.api.event.CoreEvent;
@@ -73,6 +74,7 @@ import org.mule.runtime.core.internal.interception.InterceptorManager;
 import org.mule.runtime.core.internal.message.InternalEvent;
 import org.mule.runtime.core.internal.profiling.DummyComponentTracerFactory;
 import org.mule.runtime.core.internal.profiling.InternalProfilingService;
+import org.mule.runtime.core.internal.registry.DefaultRegistry;
 import org.mule.runtime.core.internal.registry.MuleRegistry;
 import org.mule.runtime.core.internal.registry.MuleRegistryHelper;
 import org.mule.runtime.core.privileged.PrivilegedMuleContext;
@@ -207,6 +209,8 @@ public class MuleContextUtils {
     try {
       MuleRegistryHelper registry = mock(MuleRegistryHelper.class, withSettings().lenient());
       when(muleContext.getRegistry()).thenReturn(registry);
+      when(registry.lookupObject(MuleProperties.OBJECT_REGISTRY)).thenReturn(new DefaultRegistry(muleContext));
+      when(registry.lookupObject(MuleProperties.OBJECT_MULE_CONTEXT)).thenReturn(muleContext);
       ComponentInitialStateManager componentInitialStateManager =
           mock(ComponentInitialStateManager.class, withSettings().lenient());
       when(componentInitialStateManager.mustStartMessageSource(any())).thenReturn(true);

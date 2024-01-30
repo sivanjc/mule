@@ -9,8 +9,6 @@ package org.mule.runtime.module.extension.internal.manager;
 import static org.mule.metadata.api.builder.BaseTypeBuilder.create;
 import static org.mule.metadata.api.model.MetadataFormat.JAVA;
 import static org.mule.runtime.api.test.util.tck.ExtensionModelTestUtils.visitableMock;
-import static org.mule.runtime.core.api.config.MuleProperties.OBJECT_CONNECTION_MANAGER;
-import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.module.extension.internal.manager.DefaultExtensionManager.EXTENSION_JVM_ENFORCEMENT_PROPERTY;
 import static org.mule.runtime.module.extension.internal.manager.DefaultExtensionManager.JVM_ENFORCEMENT_DISABLED;
 import static org.mule.runtime.module.extension.internal.manager.DefaultExtensionManager.JVM_ENFORCEMENT_LOOSE;
@@ -60,10 +58,10 @@ import org.mule.runtime.api.meta.model.config.ConfigurationModel;
 import org.mule.runtime.api.meta.model.connection.ConnectionProviderModel;
 import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
+import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.extension.ExtensionManager;
 import org.mule.runtime.core.internal.connection.ConnectionManagerAdapter;
-import org.mule.runtime.core.internal.context.MuleContextWithRegistry;
 import org.mule.runtime.core.internal.registry.MuleRegistry;
 import org.mule.runtime.core.internal.transformer.simple.StringToEnum;
 import org.mule.runtime.core.privileged.registry.RegistrationException;
@@ -73,7 +71,6 @@ import org.mule.runtime.extension.api.runtime.config.ConfigurationProvider;
 import org.mule.runtime.extension.api.runtime.connectivity.ConnectionProviderFactory;
 import org.mule.runtime.extension.api.runtime.operation.CompletableComponentExecutor;
 import org.mule.runtime.extension.api.runtime.operation.CompletableComponentExecutorFactory;
-import org.mule.runtime.metadata.internal.MuleMetadataService;
 import org.mule.runtime.module.extension.api.runtime.privileged.ExecutionContextAdapter;
 import org.mule.runtime.module.extension.internal.loader.java.property.ConnectionProviderFactoryModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ParameterGroupModelProperty;
@@ -94,13 +91,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import org.mockito.Mock;
 import org.mockito.junit.MockitoRule;
+
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
 
 @SmallTest
 @Feature(SDK)
@@ -131,7 +131,7 @@ public class DefaultExtensionManagerTestCase extends AbstractMuleTestCase {
   @Mock(lenient = true)
   private ExtensionModel extensionModel3WithRepeatedName;
 
-  private MuleContextWithRegistry muleContext;
+  private MuleContext muleContext;
 
   @Mock(answer = RETURNS_DEEP_STUBS, lenient = true)
   private ConfigurationModel extension1ConfigurationModel;
@@ -235,9 +235,6 @@ public class DefaultExtensionManagerTestCase extends AbstractMuleTestCase {
     registerExtensions(extensionModel1, extensionModel2, extensionModel3WithRepeatedName);
 
     stubRegistryKeys(muleContext, EXTENSION1_CONFIG_INSTANCE_NAME, EXTENSION1_OPERATION_NAME, EXTENSION1_NAME);
-
-    registerIntoMockContext(muleContext, OBJECT_CONNECTION_MANAGER, mock(ConnectionManagerAdapter.class));
-    registerIntoMockContext(muleContext, MuleMetadataService.class, mock(MuleMetadataService.class));
 
     muleContext.getInjector().inject(extensionsManager);
   }
