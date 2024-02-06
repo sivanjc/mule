@@ -110,6 +110,8 @@ public class LazyMuleArtifactContext extends MuleArtifactContext
   private final Optional<ComponentModelInitializer> parentComponentModelInitializer;
 
   private final ArtifactAstDependencyGraph graph;
+
+  private final ArtifactAstDependencyGraph graphWithoutMacroExpansion;
   private final ComponentInitializationState currentComponentInitializationState;
 
   // Used for detecting cycles when initializing beans that are dynamically referenced
@@ -117,7 +119,6 @@ public class LazyMuleArtifactContext extends MuleArtifactContext
 
   private final Map<String, String> artifactProperties;
   private final LockFactory runtimeLockFactory;
-  private ArtifactAst applicationModelBeforeMacroExpansion;
 
   /**
    * Parses configuration files creating a spring ApplicationContext which is used as a parent registry using the SpringRegistry
@@ -176,7 +177,7 @@ public class LazyMuleArtifactContext extends MuleArtifactContext
     this.artifactProperties = artifactProperties;
     this.runtimeLockFactory = runtimeLockFactory;
 
-    this.applicationModelBeforeMacroExpansion = getApplicationModel();
+    this.graphWithoutMacroExpansion = generateFor(getApplicationModel());
 
     initialize();
     // Graph should be generated after the initialize() method since the applicationModel will change by macro expanding XmlSdk
@@ -424,6 +425,7 @@ public class LazyMuleArtifactContext extends MuleArtifactContext
 
   private ComponentInitializationRequest.Builder getRequestBuilder(boolean applyStartPhase, boolean keepPrevious) {
     return new ComponentInitializationRequest.Builder(graph,
+                                                      graphWithoutMacroExpansion,
                                                       currentComponentInitializationState,
                                                       MuleArtifactContext::isAlwaysEnabledComponent,
                                                       applyStartPhase,
@@ -511,10 +513,8 @@ public class LazyMuleArtifactContext extends MuleArtifactContext
         return emptyList();
       }
 
-      validateArtifact(applicationModelBeforeMacroExpansion);
+      initializationRequest.validateRequestedAst(this::validateModel);
       ArtifactAst minimalAst = initializationRequest.getFilteredAstToInitialize();
-
-      initialize();
 
       initializationRequest.getLocation()
           .ifPresent(location -> validateRequestedComponentExists(location, minimalAst));
