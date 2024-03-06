@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.rules.ExpectedException.none;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,6 +44,8 @@ import static org.mule.runtime.module.artifact.api.descriptor.BundleScope.PROVID
 import static org.mule.runtime.module.deployment.impl.internal.BundleDependencyMatcher.bundleDependency;
 import static org.mule.runtime.module.deployment.impl.internal.MavenTestUtils.installArtifact;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mule.runtime.api.deployment.meta.MuleDeployableModel;
 import org.mule.runtime.api.meta.MuleVersion;
 import org.mule.runtime.core.api.registry.SpiServiceRegistry;
@@ -60,7 +63,14 @@ import org.mule.tck.junit4.rule.SystemProperty;
 import org.mule.tck.junit4.rule.SystemPropertyTemporaryFolder;
 import org.mule.tck.util.CompilerUtils;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -345,7 +355,55 @@ public abstract class DeployableArtifactDescriptorFactoryTestCase<D extends Depl
 
   @Test
   public void classLoaderModelWithPluginDependencyAndAdditionalDependenciesLightweightUseLocalRepository() throws Exception {
+    String content =
+        readFile(getClass()
+            .getResourceAsStream("/apps/plugin-dependency-with-additional-dependencies-lightweight-local-repository/META-INF/mule-artifact/classloader-model.json"));
+
+
+    System.setProperty("outputDirectory",
+                       getClass().getResource("/").toString());
+
+    String replacedContent = replacePlaceholderWithSystemProperty(content, "outputDirectory");
+
+
+    writeFile(getClass()
+        .getResource("/apps/plugin-dependency-with-additional-dependencies-lightweight-local-repository/META-INF/mule-artifact/classloader-model.json")
+        .getPath(),
+              replacedContent);
+
+
     assertClassLoaderModelWithPluginDependencyAndAdditionalDependencies("/plugin-dependency-with-additional-dependencies-lightweight-local-repository");
+  }
+
+  private static String readFile(InputStream inputStream) throws IOException {
+    StringBuilder content = new StringBuilder();
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        content.append(line).append(System.lineSeparator());
+      }
+    }
+    return content.toString();
+  }
+
+  private static void writeFile(String filePath, String content) throws IOException {
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+      writer.write(content);
+    }
+  }
+
+  private static String replacePlaceholderWithSystemProperty(String content, String placeholder) {
+    // Replace ${placeholder} with the system property value
+    String placeholderString = "${" + placeholder + "}";
+    String replacement = System.getProperty(placeholder);
+
+    if (replacement != null) {
+      content = content.replace(placeholderString, replacement);
+    } else {
+      System.err.println("System property not set for " + placeholderString);
+    }
+
+    return content;
   }
 
   @Test
