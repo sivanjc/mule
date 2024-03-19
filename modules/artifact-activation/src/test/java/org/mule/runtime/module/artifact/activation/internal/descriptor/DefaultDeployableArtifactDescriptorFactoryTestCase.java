@@ -35,10 +35,11 @@ import org.mule.runtime.module.artifact.api.descriptor.DomainDescriptor;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.junit.Test;
+
 import io.qameta.allure.Description;
 import io.qameta.allure.Issue;
 import io.qameta.allure.Story;
-import org.junit.Test;
 
 @Story(ARTIFACT_DESCRIPTORS)
 public class DefaultDeployableArtifactDescriptorFactoryTestCase extends AbstractDeployableArtifactDescriptorFactoryTestCase {
@@ -114,10 +115,11 @@ public class DefaultDeployableArtifactDescriptorFactoryTestCase extends Abstract
     ApplicationDescriptor applicationDescriptor = createApplicationDescriptor("apps/additional-plugin-dependency-and-dep");
 
     assertThat(applicationDescriptor.getClassLoaderConfiguration().getExportedPackages(), hasSize(0));
-    assertThat(applicationDescriptor.getClassLoaderConfiguration().getDependencies(), hasSize(4));
+    assertThat(applicationDescriptor.getClassLoaderConfiguration().getDependencies(), hasSize(5));
 
     assertThat(applicationDescriptor.getClassLoaderConfiguration().getDependencies(),
-               hasItems(hasProperty("descriptor", hasProperty("artifactId", equalTo("derby"))),
+               hasItems(hasProperty("descriptor", hasProperty("artifactId", equalTo("derbyshared"))),
+                        hasProperty("descriptor", hasProperty("artifactId", equalTo("derby"))),
                         hasProperty("descriptor", hasProperty("artifactId", equalTo("mule-db-connector")))));
 
     List<BundleDependency> additionalDependencies =
