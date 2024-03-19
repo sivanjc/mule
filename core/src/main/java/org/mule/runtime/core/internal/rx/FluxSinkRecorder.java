@@ -38,9 +38,15 @@ public class FluxSinkRecorder<T> implements Consumer<FluxSink<T>> {
   private volatile String completionStackTrace = null;
   private volatile String acceptStackTrace = null;
 
+  // public Flux<T> flux() {
+  // return create(this)
+  // .contextWrite(ctx -> empty());
+  // }
+
   public Flux<T> flux() {
-    return create(this)
-        .contextWrite(ctx -> empty());
+    return create(this).doOnSubscribe(subscription -> {
+      LOGGER.info("");
+    });
   }
 
   @Override
