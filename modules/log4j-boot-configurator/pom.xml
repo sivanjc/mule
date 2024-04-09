@@ -56,11 +56,5 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.mule.runtime.boot</groupId>
-            <artifactId>mule-module-boot-api</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>
