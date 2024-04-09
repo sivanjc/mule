@@ -22,15 +22,11 @@ module org.mule.boot.api {
       org.mule.boot.commons, // container layer!
       com.mulesoft.mule.boot;
 
-  // Needed by the BootModuleLayerValidationBootstrapConfigurer and for creating the container ClassLoader
-  // requires org.mule.runtime.jpms.utils;
-
   uses org.mule.runtime.module.boot.api.MuleContainerProvider;
   uses org.mule.runtime.module.boot.api.MuleContainerLifecycleWrapper.MuleContainerLifecycleWrapperProvider;
 
   // Required to programmatically propagate accessibility by JpmsUtils
   opens org.mule.runtime.module.boot.internal to
       org.mule.runtime.jpms.utils;
-  // opens org.mule.runtime.module.boot.api to org.mule.runtime.jpms.utils;
 
 }
