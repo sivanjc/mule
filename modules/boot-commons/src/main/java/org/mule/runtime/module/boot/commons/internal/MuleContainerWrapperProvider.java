@@ -4,10 +4,13 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.boot.internal;
+package org.mule.runtime.module.boot.commons.internal;
 
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
+
+import org.mule.runtime.module.boot.api.MuleContainerLifecycleWrapper;
+import org.mule.runtime.module.boot.api.MuleContainerLifecycleWrapper.MuleContainerLifecycleWrapperProvider;
 
 /**
  * Helps with the creation and provisioning of the {@link MuleContainerWrapper} implementation instance as a singleton.
@@ -16,10 +19,9 @@ import static java.lang.System.getProperty;
  *
  * @since 4.5
  */
-public class MuleContainerWrapperProvider {
+public class MuleContainerWrapperProvider implements MuleContainerLifecycleWrapperProvider {
 
   private static final String MULE_BOOTSTRAP_CONTAINER_WRAPPER_CLASS_SYSTEM_PROPERTY = "mule.bootstrap.container.wrapper.class";
-  private static MuleContainerWrapper INSTANCE;
 
   /**
    * Creates the implementation instance based on the system property
@@ -27,21 +29,8 @@ public class MuleContainerWrapperProvider {
    *
    * @return The {@link MuleContainerWrapper} implementation.
    */
-  public static MuleContainerWrapper getMuleContainerWrapper() {
-    if (INSTANCE == null) {
-      INSTANCE = createContainerWrapper();
-    }
-
-    return INSTANCE;
-  }
-
-  /**
-   * Creates the implementation instance based on the system property
-   * {@link #MULE_BOOTSTRAP_CONTAINER_WRAPPER_CLASS_SYSTEM_PROPERTY}.
-   *
-   * @return The {@link MuleContainerWrapper} implementation.
-   */
-  private static MuleContainerWrapper createContainerWrapper() {
+  @Override
+  public MuleContainerLifecycleWrapper provide() {
     String wrapperClassName = getProperty(MULE_BOOTSTRAP_CONTAINER_WRAPPER_CLASS_SYSTEM_PROPERTY);
     if (wrapperClassName == null) {
       throw new RuntimeException(format("System property '%s' is not defined, it must be set with an implementation of %s",
@@ -65,4 +54,5 @@ public class MuleContainerWrapperProvider {
                                  e);
     }
   }
+
 }

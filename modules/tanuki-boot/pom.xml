@@ -24,6 +24,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.mule.runtime.boot</groupId>
+            <artifactId>mule-module-boot-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>tanukisoft</groupId>
             <artifactId>wrapper</artifactId>
         </dependency>

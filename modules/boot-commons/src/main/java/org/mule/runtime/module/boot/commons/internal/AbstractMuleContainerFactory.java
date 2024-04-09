@@ -4,11 +4,12 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.boot.internal;
+package org.mule.runtime.module.boot.commons.internal;
 
 import static org.mule.runtime.jpms.api.JpmsUtils.createModuleLayerClassLoader;
 import static org.mule.runtime.jpms.api.MultiLevelClassLoaderFactory.MULTI_LEVEL_URL_CLASSLOADER_FACTORY;
-import static org.mule.runtime.module.boot.internal.util.SystemUtils.getCommandLineOptions;
+import static org.mule.runtime.module.boot.api.MuleContainerProvider.lookupProvider;
+import static org.mule.runtime.module.boot.commons.internal.util.SystemUtils.getCommandLineOptions;
 
 import static java.lang.ClassLoader.getSystemClassLoader;
 import static java.lang.String.format;
@@ -78,7 +79,7 @@ public abstract class AbstractMuleContainerFactory implements MuleContainerFacto
   MuleContainer createMuleContainer() throws IOException, Exception {
     ClassLoader muleSystemCl = createContainerSystemClassLoader(lookupMuleHome(), lookupMuleBase());
 
-    final MuleContainerProvider containerProvider = load(MuleContainerProvider.class, muleSystemCl).iterator().next();
+    final MuleContainerProvider containerProvider = lookupProvider(muleSystemCl);
 
     ClassLoader originalCl = currentThread().getContextClassLoader();
     currentThread().setContextClassLoader(muleSystemCl);

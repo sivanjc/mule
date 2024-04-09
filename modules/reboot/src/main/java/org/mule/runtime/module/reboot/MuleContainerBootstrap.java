@@ -8,13 +8,8 @@ package org.mule.runtime.module.reboot;
 
 import static org.mule.runtime.module.boot.internal.BootstrapConstants.MULE_BASE_DIRECTORY_PROPERTY;
 import static org.mule.runtime.module.boot.internal.BootstrapConstants.MULE_HOME_DIRECTORY_PROPERTY;
-import static org.mule.runtime.module.boot.internal.MuleContainerWrapperProvider.getMuleContainerWrapper;
+import static org.mule.runtime.module.boot.internal.DefaultMuleContainerLifecycleWrapperProvider.getMuleContainerWrapper;
 
-import org.mule.runtime.module.boot.internal.BootModuleLayerValidationBootstrapConfigurer;
-import org.mule.runtime.module.boot.internal.MuleContainerFactory;
-import org.mule.runtime.module.boot.internal.MuleContainerWrapper;
-import org.mule.runtime.module.boot.internal.MuleLog4jConfigurer;
-import org.mule.runtime.module.boot.internal.SLF4JBridgeHandlerBootstrapConfigurer;
 import org.mule.runtime.module.reboot.internal.CEMuleContainerFactory;
 
 import org.apache.commons.cli.BasicParser;

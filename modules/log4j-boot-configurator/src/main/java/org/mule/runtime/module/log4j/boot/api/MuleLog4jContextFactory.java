@@ -14,7 +14,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.logging.log4j.LogManager.setFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import org.mule.runtime.module.boot.api.MuleLog4jContextFactoryConfigurator;
 import org.mule.runtime.module.log4j.boot.internal.ContextSelectorWrapper;
 
 import java.util.ArrayList;
@@ -63,8 +62,7 @@ import org.apache.logging.log4j.spi.LoggerContextFactory;
  *
  * @since 4.5
  */
-public class MuleLog4jContextFactory extends Log4jContextFactory
-    implements MuleLog4jContextFactoryConfigurator, ShutdownCallbackRegistry {
+public class MuleLog4jContextFactory extends Log4jContextFactory implements ShutdownCallbackRegistry {
 
   private static final String LOG_CONFIGURATION_FACTORY_PROPERTY = "log4j.configurationFactory";
   private static final String DEFAULT_LOG_CONFIGURATION_FACTORY = XmlConfigurationFactory.class.getName();
@@ -73,7 +71,7 @@ public class MuleLog4jContextFactory extends Log4jContextFactory
 
   /**
    * Creates a new instance and sets it as the factory of the {@link org.apache.logging.log4j.LogManager}.
-   * 
+   *
    * @return the created {@link MuleLog4jContextFactory}.
    */
   public static MuleLog4jContextFactory createAndInstall() {
@@ -86,11 +84,6 @@ public class MuleLog4jContextFactory extends Log4jContextFactory
     MuleLog4jContextFactory log4jContextFactory = new MuleLog4jContextFactory();
     setFactory(log4jContextFactory);
     return log4jContextFactory;
-  }
-
-  @Override
-  public void createAndInstallLogger() {
-    createAndInstall();
   }
 
   /**

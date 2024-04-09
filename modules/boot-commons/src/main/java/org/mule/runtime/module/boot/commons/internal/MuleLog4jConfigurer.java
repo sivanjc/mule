@@ -4,12 +4,14 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.boot.internal;
+package org.mule.runtime.module.boot.commons.internal;
 
-
-import static org.mule.runtime.module.boot.api.MuleLog4jContextFactoryConfigurator.load;
+import static org.mule.runtime.module.log4j.boot.api.MuleLog4jContextFactory.createAndInstall;
 
 import static java.lang.System.getProperty;
+
+import org.mule.runtime.module.boot.commons.internal.BootstrapConfigurationException;
+import org.mule.runtime.module.boot.commons.internal.BootstrapConfigurer;
 
 /**
  * A {@link BootstrapConfigurer} that configures the log4j factory.
@@ -23,7 +25,7 @@ public class MuleLog4jConfigurer implements BootstrapConfigurer {
   @Override
   public boolean configure() throws BootstrapConfigurationException {
     if (getProperty(MULE_SIMPLE_LOG) == null) {
-      load(this.getClass().getClassLoader()).createAndInstallLogger();
+      createAndInstall();
     }
     return true;
   }

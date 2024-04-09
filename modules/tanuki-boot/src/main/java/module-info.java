@@ -12,9 +12,10 @@
  */
 module org.mule.boot.tanuki {
 
-  exports org.mule.runtime.module.boot.tanuki.internal to org.mule.boot.api;
+  exports org.mule.runtime.module.boot.tanuki.internal to org.mule.boot.commons;
 
   requires org.mule.boot.api;
+  requires org.mule.boot.commons;
 
   // Tanuki wrapper
   requires wrapper;

@@ -6,7 +6,7 @@
  */
 package org.mule.runtime.module.boot.api;
 
-import org.mule.runtime.module.boot.internal.MuleContainerWrapperProvider;
+import org.mule.runtime.module.boot.internal.DefaultMuleContainerLifecycleWrapperProvider;
 
 /**
  * Manages the lifecycle of the {@link MuleContainer}.
@@ -15,13 +15,19 @@ import org.mule.runtime.module.boot.internal.MuleContainerWrapperProvider;
  */
 public interface MuleContainerLifecycleWrapper {
 
+  interface MuleContainerLifecycleWrapperProvider {
+
+    MuleContainerLifecycleWrapper provide();
+  }
+
   /**
    * Creates the implementation instance.
    *
    * @return The {@link MuleContainerLifecycleWrapper} implementation.
    */
-  public static MuleContainerLifecycleWrapper getMuleContainerWrapper() {
-    return MuleContainerWrapperProvider.getMuleContainerWrapper();
+  static MuleContainerLifecycleWrapper getMuleContainerWrapper() {
+    // TODO: better naming
+    return DefaultMuleContainerLifecycleWrapperProvider.getMuleContainerWrapper();
   }
 
   /**

@@ -4,7 +4,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.boot.internal;
+package org.mule.runtime.module.boot.commons.internal;
 
 import static java.lang.System.getProperty;
 import static java.util.Arrays.asList;
@@ -107,7 +107,7 @@ public class DefaultMuleClassPathConfig {
   /**
    * Find and if necessary filter the jars for classpath.
    *
-   * @return a list of {@link java.io.File}s
+   * @return a list of {@link File}s
    */
   protected List<File> listJars(File path) {
     File[] jars = path.listFiles((FileFilter) pathname -> {

@@ -6,12 +6,18 @@
  */
 package org.mule.runtime.module.boot.api;
 
+import static java.util.ServiceLoader.load;
+
 /**
  * Decouples the creation of the {@link MuleContainer} from the module requiring it.
  * 
  * @since 4.6
  */
 public interface MuleContainerProvider {
+
+  static MuleContainerProvider lookupProvider(ClassLoader classLoader) {
+    return load(MuleContainerProvider.class, classLoader).iterator().next();
+  }
 
   /**
    * Creates an instance of a {@link MuleContainer}.

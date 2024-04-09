@@ -18,29 +18,19 @@ module org.mule.boot.api {
   exports org.mule.runtime.module.boot.api;
   exports org.mule.runtime.module.reboot.api;
 
-  // This directs some exports to modules that are loaded in the container layer. Those are used for compile-time validation and
-  // then directed programmatically by JpmsUtils
   exports org.mule.runtime.module.boot.internal to
-      org.mule.boot,
-      org.mule.boot.tanuki,
-      org.mule.runtime.launcher, // container layer!
-      com.mulesoft.mule.boot,
-      com.mulesoft.mule.runtime.plugin; // container layer!
+      org.mule.boot.commons, // container layer!
+      com.mulesoft.mule.boot;
 
   // Needed by the BootModuleLayerValidationBootstrapConfigurer and for creating the container ClassLoader
-  requires org.mule.runtime.jpms.utils;
-
-  // Needed by the SLF4JBridgeHandlerBootstrapConfigurer, but also to make the logging modules available from the boot layer
-  requires org.mule.runtime.logging;
-
-  requires org.apache.commons.cli;
-  requires org.slf4j;
+  // requires org.mule.runtime.jpms.utils;
 
   uses org.mule.runtime.module.boot.api.MuleContainerProvider;
+  uses org.mule.runtime.module.boot.api.MuleContainerLifecycleWrapper.MuleContainerLifecycleWrapperProvider;
 
   // Required to programmatically propagate accessibility by JpmsUtils
   opens org.mule.runtime.module.boot.internal to
       org.mule.runtime.jpms.utils;
-  opens org.mule.runtime.module.boot.api to org.mule.runtime.jpms.utils;
+  // opens org.mule.runtime.module.boot.api to org.mule.runtime.jpms.utils;
 
 }
